@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Verdikt — trustless AI arbitration on Somnia</title>
+  <meta name="description" content="Verdikt: a reusable AI-jury primitive for on-chain escrow disputes on Somnia's Agentic L1.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+  <style>
+    :root {
+      --bg: #0e1116;
+      --fg: #e6edf3;
+      --panel: #161b22;
+      --border: #30363d;
+      --blue: #79c0ff;
+      --orange: #ffa657;
+      --purple: #d2a8ff;
+      --muted: #7d8590;
+    }
+    .reveal-viewport, body, .reveal { background: var(--bg); }
+    .reveal { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--fg); }
+    .reveal .slides { text-align: left; }
+    .reveal .slides > section { padding: 48px 64px; }
+    .reveal h1 { color: var(--blue); font-size: 2.4em; text-transform: none; margin-bottom: 0.4em; }
+    .reveal h2 { color: var(--blue); font-size: 1.6em; text-transform: none; margin-bottom: 0.6em; }
+    .reveal h3 { color: var(--fg); font-size: 1.1em; text-transform: none; margin-top: 1em; }
+    .reveal p, .reveal li { color: var(--fg); font-size: 0.85em; line-height: 1.55; }
+    .reveal strong { color: var(--orange); }
+    .reveal code { background: var(--panel); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 0.9em; }
+    .reveal pre code { background: var(--panel); border: 1px solid var(--border); padding: 16px; display: block; }
+    .reveal ul { margin-left: 1.2em; }
+    .reveal li + li { margin-top: 0.3em; }
+    .reveal a { color: var(--blue); text-decoration: none; border-bottom: 1px dotted var(--blue); }
+    .reveal hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
+    .reveal .controls { color: var(--muted); }
+    .reveal .progress { color: var(--blue); }
+    .reveal .slide-number { color: var(--muted); font-family: inherit; background: transparent; }
+    .footer { position: fixed; bottom: 12px; left: 24px; color: var(--muted); font-size: 0.7em; z-index: 5; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section data-markdown>
+        <textarea data-template>
+# Verdikt
+
+**Trustless AI arbitration for on-chain escrow**
+
+Built on Somnia's Agentic L1 · Shannon testnet
+
+`github.com/Ridwannurudeen/verdikt`
+
+---
+
+## On-chain escrow can't handle subjective disputes
+
+- Price feeds and parametric rules can't decide *"was the service delivered as described?"*
+- A single off-chain bot is a trust hole the size of the operator
+- Human juries (Kleros-style) are slow and uneconomical for small claims
+- Most teams ship a 2-of-3 multisig and call it done
+
+The dispute committee that on-chain escrow needs **doesn't exist yet**.
+
+---
+
+## Somnia's Agentic L1 makes AI judgment trust-minimized
+
+A subcommittee of validators each runs the same LLM inference.
+
+Consensus is reached on a **byte-identical** result via `allowedValues`.
+
+That is a juror committee.
+
+We turn it into a **settlement layer**.
+
+---
+
+## VerdiktCourt — a reusable AI-jury primitive
+
+`openCase(evidence)` → panel of **5** LLM agents → Majority verdict (`PAYEE` / `PAYER` / `SPLIT`) → 1-hour appeal window → permissionless `finalize`.
+
+- Per-juror chain-of-thought stored off-chain in the agent **receipt**
+- Consumer contracts implement `IVerdiktConsumer.onVerdict`
+- No admin signer · no fallback path · no human in the settlement loop
+
+---
+
+## The novel layer: stake-backed appeals
+
+The losing party can post a stake and force a re-trial with a **9-agent panel and new evidence**.
+
+- Appeal **upheld** → stake slashed to the counterparty (minus configurable treasury cut)
+- Appeal **overturned** → stake returned
+
+New evidence is the honest design.
+
+Deterministic inference doesn't randomly change its mind — **only better facts should**.
+
+---
+
+## Two consumers, one primitive
+
+### `VerdiktEscrow`
+
+Two-party deal. Payer funds, payee delivers, anyone can release after the deadline. Appeal stake = 10% of deal.
+
+### `VerdiktInsurance`
+
+Parametric claims-arbitration pool. Funders earn shares; insured pays a 5% premium; pool funders can appeal a `PAYEE` verdict; `withdrawPool` is locked while a claim is open.
+
+The court doesn't know what `Escrow` or `Insurance` mean — that's the point.
+
+---
+
+## What ships today
+
+- **3 contracts** (`Court`, `Escrow`, `Insurance`) + 3 interfaces
+- **35/35 tests passing** — forge 1.7.1, solc 0.8.24, evm_version paris
+- **Deploy scripts** for Shannon (`Deploy.s.sol`, `DeployInsurance.s.sol`)
+- **Auto-keeper** — Node + viem, watches `VerdictReached` / `Delivered`, drives `finalize` and `release`
+- **Demo UI** — single-page HTML, viem from esm.sh, no build step
+- **Determinism gate** — probe contract + driver that prints a per-validator histogram
+
+---
+
+## Honest scope
+
+- Shannon testnet only · unaudited hackathon code
+- Determinism gate is **prepared but not run live yet** — needs funded key + real `LLM_AGENT_ID`
+- If panel outputs diverge, fallback is binary `PAYEE/PAYER` and/or `chainOfThought=false`
+- All values in native **STT** — no ERC-20 in v1
+
+### Asks
+
+1. Validate the panel converges (run the determinism gate)
+2. Plug in a third consumer — the court is reusable by design
+
+`github.com/Ridwannurudeen/verdikt`
+        </textarea>
+      </section>
+    </div>
+  </div>
+  <div class="footer">verdikt · Somnia Agora hackathon · github.com/Ridwannurudeen/verdikt</div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: "c/t",
+      controls: true,
+      progress: true,
+      transition: "slide",
+      plugins: [ RevealMarkdown, RevealHighlight ]
+    });
+  </script>
+</body>
+</html>
