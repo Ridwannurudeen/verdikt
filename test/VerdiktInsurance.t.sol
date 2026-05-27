@@ -35,7 +35,7 @@ contract VerdiktInsuranceTest is Test {
     }
 
     function _caseId(uint256 claimId) internal view returns (uint256 c) {
-        (, , c) = ins.claims(claimId);
+        (,, c) = ins.claims(claimId);
     }
 
     function _fund(address from, uint256 amount) internal {
@@ -70,7 +70,8 @@ contract VerdiktInsuranceTest is Test {
         uint256 policyId = _policy();
         uint256 premium = (COVERAGE * ins.premiumBps()) / 10000; // 0.05 ether
         assertEq(ins.totalPool(), poolBefore + premium);
-        (address ins_, uint256 cov, uint64 exp, VerdiktInsurance.PolicyStatus st, uint256 active) = ins.policies(policyId);
+        (address ins_, uint256 cov, uint64 exp, VerdiktInsurance.PolicyStatus st, uint256 active) =
+            ins.policies(policyId);
         assertEq(ins_, insured);
         assertEq(cov, COVERAGE);
         assertGt(exp, block.timestamp);
@@ -99,7 +100,7 @@ contract VerdiktInsuranceTest is Test {
         court.finalize(caseId);
 
         assertEq(insured.balance, before + COVERAGE);
-        (, , , VerdiktInsurance.PolicyStatus st, uint256 active) = ins.policies(policyId);
+        (,,, VerdiktInsurance.PolicyStatus st, uint256 active) = ins.policies(policyId);
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Exhausted));
         assertEq(active, 0);
     }
@@ -116,7 +117,7 @@ contract VerdiktInsuranceTest is Test {
         court.finalize(caseId);
 
         assertEq(insured.balance, before); // no payout
-        (, , , VerdiktInsurance.PolicyStatus st, ) = ins.policies(policyId);
+        (,,, VerdiktInsurance.PolicyStatus st,) = ins.policies(policyId);
         // policy still active (not expired)
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Active));
     }
@@ -133,7 +134,7 @@ contract VerdiktInsuranceTest is Test {
         court.finalize(caseId);
 
         assertEq(insured.balance, before + COVERAGE / 2);
-        (, , , VerdiktInsurance.PolicyStatus st, ) = ins.policies(policyId);
+        (,,, VerdiktInsurance.PolicyStatus st,) = ins.policies(policyId);
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Exhausted));
     }
 

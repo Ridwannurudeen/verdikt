@@ -74,7 +74,9 @@ contract VerdiktInsurance is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToClaim;
 
     event PoolFunded(address indexed funder, uint256 amount, uint256 sharesMinted);
-    event PolicyCreated(uint256 indexed policyId, address indexed insured, uint256 coverage, uint256 premium, uint64 expiry);
+    event PolicyCreated(
+        uint256 indexed policyId, address indexed insured, uint256 coverage, uint256 premium, uint64 expiry
+    );
     event ClaimFiled(uint256 indexed claimId, uint256 indexed policyId, uint256 indexed caseId, address by);
     event ClaimAppealed(uint256 indexed claimId, address indexed appellant, uint256 stake, Verdict preAppealVerdict);
     event ClaimSettled(uint256 indexed claimId, Verdict verdict, uint256 payout);
@@ -126,11 +128,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
 
         policyId = nextPolicyId++;
         policies[policyId] = Policy({
-            insured: msg.sender,
-            coverage: coverage,
-            expiry: expiry,
-            status: PolicyStatus.Active,
-            activeClaimId: 0
+            insured: msg.sender, coverage: coverage, expiry: expiry, status: PolicyStatus.Active, activeClaimId: 0
         });
         totalPool += premium;
         _refundExcess(msg.value, premium);
@@ -193,11 +191,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(msg.value >= stake + agentDep, "value too low");
 
         appeals[claimId] = AppealInfo({
-            appellant: msg.sender,
-            stake: stake,
-            preAppealVerdict: cv.verdict,
-            fromPool: fromPool,
-            active: true
+            appellant: msg.sender, stake: stake, preAppealVerdict: cv.verdict, fromPool: fromPool, active: true
         });
 
         court.appeal{value: agentDep}(c.caseId, newEvidence);
