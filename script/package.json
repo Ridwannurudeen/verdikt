@@ -1,0 +1,17 @@
+{
+  "name": "verdikt-determinism-gate",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "One-shot driver for the Verdikt determinism probe on Somnia Shannon.",
+  "scripts": {
+    "gate": "node run-determinism-gate.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

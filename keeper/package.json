@@ -1,0 +1,17 @@
+{
+  "name": "verdikt-keeper",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Auto-finalize ruled cases and auto-release delivered deals on Verdikt (Shannon).",
+  "scripts": {
+    "start": "node keeper.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

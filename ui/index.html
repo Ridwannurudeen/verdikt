@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verdikt — escrow demo</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body {
+    margin: 0;
+    background: #0e1116;
+    color: #e6edf3;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 920px; margin: 24px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+  .panel { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 16px; }
+  h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  h2 { font-size: 14px; margin: 0 0 12px; font-weight: 600; }
+  .header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .conn { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .conn-info { color: #8b949e; font-size: 12px; }
+  label { display: block; margin-top: 10px; color: #8b949e; font-size: 12px; }
+  input, textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #e6edf3;
+    border-radius: 4px;
+    font: inherit;
+    margin-top: 4px;
+  }
+  textarea { min-height: 70px; resize: vertical; }
+  button {
+    padding: 8px 14px;
+    border-radius: 4px;
+    font: inherit;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  button.primary { background: #238636; color: #fff; border-color: #238636; }
+  button.primary:hover:not(:disabled) { background: #2ea043; }
+  button.ghost { background: transparent; color: #e6edf3; border-color: #30363d; }
+  button.ghost:hover:not(:disabled) { background: #21262d; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  .kv { display: grid; grid-template-columns: 160px 1fr; gap: 4px 12px; font-size: 12px; }
+  .kv .k { color: #8b949e; }
+  .kv .v { word-break: break-all; }
+  .toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 100; max-width: 380px; }
+  .toast {
+    background: #161b22; border: 1px solid #30363d; border-left: 3px solid #238636;
+    padding: 8px 12px; border-radius: 4px; font-size: 12px; word-break: break-all;
+  }
+  .toast.err { border-left-color: #f85149; }
+  .toast.info { border-left-color: #1f6feb; }
+  a { color: #58a6ff; }
+  .muted { color: #8b949e; font-size: 12px; }
+  .hidden { display: none !important; }
+  .badge {
+    display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px;
+    background: #21262d; color: #e6edf3; border: 1px solid #30363d;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="panel header">
+    <h1>Verdikt — escrow demo</h1>
+    <div class="conn">
+      <span id="connInfo" class="conn-info">not connected</span>
+      <button id="connectBtn" class="primary">Connect wallet</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Config</h2>
+    <label>RPC URL</label>
+    <input id="cfgRpc" placeholder="https://api.infra.testnet.somnia.network/" />
+    <label>Court address</label>
+    <input id="cfgCourt" placeholder="0x..." />
+    <label>Escrow address</label>
+    <input id="cfgEscrow" placeholder="0x..." />
+    <div class="row">
+      <button id="cfgSave" class="primary">Save</button>
+      <span id="cfgStatus" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Create deal</h2>
+    <label>Payee address</label>
+    <input id="newPayee" placeholder="0x..." />
+    <div class="grid2">
+      <div>
+        <label>Amount (STT)</label>
+        <input id="newAmount" placeholder="0.1" />
+      </div>
+      <div>
+        <label>Deliver by</label>
+        <input id="newDeliverBy" type="datetime-local" />
+      </div>
+    </div>
+    <div class="row">
+      <button id="createBtn" class="primary">Create deal</button>
+      <span id="createResult" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Manage deal</h2>
+    <label>Deal ID</label>
+    <input id="dealIdInput" placeholder="1" />
+    <div class="row">
+      <button id="loadDealBtn" class="ghost">Load</button>
+    </div>
+    <div id="dealView" class="hidden" style="margin-top: 12px;">
+      <div class="kv">
+        <div class="k">Payer</div><div class="v" id="dvPayer"></div>
+        <div class="k">Payee</div><div class="v" id="dvPayee"></div>
+        <div class="k">Amount</div><div class="v" id="dvAmount"></div>
+        <div class="k">Deliver by</div><div class="v" id="dvDeliverBy"></div>
+        <div class="k">Status</div><div class="v" id="dvStatus"></div>
+        <div class="k">Case ID</div><div class="v" id="dvCaseId"></div>
+      </div>
+      <div class="row">
+        <button id="markDeliveredBtn" class="ghost hidden">Mark delivered</button>
+        <button id="releaseBtn" class="ghost hidden">Release</button>
+        <button id="showDisputeBtn" class="ghost hidden">Dispute…</button>
+        <button id="showAppealBtn" class="ghost hidden">Appeal…</button>
+      </div>
+      <div id="disputeBox" class="hidden" style="margin-top: 12px;">
+        <label>Evidence (dispute)</label>
+        <textarea id="disputeEvidence" placeholder="Why you should win…"></textarea>
+        <div class="row">
+          <button id="disputeBtn" class="primary">Submit dispute</button>
+          <span id="disputeFee" class="muted"></span>
+        </div>
+      </div>
+      <div id="appealBox" class="hidden" style="margin-top: 12px;">
+        <label>New evidence (appeal)</label>
+        <textarea id="appealEvidence" placeholder="New facts for the larger panel…"></textarea>
+        <div class="row">
+          <button id="appealBtn" class="primary">Submit appeal</button>
+          <span id="appealFee" class="muted"></span>
+        </div>
+      </div>
+      <div id="appealInfo" class="hidden" style="margin-top: 12px;">
+        <h2 style="margin-bottom: 6px;">Appeal</h2>
+        <div class="kv">
+          <div class="k">Active</div><div class="v" id="aiActive"></div>
+          <div class="k">Appellant</div><div class="v" id="aiAppellant"></div>
+          <div class="k">Stake</div><div class="v" id="aiStake"></div>
+          <div class="k">Pre-appeal verdict</div><div class="v" id="aiPre"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Case viewer</h2>
+    <label>Case ID</label>
+    <input id="caseIdInput" placeholder="1" />
+    <div class="row">
+      <button id="loadCaseBtn" class="ghost">Load</button>
+    </div>
+    <div id="caseView" class="hidden" style="margin-top: 12px;">
+      <div class="kv">
+        <div class="k">Consumer</div><div class="v" id="cvConsumer"></div>
+        <div class="k">Escrow ref</div><div class="v" id="cvEscrow"></div>
+        <div class="k">Round</div><div class="v" id="cvRound"></div>
+        <div class="k">Status</div><div class="v" id="cvStatus"></div>
+        <div class="k">Verdict</div><div class="v" id="cvVerdict"></div>
+        <div class="k">Receipt ID</div><div class="v" id="cvReceipt"></div>
+        <div class="k">Ruling time</div><div class="v" id="cvRulingTime"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script type="module">
+import {
+  createPublicClient, createWalletClient, custom, http,
+  parseEther, formatEther, decodeEventLog, getAddress, isAddress,
+} from "https://esm.sh/viem@2.21.0?bundle";
+
+const NS = "verdikt.ui.v1";
+const SHANNON = {
+  chainIdHex: "0xC488", // 50312
+  chainIdNum: 50312,
+  name: "Somnia Shannon Testnet",
+  rpc: "https://api.infra.testnet.somnia.network/",
+  symbol: "STT",
+  decimals: 18,
+};
+
+const ESCROW_ABI = [
+  { type: "function", name: "createDeal", stateMutability: "payable", inputs: [
+    { name: "payee", type: "address" }, { name: "deliverBy", type: "uint64" },
+  ], outputs: [{ name: "dealId", type: "uint256" }] },
+  { type: "function", name: "markDelivered", stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }], outputs: [] },
+  { type: "function", name: "release", stateMutability: "nonpayable",
+    inputs: [{ name: "dealId", type: "uint256" }], outputs: [] },
+  { type: "function", name: "dispute", stateMutability: "payable", inputs: [
+    { name: "dealId", type: "uint256" }, { name: "evidence", type: "string" },
+  ], outputs: [] },
+  { type: "function", name: "appeal", stateMutability: "payable", inputs: [
+    { name: "dealId", type: "uint256" }, { name: "newEvidence", type: "string" },
+  ], outputs: [] },
+  { type: "function", name: "deals", stateMutability: "view",
+    inputs: [{ name: "", type: "uint256" }],
+    outputs: [
+      { name: "payer", type: "address" }, { name: "payee", type: "address" },
+      { name: "amount", type: "uint256" }, { name: "status", type: "uint8" },
+      { name: "deliverBy", type: "uint64" }, { name: "caseId", type: "uint256" },
+    ] },
+  { type: "function", name: "appeals", stateMutability: "view",
+    inputs: [{ name: "", type: "uint256" }],
+    outputs: [
+      { name: "appellant", type: "address" }, { name: "stake", type: "uint256" },
+      { name: "preAppealVerdict", type: "uint8" }, { name: "active", type: "bool" },
+    ] },
+  { type: "function", name: "appealStakeBps", stateMutability: "view",
+    inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "event", name: "DealCreated", inputs: [
+    { name: "dealId", type: "uint256", indexed: true },
+    { name: "payer", type: "address", indexed: true },
+    { name: "payee", type: "address", indexed: true },
+    { name: "amount", type: "uint256", indexed: false },
+  ] },
+];
+
+const COURT_ABI = [
+  { type: "function", name: "quoteOpen", stateMutability: "view",
+    inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "quoteAppeal", stateMutability: "view",
+    inputs: [{ name: "caseId", type: "uint256" }], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "appealWindow", stateMutability: "view",
+    inputs: [], outputs: [{ type: "uint64" }] },
+  { type: "function", name: "getCase", stateMutability: "view",
+    inputs: [{ name: "caseId", type: "uint256" }],
+    outputs: [{ type: "tuple", components: [
+      { name: "consumer", type: "address" },
+      { name: "escrowRef", type: "uint256" },
+      { name: "round", type: "uint8" },
+      { name: "status", type: "uint8" },
+      { name: "verdict", type: "uint8" },
+      { name: "receiptId", type: "uint256" },
+      { name: "rulingTime", type: "uint64" },
+    ] }] },
+];
+
+const DEAL_STATUS = ["None", "Funded", "Delivered", "Disputed", "Settled"];
+const CASE_STATUS = ["None", "Pending", "Ruled", "Final", "Errored"];
+const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT"];
+
+const $ = (id) => document.getElementById(id);
+
+const state = {
+  cfg: { rpc: SHANNON.rpc, court: "", escrow: "" },
+  account: null,
+  chainId: null,
+  publicClient: null,
+  walletClient: null,
+  currentDeal: null,    // { id, payer, payee, amount, status, deliverBy, caseId }
+  currentAppeal: null,  // { appellant, stake, preAppealVerdict, active }
+  currentCase: null,    // CaseView or null
+};
+
+// --- toast / error helpers ------------------------------------------------
+
+function toast(msg, kind = "info", ms = 6000) {
+  const el = document.createElement("div");
+  el.className = `toast ${kind}`;
+  el.textContent = msg;
+  $("toasts").appendChild(el);
+  setTimeout(() => el.remove(), ms);
+  return el;
+}
+
+function errMsg(e) {
+  return e?.shortMessage || e?.details || e?.message || String(e);
+}
+
+// --- config persistence ---------------------------------------------------
+
+function loadCfg() {
+  try {
+    const raw = localStorage.getItem(NS);
+    if (raw) Object.assign(state.cfg, JSON.parse(raw));
+  } catch {}
+  $("cfgRpc").value = state.cfg.rpc;
+  $("cfgCourt").value = state.cfg.court;
+  $("cfgEscrow").value = state.cfg.escrow;
+}
+
+function saveCfg() {
+  const rpc = $("cfgRpc").value.trim() || SHANNON.rpc;
+  const court = $("cfgCourt").value.trim();
+  const escrow = $("cfgEscrow").value.trim();
+  if (court && !isAddress(court)) return toast("court: invalid address", "err");
+  if (escrow && !isAddress(escrow)) return toast("escrow: invalid address", "err");
+  state.cfg = { rpc, court, escrow };
+  localStorage.setItem(NS, JSON.stringify(state.cfg));
+  rebuildClients();
+  $("cfgStatus").textContent = "saved";
+  setTimeout(() => $("cfgStatus").textContent = "", 2000);
+}
+
+function rebuildClients() {
+  state.publicClient = createPublicClient({ transport: http(state.cfg.rpc) });
+  if (window.ethereum && state.account) {
+    state.walletClient = createWalletClient({
+      account: state.account, transport: custom(window.ethereum),
+    });
+  }
+}
+
+// --- wallet ---------------------------------------------------------------
+
+async function connect() {
+  if (!window.ethereum) return toast("no injected wallet found", "err");
+  try {
+    const accts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    state.account = getAddress(accts[0]);
+    const cid = await window.ethereum.request({ method: "eth_chainId" });
+    state.chainId = parseInt(cid, 16);
+    if (state.chainId !== SHANNON.chainIdNum) await switchChain();
+    rebuildClients();
+    renderConn();
+  } catch (e) {
+    toast(`connect: ${errMsg(e)}`, "err");
+  }
+}
+
+async function switchChain() {
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: SHANNON.chainIdHex }],
+    });
+  } catch (e) {
+    if (e?.code === 4902 || /Unrecognized chain/i.test(errMsg(e))) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: SHANNON.chainIdHex,
+          chainName: SHANNON.name,
+          rpcUrls: [SHANNON.rpc],
+          nativeCurrency: { name: SHANNON.symbol, symbol: SHANNON.symbol, decimals: SHANNON.decimals },
+        }],
+      });
+    } else {
+      throw e;
+    }
+  }
+  const cid = await window.ethereum.request({ method: "eth_chainId" });
+  state.chainId = parseInt(cid, 16);
+}
+
+function renderConn() {
+  if (!state.account) {
+    $("connInfo").textContent = "not connected";
+    $("connectBtn").textContent = "Connect wallet";
+    return;
+  }
+  const short = `${state.account.slice(0, 6)}…${state.account.slice(-4)}`;
+  const chainLabel = state.chainId === SHANNON.chainIdNum ? "Shannon" : `chain ${state.chainId}`;
+  $("connInfo").textContent = `${short} · ${chainLabel}`;
+  $("connectBtn").textContent = "Reconnect";
+}
+
+if (window.ethereum) {
+  window.ethereum.on?.("accountsChanged", (a) => {
+    state.account = a[0] ? getAddress(a[0]) : null;
+    rebuildClients();
+    renderConn();
+  });
+  window.ethereum.on?.("chainChanged", (cid) => {
+    state.chainId = parseInt(cid, 16);
+    renderConn();
+  });
+}
+
+// --- write tx helper ------------------------------------------------------
+
+async function sendTx({ address, abi, functionName, args, value }) {
+  if (!state.account || !state.walletClient) {
+    toast("connect wallet first", "err"); return null;
+  }
+  if (!address) { toast("address not configured", "err"); return null; }
+  const pending = toast(`submitting ${functionName}…`, "info", 30000);
+  try {
+    const { request } = await state.publicClient.simulateContract({
+      address, abi, functionName, args, value,
+      account: state.account,
+    });
+    const hash = await state.walletClient.writeContract(request);
+    pending.remove();
+    toast(`${functionName} sent: ${hash}`, "info", 12000);
+    const receipt = await state.publicClient.waitForTransactionReceipt({ hash });
+    toast(`${functionName} ${receipt.status === "success" ? "confirmed" : "FAILED"}: ${hash}`,
+      receipt.status === "success" ? "info" : "err", 12000);
+    return receipt;
+  } catch (e) {
+    pending.remove();
+    toast(`${functionName}: ${errMsg(e)}`, "err", 12000);
+    return null;
+  }
+}
+
+// --- create deal ----------------------------------------------------------
+
+async function createDeal() {
+  const payee = $("newPayee").value.trim();
+  const amountStr = $("newAmount").value.trim();
+  const deliverByLocal = $("newDeliverBy").value;
+  if (!isAddress(payee)) return toast("payee: invalid address", "err");
+  if (!amountStr) return toast("amount required", "err");
+  if (!deliverByLocal) return toast("deliverBy required", "err");
+  let amount;
+  try { amount = parseEther(amountStr); } catch { return toast("amount: invalid decimal", "err"); }
+  const deliverBy = BigInt(Math.floor(new Date(deliverByLocal).getTime() / 1000));
+
+  const receipt = await sendTx({
+    address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "createDeal",
+    args: [payee, deliverBy], value: amount,
+  });
+  if (!receipt) return;
+
+  for (const log of receipt.logs) {
+    try {
+      const dec = decodeEventLog({ abi: ESCROW_ABI, data: log.data, topics: log.topics });
+      if (dec.eventName === "DealCreated") {
+        const id = dec.args.dealId.toString();
+        $("createResult").innerHTML = `created <span class="badge">dealId ${id}</span>`;
+        $("dealIdInput").value = id;
+        await loadDeal();
+        return;
+      }
+    } catch {}
+  }
+}
+
+// --- load deal ------------------------------------------------------------
+
+function fmtDate(unix) {
+  if (!unix || unix === 0n) return "—";
+  const d = new Date(Number(unix) * 1000);
+  return `${d.toLocaleString()} (${unix.toString()})`;
+}
+
+async function loadDeal() {
+  const idStr = $("dealIdInput").value.trim();
+  if (!idStr) return toast("deal id required", "err");
+  if (!state.cfg.escrow) return toast("escrow not configured", "err");
+  if (!state.publicClient) return toast("rpc not configured", "err");
+  const id = BigInt(idStr);
+  try {
+    const [dealRaw, appealRaw] = await Promise.all([
+      state.publicClient.readContract({
+        address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "deals", args: [id],
+      }),
+      state.publicClient.readContract({
+        address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "appeals", args: [id],
+      }),
+    ]);
+    const [payer, payee, amount, status, deliverBy, caseId] = dealRaw;
+    state.currentDeal = { id, payer, payee, amount, status: Number(status), deliverBy, caseId };
+    const [appellant, stake, preAppealVerdict, active] = appealRaw;
+    state.currentAppeal = { appellant, stake, preAppealVerdict: Number(preAppealVerdict), active };
+    renderDeal();
+  } catch (e) {
+    toast(`load deal: ${errMsg(e)}`, "err");
+  }
+}
+
+function sameAddr(a, b) {
+  return a && b && a.toLowerCase() === b.toLowerCase();
+}
+
+async function renderDeal() {
+  const d = state.currentDeal;
+  if (!d || d.status === 0) {
+    $("dealView").classList.add("hidden");
+    return toast("deal not found", "err");
+  }
+  $("dealView").classList.remove("hidden");
+  $("dvPayer").textContent = d.payer;
+  $("dvPayee").textContent = d.payee;
+  $("dvAmount").textContent = `${formatEther(d.amount)} STT`;
+  $("dvDeliverBy").textContent = fmtDate(d.deliverBy);
+  $("dvStatus").innerHTML = `<span class="badge">${DEAL_STATUS[d.status]}</span>`;
+  $("dvCaseId").textContent = d.caseId.toString() === "0" ? "—" : d.caseId.toString();
+
+  const me = state.account;
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  const isPayer = sameAddr(me, d.payer);
+  const isPayee = sameAddr(me, d.payee);
+  const isParty = isPayer || isPayee;
+
+  // Mark delivered: payee only, Funded.
+  $("markDeliveredBtn").classList.toggle("hidden", !(isPayee && d.status === 1));
+  // Release: payer anytime (Funded|Delivered), OR anyone after deliverBy if Delivered.
+  const canRelease =
+    ((d.status === 1 || d.status === 2) && isPayer) ||
+    (d.status === 2 && now > d.deliverBy);
+  $("releaseBtn").classList.toggle("hidden", !canRelease);
+  // Dispute: party, Funded|Delivered.
+  $("showDisputeBtn").classList.toggle("hidden", !(isParty && (d.status === 1 || d.status === 2)));
+  $("disputeBox").classList.add("hidden");
+
+  // Appeal: case must exist + Ruled + appeal window open + caller eligible.
+  let canAppeal = false;
+  if (d.caseId > 0n && d.status === 3 && state.cfg.court && !state.currentAppeal.active) {
+    try {
+      const cv = await state.publicClient.readContract({
+        address: state.cfg.court, abi: COURT_ABI, functionName: "getCase", args: [d.caseId],
+      });
+      if (Number(cv.status) === 2) { // Ruled
+        const v = Number(cv.verdict);
+        if (v === 3) {
+          canAppeal = isParty;
+        } else if (v === 1) {
+          canAppeal = isPayer; // PAYEE won → payer is loser
+        } else if (v === 2) {
+          canAppeal = isPayee; // PAYER won → payee is loser
+        }
+      }
+    } catch {}
+  }
+  $("showAppealBtn").classList.toggle("hidden", !canAppeal);
+  $("appealBox").classList.add("hidden");
+
+  // Appeal info panel
+  if (state.currentAppeal.appellant !== "0x0000000000000000000000000000000000000000") {
+    $("appealInfo").classList.remove("hidden");
+    $("aiActive").textContent = state.currentAppeal.active ? "yes" : "no";
+    $("aiAppellant").textContent = state.currentAppeal.appellant;
+    $("aiStake").textContent = `${formatEther(state.currentAppeal.stake)} STT`;
+    $("aiPre").textContent = VERDICT[state.currentAppeal.preAppealVerdict] ?? "?";
+  } else {
+    $("appealInfo").classList.add("hidden");
+  }
+}
+
+// --- deal actions ---------------------------------------------------------
+
+async function markDelivered() {
+  const d = state.currentDeal; if (!d) return;
+  const r = await sendTx({
+    address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "markDelivered", args: [d.id],
+  });
+  if (r) loadDeal();
+}
+
+async function release() {
+  const d = state.currentDeal; if (!d) return;
+  const r = await sendTx({
+    address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "release", args: [d.id],
+  });
+  if (r) loadDeal();
+}
+
+async function showDispute() {
+  $("disputeBox").classList.remove("hidden");
+  try {
+    const fee = await state.publicClient.readContract({
+      address: state.cfg.court, abi: COURT_ABI, functionName: "quoteOpen",
+    });
+    $("disputeFee").textContent = `fee: ${formatEther(fee)} STT`;
+  } catch (e) {
+    $("disputeFee").textContent = `fee quote failed: ${errMsg(e)}`;
+  }
+}
+
+async function submitDispute() {
+  const d = state.currentDeal; if (!d) return;
+  const evidence = $("disputeEvidence").value;
+  if (!evidence.trim()) return toast("evidence required", "err");
+  let fee;
+  try {
+    fee = await state.publicClient.readContract({
+      address: state.cfg.court, abi: COURT_ABI, functionName: "quoteOpen",
+    });
+  } catch (e) { return toast(`quote: ${errMsg(e)}`, "err"); }
+  const r = await sendTx({
+    address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "dispute",
+    args: [d.id, evidence], value: fee,
+  });
+  if (r) loadDeal();
+}
+
+async function showAppeal() {
+  $("appealBox").classList.remove("hidden");
+  const d = state.currentDeal;
+  try {
+    const [agentDep, bps] = await Promise.all([
+      state.publicClient.readContract({
+        address: state.cfg.court, abi: COURT_ABI, functionName: "quoteAppeal", args: [d.caseId],
+      }),
+      state.publicClient.readContract({
+        address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "appealStakeBps",
+      }),
+    ]);
+    const stake = (d.amount * bps) / 10000n;
+    const total = stake + agentDep;
+    $("appealFee").textContent =
+      `stake: ${formatEther(stake)} + agents: ${formatEther(agentDep)} = ${formatEther(total)} STT`;
+  } catch (e) {
+    $("appealFee").textContent = `quote failed: ${errMsg(e)}`;
+  }
+}
+
+async function submitAppeal() {
+  const d = state.currentDeal; if (!d) return;
+  const evidence = $("appealEvidence").value;
+  if (!evidence.trim()) return toast("evidence required", "err");
+  let stake, agentDep;
+  try {
+    const bps = await state.publicClient.readContract({
+      address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "appealStakeBps",
+    });
+    agentDep = await state.publicClient.readContract({
+      address: state.cfg.court, abi: COURT_ABI, functionName: "quoteAppeal", args: [d.caseId],
+    });
+    stake = (d.amount * bps) / 10000n;
+  } catch (e) { return toast(`quote: ${errMsg(e)}`, "err"); }
+  const r = await sendTx({
+    address: state.cfg.escrow, abi: ESCROW_ABI, functionName: "appeal",
+    args: [d.id, evidence], value: stake + agentDep,
+  });
+  if (r) loadDeal();
+}
+
+// --- case viewer ----------------------------------------------------------
+
+async function loadCase() {
+  const idStr = $("caseIdInput").value.trim();
+  if (!idStr) return toast("case id required", "err");
+  if (!state.cfg.court) return toast("court not configured", "err");
+  if (!state.publicClient) return toast("rpc not configured", "err");
+  try {
+    const cv = await state.publicClient.readContract({
+      address: state.cfg.court, abi: COURT_ABI, functionName: "getCase", args: [BigInt(idStr)],
+    });
+    state.currentCase = cv;
+    $("caseView").classList.remove("hidden");
+    $("cvConsumer").textContent = cv.consumer;
+    $("cvEscrow").textContent = cv.escrowRef.toString();
+    $("cvRound").textContent = String(cv.round);
+    $("cvStatus").innerHTML = `<span class="badge">${CASE_STATUS[Number(cv.status)] ?? "?"}</span>`;
+    $("cvVerdict").innerHTML = `<span class="badge">${VERDICT[Number(cv.verdict)] ?? "?"}</span>`;
+    if (cv.receiptId > 0n) {
+      const url = `https://agents.somnia.network/receipts/${cv.receiptId}`;
+      $("cvReceipt").innerHTML =
+        `${cv.receiptId} — <a href="${url}" target="_blank" rel="noopener">View juror reasoning</a>`;
+    } else {
+      $("cvReceipt").textContent = "—";
+    }
+    $("cvRulingTime").textContent = fmtDate(cv.rulingTime);
+  } catch (e) {
+    toast(`load case: ${errMsg(e)}`, "err");
+  }
+}
+
+// --- wire up --------------------------------------------------------------
+
+$("connectBtn").addEventListener("click", connect);
+$("cfgSave").addEventListener("click", saveCfg);
+$("createBtn").addEventListener("click", createDeal);
+$("loadDealBtn").addEventListener("click", loadDeal);
+$("markDeliveredBtn").addEventListener("click", markDelivered);
+$("releaseBtn").addEventListener("click", release);
+$("showDisputeBtn").addEventListener("click", showDispute);
+$("disputeBtn").addEventListener("click", submitDispute);
+$("showAppealBtn").addEventListener("click", showAppeal);
+$("appealBtn").addEventListener("click", submitAppeal);
+$("loadCaseBtn").addEventListener("click", loadCase);
+
+loadCfg();
+rebuildClients();
+</script>
+</body>
+</html>

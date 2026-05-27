@@ -1,0 +1,255 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {IAgentRequester, Response, Request, ConsensusType, ResponseStatus} from "./interfaces/IAgentRequester.sol";
+import {ILLMAgent} from "./interfaces/ILLMAgent.sol";
+import {IVerdiktCourt, IVerdiktConsumer, Verdict, CaseStatus, CaseView} from "./interfaces/IVerdiktCourt.sol";
+
+/// @title VerdiktCourt
+/// @notice A reusable on-chain arbitration primitive for Somnia's Agentic L1.
+/// A consumer opens a case with evidence; the court convenes a panel of LLM-inference
+/// agents via createAdvancedRequest, which return a discrete verdict (PAYEE/PAYER/SPLIT)
+/// agreed by Majority consensus (byte-identical results). The consumer may appeal once
+/// with new evidence — re-tried by a larger panel — before the verdict is finalized.
+/// Per-juror reasoning is recorded off-chain in the agent receipt (receiptId).
+contract VerdiktCourt is IVerdiktCourt {
+    IAgentRequester public immutable platform;
+    address public owner;
+
+    /// @dev LLM Inference agent id — fetch the real value from https://agents.somnia.network.
+    uint256 public agentId;
+    /// @dev per-agent reward for LLM inference (docs: 0.07 STT). Settable in case pricing changes.
+    uint256 public perAgentPrice = 0.07 ether;
+    /// @dev agent execution timeout passed to createAdvancedRequest (units to confirm on Shannon).
+    uint256 public requestTimeout = 300;
+    /// @dev how long after a ruling an appeal may be filed.
+    uint64 public override appealWindow = 1 hours;
+    uint8 public constant override MAX_ROUND = 1; // round 0 = trial (panel 5), round 1 = appeal (panel 9)
+
+    struct Case {
+        address consumer;
+        uint256 escrowRef;
+        uint8 round;
+        CaseStatus status;
+        Verdict verdict;
+        uint256 platformRequestId;
+        uint256 receiptId;
+        uint64 rulingTime;
+        string evidence;
+    }
+
+    uint256 public nextCaseId = 1;
+    mapping(uint256 => Case) private cases;
+    /// @notice platform requestId => caseId
+    mapping(uint256 => uint256) public requestToCase;
+
+    string internal constant SYSTEM_PROMPT =
+        "You are an impartial on-chain arbitrator resolving an escrow dispute. Decide strictly from the evidence provided. Output only the verdict label.";
+
+    event CaseOpened(uint256 indexed caseId, address indexed consumer, uint256 indexed escrowRef);
+    event VerdictRequested(
+        uint256 indexed caseId, uint256 indexed requestId, uint8 round, uint256 panelSize, uint256 threshold
+    );
+    event VerdictReached(uint256 indexed caseId, Verdict verdict, uint8 round, uint256 receiptId);
+    event Appealed(uint256 indexed caseId, uint8 newRound);
+    event CaseFinalized(uint256 indexed caseId, Verdict verdict);
+    event CaseErrored(uint256 indexed caseId, ResponseStatus status);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "not owner");
+        _;
+    }
+
+    constructor(address platform_, uint256 agentId_) {
+        platform = IAgentRequester(platform_);
+        agentId = agentId_;
+        owner = msg.sender;
+    }
+
+    // --- consumer entrypoints -------------------------------------------------
+
+    function openCase(uint256 escrowRef, string calldata evidence) external payable override returns (uint256 caseId) {
+        require(msg.value >= quoteOpen(), "deposit too low");
+        caseId = nextCaseId++;
+        Case storage c = cases[caseId];
+        c.consumer = msg.sender;
+        c.escrowRef = escrowRef;
+        c.evidence = evidence;
+        emit CaseOpened(caseId, msg.sender, escrowRef);
+        _dispatch(caseId);
+    }
+
+    function appeal(uint256 caseId, string calldata newEvidence) external payable override {
+        Case storage c = cases[caseId];
+        require(msg.sender == c.consumer, "only consumer");
+        require(c.status == CaseStatus.Ruled, "not appealable");
+        require(c.round < MAX_ROUND, "no rounds left");
+        require(block.timestamp <= c.rulingTime + appealWindow, "window closed");
+        require(msg.value >= quoteAppeal(caseId), "deposit too low");
+
+        c.round += 1;
+        c.evidence = string.concat(c.evidence, "\n\n[NEW EVIDENCE ON APPEAL]\n", newEvidence);
+        emit Appealed(caseId, c.round);
+        _dispatch(caseId);
+    }
+
+    /// @notice Re-run a panel for a case whose request failed or timed out.
+    function retry(uint256 caseId) external payable override {
+        Case storage c = cases[caseId];
+        require(msg.sender == c.consumer, "only consumer");
+        require(c.status == CaseStatus.Errored, "not errored");
+        require(msg.value >= _depositFor(_panelSize(c.round)), "deposit too low");
+        _dispatch(caseId);
+    }
+
+    /// @notice Settle a case once the appeal window has passed (or the final round is in).
+    /// Permissionless so a keeper can drive it autonomously.
+    function finalize(uint256 caseId) external override {
+        Case storage c = cases[caseId];
+        require(c.status == CaseStatus.Ruled, "not ruled");
+        require(c.round == MAX_ROUND || block.timestamp > c.rulingTime + appealWindow, "appeal window open");
+        c.status = CaseStatus.Final;
+        emit CaseFinalized(caseId, c.verdict);
+        IVerdiktConsumer(c.consumer).onVerdict(c.escrowRef, c.verdict);
+    }
+
+    // --- platform callback ----------------------------------------------------
+
+    function handleVerdict(
+        uint256 requestId,
+        Response[] memory responses,
+        ResponseStatus status,
+        Request memory /*details*/
+    )
+        external
+    {
+        require(msg.sender == address(platform), "only platform");
+        uint256 caseId = requestToCase[requestId];
+        require(caseId != 0, "unknown request");
+        Case storage c = cases[caseId];
+        require(c.status == CaseStatus.Pending && c.platformRequestId == requestId, "stale callback");
+
+        if (status != ResponseStatus.Success || responses.length == 0) {
+            c.status = CaseStatus.Errored;
+            emit CaseErrored(caseId, status);
+            return;
+        }
+
+        Verdict v = _parse(abi.decode(responses[0].result, (string)));
+        if (v == Verdict.NONE) {
+            c.status = CaseStatus.Errored;
+            emit CaseErrored(caseId, ResponseStatus.Failed);
+            return;
+        }
+
+        c.verdict = v;
+        c.receiptId = responses[0].receipt;
+        c.rulingTime = uint64(block.timestamp);
+        c.status = CaseStatus.Ruled;
+        emit VerdictReached(caseId, v, c.round, c.receiptId);
+    }
+
+    // --- internals ------------------------------------------------------------
+
+    function _dispatch(uint256 caseId) internal {
+        Case storage c = cases[caseId];
+        uint256 panel = _panelSize(c.round);
+        uint256 threshold = panel / 2 + 1;
+        uint256 deposit = _depositFor(panel);
+        require(address(this).balance >= deposit, "insufficient balance");
+
+        uint256 requestId = platform.createAdvancedRequest{value: deposit}(
+            agentId,
+            address(this),
+            this.handleVerdict.selector,
+            _buildPayload(c),
+            panel,
+            threshold,
+            ConsensusType.Majority,
+            requestTimeout
+        );
+
+        c.platformRequestId = requestId;
+        c.status = CaseStatus.Pending;
+        requestToCase[requestId] = caseId;
+        emit VerdictRequested(caseId, requestId, c.round, panel, threshold);
+    }
+
+    function _buildPayload(Case storage c) internal view returns (bytes memory) {
+        string[] memory allowed = new string[](3);
+        allowed[0] = "PAYEE";
+        allowed[1] = "PAYER";
+        allowed[2] = "SPLIT";
+        string memory prompt = string.concat(
+            "Escrow dispute. Review the evidence and decide who is right.\n\nEVIDENCE:\n",
+            c.evidence,
+            "\n\nRespond with exactly one of: PAYEE (release to the seller/payee), PAYER (refund the buyer/payer), or SPLIT (50/50)."
+        );
+        return abi.encodeWithSelector(ILLMAgent.inferString.selector, prompt, SYSTEM_PROMPT, true, allowed);
+    }
+
+    function _panelSize(uint8 round) internal pure returns (uint256) {
+        return round == 0 ? 5 : 9;
+    }
+
+    function _depositFor(uint256 panel) internal view returns (uint256) {
+        return platform.getAdvancedRequestDeposit(panel) + perAgentPrice * panel;
+    }
+
+    function _parse(string memory v) internal pure returns (Verdict) {
+        bytes32 h = keccak256(bytes(v));
+        if (h == keccak256("PAYEE")) return Verdict.PAYEE;
+        if (h == keccak256("PAYER")) return Verdict.PAYER;
+        if (h == keccak256("SPLIT")) return Verdict.SPLIT;
+        return Verdict.NONE;
+    }
+
+    // --- views ----------------------------------------------------------------
+
+    function quoteOpen() public view override returns (uint256) {
+        return _depositFor(_panelSize(0));
+    }
+
+    function quoteAppeal(uint256 caseId) public view override returns (uint256) {
+        return _depositFor(_panelSize(cases[caseId].round + 1));
+    }
+
+    function getCase(uint256 caseId) external view override returns (CaseView memory) {
+        Case storage c = cases[caseId];
+        return CaseView({
+            consumer: c.consumer,
+            escrowRef: c.escrowRef,
+            round: c.round,
+            status: c.status,
+            verdict: c.verdict,
+            receiptId: c.receiptId,
+            rulingTime: c.rulingTime
+        });
+    }
+
+    // --- admin ----------------------------------------------------------------
+
+    function setAgentId(uint256 id) external onlyOwner {
+        agentId = id;
+    }
+
+    function setPerAgentPrice(uint256 price) external onlyOwner {
+        perAgentPrice = price;
+    }
+
+    function setAppealWindow(uint64 w) external onlyOwner {
+        appealWindow = w;
+    }
+
+    function setRequestTimeout(uint256 t) external onlyOwner {
+        requestTimeout = t;
+    }
+
+    /// @notice Withdraw accumulated agent-fee rebates (dust returned by the platform).
+    function sweep(address to) external onlyOwner {
+        (bool ok,) = to.call{value: address(this).balance}("");
+        require(ok, "sweep failed");
+    }
+
+    receive() external payable {}
+}
