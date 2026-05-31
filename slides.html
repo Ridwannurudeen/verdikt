@@ -22,11 +22,11 @@
     .reveal-viewport, body, .reveal { background: var(--bg); }
     .reveal { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--fg); }
     .reveal .slides { text-align: left; }
-    .reveal .slides > section { padding: 48px 64px; }
-    .reveal h1 { color: var(--blue); font-size: 2.4em; text-transform: none; margin-bottom: 0.4em; }
-    .reveal h2 { color: var(--blue); font-size: 1.6em; text-transform: none; margin-bottom: 0.6em; }
-    .reveal h3 { color: var(--fg); font-size: 1.1em; text-transform: none; margin-top: 1em; }
-    .reveal p, .reveal li { color: var(--fg); font-size: 0.85em; line-height: 1.55; }
+    .reveal .slides > section { padding: 32px 56px; }
+    .reveal h1 { color: var(--blue); font-size: 2.2em; text-transform: none; margin-bottom: 0.4em; }
+    .reveal h2 { color: var(--blue); font-size: 1.4em; text-transform: none; margin-bottom: 0.45em; }
+    .reveal h3 { color: var(--fg); font-size: 1.05em; text-transform: none; margin-top: 0.7em; }
+    .reveal p, .reveal li { color: var(--fg); font-size: 0.72em; line-height: 1.4; }
     .reveal strong { color: var(--orange); }
     .reveal code { background: var(--panel); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 0.9em; }
     .reveal pre code { background: var(--panel); border: 1px solid var(--border); padding: 16px; display: block; }
@@ -105,35 +105,33 @@ Deterministic inference doesn't randomly change its mind — **only better facts
 
 ## N protocols, one court
 
-Six consumers settle on the same court — the court doesn't know what any of them mean:
+Six consumers settle on the same court — it doesn't know what any of them mean:
 
-- `VerdiktEscrow` — two-party deal; appeal stake = 10%
-- `VerdiktInsurance` — parametric claims-arbitration pool
-- **`VerdiktAgentEscrow`** — machine-native, pull-payment: *agents can't sue each other — now they can*
-- **`VerdiktTokenEscrow`** — ERC-20 settlement (agents settle real stablecoin value)
-- `VerdiktGrantClawback` — DAO grant clawback · `VerdiktMilestone` — freelance milestone
+- `VerdiktEscrow` · `VerdiktInsurance` — two-party deal, parametric claims pool
+- **`VerdiktAgentEscrow`** — pull-payment: *agents can't sue each other — now they can*
+- **`VerdiktTokenEscrow`** — ERC-20 (agents settle real stablecoin value)
+- `VerdiktGrantClawback` · `VerdiktMilestone` — DAO grants, freelance milestones
 
-That reusability is the point: Verdikt is a settlement court any protocol or agent can call.
+Reusability is the point: a settlement court any protocol or agent can call.
 
 ---
 
 ## What ships today
 
-- **11 Solidity contracts** — `VerdiktCourt` + **6 consumers** (Escrow, Insurance, **AgentEscrow**, **TokenEscrow**, GrantClawback, Milestone) on one shared court
+- **11 contracts** — `VerdiktCourt` + **6 consumers** on one shared court
 - **128/128 tests** — solc 0.8.24, evm_version cancun, incl. invariant + fuzz
-- **Agent-to-agent court** — both parties can be contracts; pull-payment settlement; **ERC-20** too
-- **Precedent layer** — on-chain, AI-authored, citable case law (`priorCaseId`)
-- **Marketplace** of competing courts · **reputation** · **timelock** governance
-- Auto-keeper · demo UI · case-law indexer + dashboard · security/economics/portability docs
+- **Agent-to-agent court** — both parties can be contracts; pull-payment; **ERC-20** too
+- **Precedent layer** — on-chain, AI-authored, citable case law
+- **Marketplace** · **reputation** · **timelock** governance · keeper · dashboard
 
 ---
 
 ## Live on Shannon
 
-- **Determinism gate: PASS** — a panel of 5 returned **PAYEE 5/5, byte-identical**. The premise the whole design rests on holds.
-- **Full stack deployed + exercised** — disputes settled by real AI panels with **no human in the loop** (PAYER and PAYEE outcomes); **4 rulings recorded in the precedent index**; reputation populated on-chain.
-- Appeal panel (9 agents) needs ≥9 validators; Shannon caps ~6, so the staked-appeal path is unit-tested and runs live on a larger set.
-- Unaudited hackathon code · all addresses in `deployments/shannon.json`.
+- **Determinism gate: PASS** — a panel of 5 returned **PAYEE 5/5, byte-identical**. The premise holds.
+- **Deployed + exercised** — disputes settled by real AI panels, **no human in the loop**; **4 rulings in the precedent index**; reputation on-chain.
+- Appeal panel (9 agents) needs ≥9 validators; Shannon caps ~6 → staked-appeal path is unit-tested.
+- Unaudited hackathon code · addresses in `deployments/shannon.json`.
 
 `github.com/Ridwannurudeen/verdikt`
         </textarea>
