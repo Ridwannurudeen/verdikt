@@ -93,7 +93,7 @@ Driver details (env, exit codes, optional CLI args) are in [`script/README-deter
 
 - [x] Court + Escrow contracts, full unit test suite (35/35)
 - [x] Deploy + determinism-probe scripts
-- [ ] Run determinism gate on Shannon (needs funded key + real `LLM_AGENT_ID`)
+- [x] Run determinism gate on Shannon — **PASS, panel converged byte-identically** (PAYEE 5/5, 100%; probe `0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb`, requestId 3486438, fire tx `0xdbbe4fbb…aa869e`)
 - [x] Keeper (auto-finalize / auto-release) and minimal demo UI
 - [x] Second consumer (insurance claim) to demonstrate the court as a primitive
 

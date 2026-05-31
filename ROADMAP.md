@@ -36,13 +36,17 @@ working on-chain demo.
   `DeployInsurance` all `SIMULATION COMPLETE` against live Shannon (chain 50312) with placeholder env,
   no broadcast. Deploy ≈ 0.058 STT, Probe ≈ 0.016, Insurance ≈ 0.030. `script/` + `keeper/` deps
   installed. **Only `LLM_AGENT_ID` remains to go live.**
-- [ ] **Run the determinism gate.** Deploy `script/Probe.s.sol:ProbeDeploy`, then
-  `cd script && npm install && node run-determinism-gate.mjs <PROBE_ADDR>`. Capture the histogram.
-  - [ ] PASS → record the receipt id + screenshot for the deck/submission.
-  - [ ] PARTIAL/FAIL → apply the documented fallback (binary `["PAYEE","PAYER"]` set and/or
-    `chainOfThought=false` in `Probe.fire`), redeploy, re-run. Tick the README roadmap box either way.
-- [ ] **Deploy the stack to Shannon.** `Deploy.s.sol` (Court + Escrow) then `DeployInsurance.s.sol`.
-  Wire `setAgentId` on the Court. Record all addresses in a new `deployments/shannon.json`.
+- [x] **Run the determinism gate — PASS.** Probe `0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb`,
+  panel 5 → **PAYEE 5/5 (100%), byte-identical convergence** in ~11s (requestId 3486438, fire tx
+  `0xdbbe4fbb…aa869e`, fee 0.40 STT). The premise the whole design rests on is proven live. Capture a
+  screenshot of the histogram for the deck/submission.
+  - ⚠️ **Gas gotcha discovered:** Somnia meters *contract deployment* far more expensively than
+    mainnet, so `eth_estimateGas` under-reports and forge's default limit OOGs (tx fails with
+    `gasUsed == gasLimit`). Deploy with an explicit high `--gas-limit` (probe needed >8M, succeeded at
+    20M) or a large `--gas-estimate-multiplier`. Function calls (e.g. `fire`) estimate fine.
+- [ ] **Deploy the stack to Shannon.** `Deploy.s.sol` (Court + Escrow) then `DeployInsurance.s.sol`
+  — **use high explicit gas per the gotcha above** (forge create w/ `--gas-limit 30000000`, or script
+  w/ big multiplier). Wire `setAgentId` on the Court. Record all addresses in `deployments/shannon.json`.
 - [ ] **End-to-end live dispute.** Drive one full escrow lifecycle on Shannon:
   `createDeal → dispute → handleVerdict → finalize`, and one appeal that escalates panel 5 → 9.
   Confirm slashing/return economics match the tests.
