@@ -1,0 +1,25 @@
+{
+  "network": "somnia-shannon-testnet",
+  "chainId": 50312,
+  "rpc": "https://api.infra.testnet.somnia.network/",
+  "deployedAt": "2026-05-31",
+  "deployer": "0xFDc753d1b3967653bC8Dcc394a38FBf3ea5a6a58",
+  "treasury": "0xFDc753d1b3967653bC8Dcc394a38FBf3ea5a6a58",
+  "platform": "0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776",
+  "llmAgentId": "12847293847561029384",
+  "contracts": {
+    "VerdiktCourt": "0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee",
+    "VerdiktEscrow": "0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6",
+    "VerdiktInsurance": "0xEA462e024b6207B5311820864dC6a4cF64346Da4"
+  },
+  "determinismGate": {
+    "probe": "0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb",
+    "result": "PASS",
+    "panel": 5,
+    "verdict": "PAYEE",
+    "histogram": "PAYEE 5/5 (100%)",
+    "requestId": 3486438,
+    "fireTx": "0xdbbe4fbb...aa869e"
+  },
+  "notes": "Somnia meters contract deployment far above mainnet; eth_estimateGas under-reports. Deploy contracts with an explicit high --gas-limit (used 50M) or large --gas-estimate-multiplier, else the tx OOGs with gasUsed==gasLimit. Function calls estimate normally."
+}
