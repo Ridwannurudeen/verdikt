@@ -27,7 +27,7 @@ contract EscrowHandler is Test {
     // ground-truth accounting
     uint256 public totalFunded; // sum of deal amounts ever escrowed
     uint256 public totalStaked; // sum of appeal stakes ever posted
-    uint256 public totalPaidOut; // ETH actually delivered to payer + payee + treasury on settlement
+    uint256 public totalPaidOut; // ETH credited to payer + payee + treasury on settlement
 
     // outstanding obligations the escrow still holds custody of
     uint256 public outstanding;
@@ -131,15 +131,17 @@ contract EscrowHandler is Test {
         if (cv.round != court.MAX_ROUND() && block.timestamp <= cv.rulingTime + court.appealWindow()) return;
 
         uint256 amount = _dealAmount(dealId);
-        uint256 payerBefore = payer.balance;
-        uint256 payeeBefore = payee.balance;
-        uint256 treasBefore = treasury.balance;
+        uint256 payerBefore = escrow.pending(payer);
+        uint256 payeeBefore = escrow.pending(payee);
+        uint256 treasBefore = escrow.pending(treasury);
 
         court.finalize(caseId);
 
         settled[dealId] = true;
 
-        uint256 paid = (payer.balance - payerBefore) + (payee.balance - payeeBefore) + (treasury.balance - treasBefore);
+        uint256 paid =
+            (escrow.pending(payer) - payerBefore) + (escrow.pending(payee) - payeeBefore)
+                + (escrow.pending(treasury) - treasBefore);
         totalPaidOut += paid;
 
         // obligation discharged: the deal amount plus any stake leaves the escrow's custody.
@@ -257,12 +259,12 @@ contract VerdiktEscrowConservationTest is Test {
         uint256 caseId = _disputeAndRule(dealId, "PAYEE");
 
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 pBefore = payer.balance;
-        uint256 eBefore = payee.balance;
+        uint256 pBefore = escrow.pending(payer);
+        uint256 eBefore = escrow.pending(payee);
         court.finalize(caseId);
 
-        uint256 toPayer = payer.balance - pBefore;
-        uint256 toPayee = payee.balance - eBefore;
+        uint256 toPayer = escrow.pending(payer) - pBefore;
+        uint256 toPayee = escrow.pending(payee) - eBefore;
         assertEq(toPayer, 0);
         assertEq(toPayee, amount);
         assertEq(toPayer + toPayee, amount);
@@ -274,12 +276,12 @@ contract VerdiktEscrowConservationTest is Test {
         uint256 caseId = _disputeAndRule(dealId, "PAYER");
 
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 pBefore = payer.balance;
-        uint256 eBefore = payee.balance;
+        uint256 pBefore = escrow.pending(payer);
+        uint256 eBefore = escrow.pending(payee);
         court.finalize(caseId);
 
-        uint256 toPayer = payer.balance - pBefore;
-        uint256 toPayee = payee.balance - eBefore;
+        uint256 toPayer = escrow.pending(payer) - pBefore;
+        uint256 toPayee = escrow.pending(payee) - eBefore;
         assertEq(toPayer, amount);
         assertEq(toPayee, 0);
         assertEq(toPayer + toPayee, amount);
@@ -291,12 +293,12 @@ contract VerdiktEscrowConservationTest is Test {
         uint256 caseId = _disputeAndRule(dealId, "SPLIT");
 
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 pBefore = payer.balance;
-        uint256 eBefore = payee.balance;
+        uint256 pBefore = escrow.pending(payer);
+        uint256 eBefore = escrow.pending(payee);
         court.finalize(caseId);
 
-        uint256 toPayer = payer.balance - pBefore;
-        uint256 toPayee = payee.balance - eBefore;
+        uint256 toPayer = escrow.pending(payer) - pBefore;
+        uint256 toPayee = escrow.pending(payee) - eBefore;
         // odd amounts: the remainder wei is routed to the payee, never stranded.
         assertEq(toPayer, amount / 2);
         assertEq(toPayee, amount - amount / 2);
@@ -316,12 +318,12 @@ contract VerdiktEscrowConservationTest is Test {
         escrow.appeal{value: stake + agentDep}(dealId, "appeal");
         platform.fireSuccess(_lastReq(), "PAYEE"); // upheld -> stake slashed
 
-        uint256 payeeBefore = payee.balance;
-        uint256 treasBefore = treasury.balance;
+        uint256 payeeBefore = escrow.pending(payee);
+        uint256 treasBefore = escrow.pending(treasury);
         court.finalize(caseId);
 
-        uint256 toWinner = (payee.balance - payeeBefore) - amount; // payee also receives the deal amount
-        uint256 toTreasury = treasury.balance - treasBefore;
+        uint256 toWinner = (escrow.pending(payee) - payeeBefore) - amount; // payee also receives the deal amount
+        uint256 toTreasury = escrow.pending(treasury) - treasBefore;
         // no wei lost or created: the slashed stake is split exactly between winner and treasury.
         assertEq(toWinner + toTreasury, stake);
     }
@@ -337,11 +339,11 @@ contract VerdiktEscrowConservationTest is Test {
         escrow.appeal{value: stake + agentDep}(dealId, "appeal");
         platform.fireSuccess(_lastReq(), "PAYER"); // overturned -> stake returned + refund
 
-        uint256 before = payer.balance;
+        uint256 before = escrow.pending(payer);
         court.finalize(caseId);
         // payer gets the full deal amount back plus the entire stake, no treasury cut.
-        assertEq(payer.balance - before, amount + stake);
-        assertEq(treasury.balance, 0);
+        assertEq(escrow.pending(payer) - before, amount + stake);
+        assertEq(escrow.pending(treasury), 0);
     }
 
     // --- Invariant 3: no double settle --------------------------------------------------------

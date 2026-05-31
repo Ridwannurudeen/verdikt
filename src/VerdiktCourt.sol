@@ -36,6 +36,7 @@ contract VerdiktCourt is IVerdiktCourt {
         uint256 platformRequestId;
         uint256 receiptId;
         uint64 rulingTime;
+        uint64 appealDeadline;
         string evidence;
     }
 
@@ -72,7 +73,8 @@ contract VerdiktCourt is IVerdiktCourt {
     // --- consumer entrypoints -------------------------------------------------
 
     function openCase(uint256 escrowRef, string calldata evidence) external payable override returns (uint256 caseId) {
-        require(msg.value >= quoteOpen(), "deposit too low");
+        uint256 deposit = quoteOpen();
+        require(msg.value >= deposit, "deposit too low");
         caseId = nextCaseId++;
         Case storage c = cases[caseId];
         c.consumer = msg.sender;
@@ -80,6 +82,7 @@ contract VerdiktCourt is IVerdiktCourt {
         c.evidence = evidence;
         emit CaseOpened(caseId, msg.sender, escrowRef);
         _dispatch(caseId);
+        _refundExcess(msg.value, deposit);
     }
 
     function appeal(uint256 caseId, string calldata newEvidence) external payable override {
@@ -87,13 +90,15 @@ contract VerdiktCourt is IVerdiktCourt {
         require(msg.sender == c.consumer, "only consumer");
         require(c.status == CaseStatus.Ruled, "not appealable");
         require(c.round < MAX_ROUND, "no rounds left");
-        require(block.timestamp <= c.rulingTime + appealWindow, "window closed");
-        require(msg.value >= quoteAppeal(caseId), "deposit too low");
+        require(block.timestamp <= c.appealDeadline, "window closed");
+        uint256 deposit = quoteAppeal(caseId);
+        require(msg.value >= deposit, "deposit too low");
 
         c.round += 1;
         c.evidence = string.concat(c.evidence, "\n\n[NEW EVIDENCE ON APPEAL]\n", newEvidence);
         emit Appealed(caseId, c.round);
         _dispatch(caseId);
+        _refundExcess(msg.value, deposit);
     }
 
     /// @notice Re-run a panel for a case whose request failed or timed out.
@@ -101,8 +106,10 @@ contract VerdiktCourt is IVerdiktCourt {
         Case storage c = cases[caseId];
         require(msg.sender == c.consumer, "only consumer");
         require(c.status == CaseStatus.Errored, "not errored");
-        require(msg.value >= _depositFor(_panelSize(c.round)), "deposit too low");
+        uint256 deposit = _depositFor(_panelSize(c.round));
+        require(msg.value >= deposit, "deposit too low");
         _dispatch(caseId);
+        _refundExcess(msg.value, deposit);
     }
 
     /// @notice Settle a case once the appeal window has passed (or the final round is in).
@@ -110,7 +117,7 @@ contract VerdiktCourt is IVerdiktCourt {
     function finalize(uint256 caseId) external override {
         Case storage c = cases[caseId];
         require(c.status == CaseStatus.Ruled, "not ruled");
-        require(c.round == MAX_ROUND || block.timestamp > c.rulingTime + appealWindow, "appeal window open");
+        require(c.round == MAX_ROUND || block.timestamp > c.appealDeadline, "appeal window open");
         c.status = CaseStatus.Final;
         emit CaseFinalized(caseId, c.verdict);
         IVerdiktConsumer(c.consumer).onVerdict(c.escrowRef, c.verdict);
@@ -148,6 +155,7 @@ contract VerdiktCourt is IVerdiktCourt {
         c.verdict = v;
         c.receiptId = responses[0].receipt;
         c.rulingTime = uint64(block.timestamp);
+        c.appealDeadline = uint64(block.timestamp + appealWindow);
         c.status = CaseStatus.Ruled;
         emit VerdictReached(caseId, v, c.round, c.receiptId);
     }
@@ -207,6 +215,13 @@ contract VerdiktCourt is IVerdiktCourt {
         return Verdict.NONE;
     }
 
+    function _refundExcess(uint256 sent, uint256 used) internal {
+        if (sent > used) {
+            (bool ok,) = msg.sender.call{value: sent - used}("");
+            require(ok, "refund failed");
+        }
+    }
+
     // --- views ----------------------------------------------------------------
 
     function quoteOpen() public view override returns (uint256) {
@@ -250,12 +265,14 @@ contract VerdiktCourt is IVerdiktCourt {
 
     /// @notice Withdraw accumulated agent-fee rebates (dust returned by the platform).
     function sweep(address to) external onlyOwner {
+        require(to != address(0), "zero address");
         (bool ok,) = to.call{value: address(this).balance}("");
         require(ok, "sweep failed");
     }
 
     /// @notice Begin a 2-step ownership transfer. The new owner must call acceptOwnership.
     function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "zero owner");
         pendingOwner = newOwner;
         emit OwnershipTransferStarted(owner, newOwner);
     }

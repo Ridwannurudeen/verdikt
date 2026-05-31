@@ -1,322 +1,1060 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Verdikt — AI arbitration court for on-chain disputes on Somnia</title>
-<meta name="description" content="Verdikt settles on-chain disputes with a consensus panel of validator-run AI agents. Trust-minimized verdicts, stake-backed appeals, and citable on-chain case law — a reusable settlement court any contract or agent can call. Live on Somnia Shannon." />
-<meta name="keywords" content="AI arbitration, on-chain dispute resolution, Somnia, agentic L1, AI jury, escrow, smart contract settlement, decentralized justice, agent economy, web3" />
-<meta name="author" content="Verdikt" />
-<link rel="canonical" href="https://verdikt.gudman.xyz/" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Verdikt — AI arbitration court for on-chain disputes on Somnia
+    </title>
+    <meta
+      name="description"
+      content="Verdikt settles on-chain disputes with a consensus panel of validator-run AI agents. Trust-minimized verdicts, stake-backed appeals, and citable on-chain case law — a reusable settlement court any contract or agent can call. Live on Somnia Shannon."
+    />
+    <meta
+      name="keywords"
+      content="AI arbitration, on-chain dispute resolution, Somnia, agentic L1, AI jury, escrow, smart contract settlement, decentralized justice, agent economy, web3"
+    />
+    <meta name="author" content="Verdikt" />
+    <link rel="canonical" href="https://verdikt.gudman.xyz/" />
 
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://verdikt.gudman.xyz/" />
-<meta property="og:title" content="Verdikt — AI arbitration court for on-chain disputes" />
-<meta property="og:description" content="A consensus panel of validator-run AI agents settles on-chain disputes. Stake-backed appeals, citable on-chain case law. Live on Somnia Shannon." />
-<meta property="og:site_name" content="Verdikt" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Verdikt — AI arbitration court for on-chain disputes" />
-<meta name="twitter:description" content="A consensus panel of validator-run AI agents settles on-chain disputes. Live on Somnia Shannon." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://verdikt.gudman.xyz/" />
+    <meta
+      property="og:title"
+      content="Verdikt — AI arbitration court for on-chain disputes"
+    />
+    <meta
+      property="og:description"
+      content="A consensus panel of validator-run AI agents settles on-chain disputes. Stake-backed appeals, citable on-chain case law. Live on Somnia Shannon."
+    />
+    <meta property="og:site_name" content="Verdikt" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Verdikt — AI arbitration court for on-chain disputes"
+    />
+    <meta
+      name="twitter:description"
+      content="A consensus panel of validator-run AI agents settles on-chain disputes. Live on Somnia Shannon."
+    />
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1116'/%3E%3Ctext x='16' y='23' font-size='20' font-family='monospace' font-weight='bold' fill='%2379c0ff' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1116'/%3E%3Ctext x='16' y='23' font-size='20' font-family='monospace' font-weight='bold' fill='%2379c0ff' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E"
+    />
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    { "@type": "Question", "name": "What is Verdikt?", "acceptedAnswer": { "@type": "Answer", "text": "Verdikt is an on-chain arbitration court. When a deal is contested, the contract convenes a panel of validator-run LLM agents that review the evidence and return a binding verdict (PAYEE / PAYER / SPLIT) under majority consensus. It is a reusable settlement primitive any contract or agent can call." } },
-    { "@type": "Question", "name": "How is the AI judgment trust-minimized?", "acceptedAnswer": { "@type": "Answer", "text": "A subcommittee of Somnia validators each runs the same LLM inference and consensus is reached on a byte-identical result. No single off-chain bot decides; the verdict is the agreed output of the validator panel." } },
-    { "@type": "Question", "name": "How is it different from Kleros?", "acceptedAnswer": { "@type": "Answer", "text": "Kleros uses human jurors staking tokens, which is slow and uneconomical for small claims. Verdikt replaces the human jury with a fast AI panel reaching validator consensus, with stake-backed appeals that escalate to a larger panel." } },
-    { "@type": "Question", "name": "Is it live?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The full stack is deployed on Somnia Shannon testnet; the determinism gate passed (byte-identical panel convergence), real disputes have been settled by live AI panels, and rulings are recorded in an on-chain precedent index." } }
-  ]
-}
-</script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Verdikt?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Verdikt is an on-chain arbitration court. When a deal is contested, the contract convenes a panel of validator-run LLM agents that review the evidence and return a binding verdict (PAYEE / PAYER / SPLIT) under majority consensus. It is a reusable settlement primitive any contract or agent can call."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is the AI judgment trust-minimized?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A subcommittee of Somnia validators each runs the same LLM inference and consensus is reached on a byte-identical result. No single off-chain bot decides; the verdict is the agreed output of the validator panel."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is it different from Kleros?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Kleros uses human jurors staking tokens, which is slow and uneconomical for small claims. Verdikt replaces the human jury with a fast AI panel reaching validator consensus, with stake-backed appeals that escalate to a larger panel."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it live?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The full stack is deployed on Somnia Shannon testnet; the determinism gate passed (byte-identical panel convergence), real disputes have been settled by live AI panels, and rulings are recorded in an on-chain precedent index."
+            }
+          }
+        ]
+      }
+    </script>
 
-<style>
-  :root {
-    --bg:#0e1116; --bg2:#0b0e13; --panel:#161b22; --panel2:#1c222b; --border:#30363d;
-    --fg:#e6edf3; --muted:#8b949e; --dim:#6e7681;
-    --blue:#79c0ff; --purple:#d2a8ff; --orange:#ffa657; --green:#3fb950; --red:#f85149;
-  }
-  * { box-sizing:border-box; }
-  html { scroll-behavior:smooth; }
-  body {
-    margin:0; background:var(--bg); color:var(--fg);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height:1.6; -webkit-font-smoothing:antialiased;
-  }
-  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-  a { color:var(--blue); text-decoration:none; }
-  .wrap { max-width:1080px; margin:0 auto; padding:0 24px; }
-  .accent { color:var(--blue); }
-  .grad { background:linear-gradient(100deg,var(--blue),var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    <style>
+      :root {
+        --bg: #0e1116;
+        --bg2: #0b0e13;
+        --panel: #161b22;
+        --panel2: #1c222b;
+        --border: #30363d;
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --dim: #6e7681;
+        --blue: #79c0ff;
+        --purple: #d2a8ff;
+        --orange: #ffa657;
+        --green: #3fb950;
+        --red: #f85149;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      a {
+        color: var(--blue);
+        text-decoration: none;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .accent {
+        color: var(--blue);
+      }
+      .grad {
+        background: linear-gradient(100deg, var(--blue), var(--purple));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
 
-  /* nav */
-  header { position:sticky; top:0; z-index:50; backdrop-filter:blur(10px);
-    background:rgba(14,17,22,.8); border-bottom:1px solid var(--border); }
-  nav { display:flex; align-items:center; justify-content:space-between; height:62px; }
-  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; }
-  .logo .badge { width:28px; height:28px; border-radius:7px; display:grid; place-items:center;
-    background:linear-gradient(135deg,#1f6feb33,#8957e533); border:1px solid #30363d; color:var(--blue);
-    font-family:ui-monospace,monospace; font-weight:800; }
-  nav .links { display:flex; align-items:center; gap:26px; }
-  nav .links a { color:var(--muted); font-size:14px; font-weight:500; }
-  nav .links a:hover { color:var(--fg); }
-  .btn { display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:14px;
-    padding:9px 16px; border-radius:8px; border:1px solid transparent; cursor:pointer; transition:all .15s; }
-  .btn-primary { background:linear-gradient(135deg,#1f6feb,#8957e5); color:#fff; }
-  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px -8px #1f6feb88; }
-  .btn-ghost { border-color:var(--border); color:var(--fg); background:transparent; }
-  .btn-ghost:hover { border-color:#56607a; background:#ffffff08; }
-  nav .menu-btn { display:none; }
+      /* nav */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(10px);
+        background: rgba(14, 17, 22, 0.8);
+        border-bottom: 1px solid var(--border);
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 62px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .logo .badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #1f6feb33, #8957e533);
+        border: 1px solid #30363d;
+        color: var(--blue);
+        font-family: ui-monospace, monospace;
+        font-weight: 800;
+      }
+      nav .links {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+      }
+      nav .links a {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      nav .links a:hover {
+        color: var(--fg);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 9px 16px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #1f6feb, #8957e5);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px -8px #1f6feb88;
+      }
+      .btn-ghost {
+        border-color: var(--border);
+        color: var(--fg);
+        background: transparent;
+      }
+      .btn-ghost:hover {
+        border-color: #56607a;
+        background: #ffffff08;
+      }
+      nav .menu-btn {
+        display: none;
+      }
 
-  /* hero */
-  .hero { position:relative; padding:88px 0 72px; overflow:hidden; }
-  .hero .glow { position:absolute; top:-180px; left:50%; transform:translateX(-50%);
-    width:900px; height:600px; pointer-events:none;
-    background:radial-gradient(circle, rgba(121,192,255,.10) 0%, rgba(210,168,255,.05) 35%, transparent 70%); }
-  .pill { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600;
-    color:var(--blue); background:#1f6feb14; border:1px solid #1f6feb3a; padding:6px 14px; border-radius:999px; }
-  .dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 #3fb95080; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%{box-shadow:0 0 0 0 #3fb95066} 70%{box-shadow:0 0 0 7px #3fb95000} 100%{box-shadow:0 0 0 0 #3fb95000} }
-  h1 { font-size:clamp(34px,5.5vw,58px); line-height:1.05; letter-spacing:-.02em; font-weight:800; margin:22px 0 18px; }
-  .sub { color:var(--muted); font-size:clamp(16px,2.2vw,20px); max-width:680px; margin:0 0 30px; }
-  .cta-row { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
-  .btn-lg { padding:13px 22px; font-size:15px; border-radius:10px; }
-  .trust { display:flex; align-items:center; gap:8px; margin-top:18px; color:var(--dim); font-size:13px; }
+      /* hero */
+      .hero {
+        position: relative;
+        padding: 88px 0 72px;
+        overflow: hidden;
+      }
+      .hero .glow {
+        position: absolute;
+        top: -180px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 900px;
+        height: 600px;
+        pointer-events: none;
+        background: radial-gradient(
+          circle,
+          rgba(121, 192, 255, 0.1) 0%,
+          rgba(210, 168, 255, 0.05) 35%,
+          transparent 70%
+        );
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--blue);
+        background: #1f6feb14;
+        border: 1px solid #1f6feb3a;
+        padding: 6px 14px;
+        border-radius: 999px;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 0 #3fb95080;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 #3fb95066;
+        }
+        70% {
+          box-shadow: 0 0 0 7px #3fb95000;
+        }
+        100% {
+          box-shadow: 0 0 0 0 #3fb95000;
+        }
+      }
+      h1 {
+        font-size: clamp(34px, 5.5vw, 58px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        font-weight: 800;
+        margin: 22px 0 18px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: clamp(16px, 2.2vw, 20px);
+        max-width: 680px;
+        margin: 0 0 30px;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+      }
+      .btn-lg {
+        padding: 13px 22px;
+        font-size: 15px;
+        border-radius: 10px;
+      }
+      .trust {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 18px;
+        color: var(--dim);
+        font-size: 13px;
+      }
 
-  /* stats */
-  .stats { border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:#ffffff05; padding:30px 0; }
-  .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; text-align:center; }
-  .stat .num { font-size:clamp(22px,3vw,32px); font-weight:800; letter-spacing:-.02em;
-    background:linear-gradient(100deg,var(--blue),var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-  .stat .lbl { font-size:12px; color:var(--dim); margin-top:4px; }
-  .live-row { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:18px; color:var(--dim); font-size:12.5px; }
+      /* stats */
+      .stats {
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        background: #ffffff05;
+        padding: 30px 0;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+        text-align: center;
+      }
+      .stat .num {
+        font-size: clamp(22px, 3vw, 32px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(100deg, var(--blue), var(--purple));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .stat .lbl {
+        font-size: 12px;
+        color: var(--dim);
+        margin-top: 4px;
+      }
+      .live-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 18px;
+        color: var(--dim);
+        font-size: 12.5px;
+      }
 
-  /* sections */
-  section.block { padding:76px 0; }
-  .eyebrow { color:var(--purple); font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-  h2 { font-size:clamp(26px,3.6vw,38px); line-height:1.15; letter-spacing:-.02em; font-weight:800; margin:10px 0 14px; }
-  .lead { color:var(--muted); font-size:17px; max-width:640px; margin:0 0 8px; }
+      /* sections */
+      section.block {
+        padding: 76px 0;
+      }
+      .eyebrow {
+        color: var(--purple);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: clamp(26px, 3.6vw, 38px);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        font-weight: 800;
+        margin: 10px 0 14px;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 17px;
+        max-width: 640px;
+        margin: 0 0 8px;
+      }
 
-  /* how it works */
-  .steps { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:40px; }
-  .step { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:20px; position:relative; }
-  .step .n { font-family:ui-monospace,monospace; font-size:12px; font-weight:800; color:var(--blue);
-    width:26px; height:26px; border-radius:7px; display:grid; place-items:center; background:#1f6feb1a; border:1px solid #1f6feb33; margin-bottom:12px; }
-  .step h3 { font-size:15px; margin:0 0 6px; }
-  .step p { font-size:13px; color:var(--muted); margin:0; }
+      /* how it works */
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        margin-top: 40px;
+      }
+      .step {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+      }
+      .step .n {
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--blue);
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        background: #1f6feb1a;
+        border: 1px solid #1f6feb33;
+        margin-bottom: 12px;
+      }
+      .step h3 {
+        font-size: 15px;
+        margin: 0 0 6px;
+      }
+      .step p {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+      }
 
-  /* features */
-  .feat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:40px; }
-  .card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:24px; transition:all .15s; }
-  .card:hover { border-color:#56607a; transform:translateY(-2px); }
-  .card .ic { font-size:22px; margin-bottom:12px; }
-  .card h3 { font-size:16px; margin:0 0 8px; }
-  .card p { font-size:14px; color:var(--muted); margin:0; }
-  .tag { display:inline-block; font-size:11px; font-weight:700; color:var(--green); background:#3fb9501a; border:1px solid #3fb95033; padding:2px 8px; border-radius:6px; margin-bottom:10px; }
+      /* features */
+      .feat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 40px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        transition: all 0.15s;
+      }
+      .card:hover {
+        border-color: #56607a;
+        transform: translateY(-2px);
+      }
+      .card .ic {
+        font-size: 22px;
+        margin-bottom: 12px;
+      }
+      .card h3 {
+        font-size: 16px;
+        margin: 0 0 8px;
+      }
+      .card p {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--green);
+        background: #3fb9501a;
+        border: 1px solid #3fb95033;
+        padding: 2px 8px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+      }
 
-  /* proof */
-  .proof { background:linear-gradient(180deg,#0b0e13,#0e1116); border:1px solid var(--border); border-radius:16px; padding:32px; margin-top:36px; }
-  .proof-grid { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
-  .addr { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
-  .addr:last-child { border-bottom:none; }
-  .addr .k { color:var(--muted); }
-  .addr a { font-family:ui-monospace,monospace; font-size:12px; }
-  .verdict-pill { font-family:ui-monospace,monospace; font-size:11px; font-weight:700; padding:2px 7px; border-radius:5px; }
-  .v-payee { color:var(--green); background:#3fb9501a; border:1px solid #3fb95033; }
-  .v-payer { color:var(--red); background:#f851491a; border:1px solid #f8514933; }
+      /* proof */
+      .proof {
+        background: linear-gradient(180deg, #0b0e13, #0e1116);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        margin-top: 36px;
+      }
+      .proof-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+      .addr {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .addr:last-child {
+        border-bottom: none;
+      }
+      .addr .k {
+        color: var(--muted);
+      }
+      .addr a {
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .verdict-pill {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 5px;
+      }
+      .v-payee {
+        color: var(--green);
+        background: #3fb9501a;
+        border: 1px solid #3fb95033;
+      }
+      .v-payer {
+        color: var(--red);
+        background: #f851491a;
+        border: 1px solid #f8514933;
+      }
 
-  /* FAQ */
-  .faq { margin-top:36px; border-top:1px solid var(--border); }
-  details { border-bottom:1px solid var(--border); }
-  summary { cursor:pointer; list-style:none; padding:18px 0; font-weight:600; font-size:16px; display:flex; justify-content:space-between; align-items:center; }
-  summary::-webkit-details-marker { display:none; }
-  summary .chev { color:var(--muted); transition:transform .2s; }
-  details[open] summary .chev { transform:rotate(180deg); }
-  details p { color:var(--muted); font-size:14.5px; margin:0 0 18px; max-width:760px; }
+      /* FAQ */
+      .faq {
+        margin-top: 36px;
+        border-top: 1px solid var(--border);
+      }
+      details {
+        border-bottom: 1px solid var(--border);
+      }
+      summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 18px 0;
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      summary .chev {
+        color: var(--muted);
+        transition: transform 0.2s;
+      }
+      details[open] summary .chev {
+        transform: rotate(180deg);
+      }
+      details p {
+        color: var(--muted);
+        font-size: 14.5px;
+        margin: 0 0 18px;
+        max-width: 760px;
+      }
 
-  /* footer */
-  footer { border-top:1px solid var(--border); padding:48px 0 36px; }
-  .foot-grid { display:flex; justify-content:space-between; flex-wrap:wrap; gap:24px; }
-  .foot-links { display:flex; gap:28px; flex-wrap:wrap; }
-  .foot-links a { color:var(--muted); font-size:14px; }
-  .foot-links a:hover { color:var(--fg); }
-  .foot-note { color:var(--dim); font-size:13px; margin-top:24px; }
+      /* footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 48px 0 36px;
+      }
+      .foot-grid {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 24px;
+      }
+      .foot-links {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+      }
+      .foot-links a {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .foot-links a:hover {
+        color: var(--fg);
+      }
+      .foot-note {
+        color: var(--dim);
+        font-size: 13px;
+        margin-top: 24px;
+      }
 
-  @media (max-width:860px) {
-    nav .links { display:none; }
-    nav .menu-btn { display:inline-flex; }
-    .stats-grid { grid-template-columns:repeat(3,1fr); row-gap:24px; }
-    .steps { grid-template-columns:1fr 1fr; }
-    .feat-grid { grid-template-columns:1fr; }
-    .proof-grid { grid-template-columns:1fr; }
-  }
-  @media (max-width:520px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .steps { grid-template-columns:1fr; } }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="wrap">
-    <nav>
-      <div class="logo"><span class="badge">V</span> Verdikt</div>
-      <div class="links">
-        <a href="#how">How it works</a>
-        <a href="#features">Features</a>
-        <a href="#proof">Live proof</a>
-        <a href="/app/caselaw.html">Case law</a>
-        <a href="https://github.com/Ridwannurudeen/verdikt" target="_blank" rel="noopener">GitHub</a>
+      @media (max-width: 860px) {
+        nav .links {
+          display: none;
+        }
+        nav .menu-btn {
+          display: inline-flex;
+        }
+        .stats-grid {
+          grid-template-columns: repeat(3, 1fr);
+          row-gap: 24px;
+        }
+        .steps {
+          grid-template-columns: 1fr 1fr;
+        }
+        .feat-grid {
+          grid-template-columns: 1fr;
+        }
+        .proof-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 520px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .steps {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <nav>
+          <div class="logo"><span class="badge">V</span> Verdikt</div>
+          <div class="links">
+            <a href="#how">How it works</a>
+            <a href="#features">Features</a>
+            <a href="#proof">Live proof</a>
+            <a href="/app/caselaw.html">Case law</a>
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+          </div>
+          <a class="btn btn-primary" href="/app/">Launch app →</a>
+        </nav>
       </div>
-      <a class="btn btn-primary" href="/app/">Launch app →</a>
-    </nav>
-  </div>
-</header>
+    </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="glow"></div>
-  <div class="wrap">
-    <span class="pill"><span class="dot"></span> Live on Somnia Shannon · Somnia Agora hackathon</span>
-    <h1>The settlement court for the<br><span class="grad">on-chain agent economy</span></h1>
-    <p class="sub">On-chain escrow can't decide <em>"was the service delivered as described?"</em> — price feeds can't, and a single bot can't be trusted. Verdikt convenes a <strong>consensus panel of validator-run AI agents</strong> that review the evidence and return a binding verdict. Autonomous agents couldn't sue each other. Now they can.</p>
-    <div class="cta-row">
-      <a class="btn btn-primary btn-lg" href="/app/">Launch the demo →</a>
-      <a class="btn btn-ghost btn-lg" href="/app/caselaw.html">View live case law</a>
-      <a class="btn btn-ghost btn-lg" href="/deck.html">Pitch deck</a>
-    </div>
-    <div class="trust">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-      No admin signer · no human in the settlement loop · per-juror reasoning on-chain
-    </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<div class="stats">
-  <div class="wrap">
-    <div class="stats-grid">
-      <div class="stat"><div class="num" id="stat-rulings">4</div><div class="lbl">Rulings in the on-chain precedent index</div></div>
-      <div class="stat"><div class="num">6</div><div class="lbl">Consumer protocols on one shared court</div></div>
-      <div class="stat"><div class="num">11</div><div class="lbl">Solidity contracts deployed</div></div>
-      <div class="stat"><div class="num">128</div><div class="lbl">Tests passing (incl. fuzz + invariant)</div></div>
-      <div class="stat"><div class="num">5/5</div><div class="lbl">Determinism gate — byte-identical panel</div></div>
-    </div>
-    <div class="live-row"><span class="dot"></span> Reading live from <span class="mono">VerdiktRegistry</span> on Somnia Shannon (chain 50312)</div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<section class="block" id="how">
-  <div class="wrap">
-    <span class="eyebrow">How it works</span>
-    <h2>A dispute, settled by an AI jury — autonomously</h2>
-    <p class="lead">No human touches the settlement loop. The contract convenes the panel, the panel rules, and anyone can finalize.</p>
-    <div class="steps">
-      <div class="step"><div class="n">1</div><h3>Open a case</h3><p>A consumer contract calls <span class="mono">openCase(evidence)</span> with the dispute and the panel fee.</p></div>
-      <div class="step"><div class="n">2</div><h3>AI panel runs</h3><p>5 Somnia validators each run the same LLM inference, constrained to <span class="mono">PAYEE / PAYER / SPLIT</span>.</p></div>
-      <div class="step"><div class="n">3</div><h3>Majority verdict</h3><p>Consensus on a byte-identical result. Each juror's reasoning is kept in an on-chain receipt.</p></div>
-      <div class="step"><div class="n">4</div><h3>Stake to appeal</h3><p>The loser can post a stake and force a re-trial by a larger 9-agent panel with new evidence.</p></div>
-      <div class="step"><div class="n">5</div><h3>Finalize</h3><p>After the appeal window, anyone calls <span class="mono">finalize</span> — funds settle, stake slashed if upheld.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="block" id="features">
-  <div class="wrap">
-    <span class="eyebrow">Built as a primitive</span>
-    <h2>One court. Any protocol or agent can call it.</h2>
-    <p class="lead">Verdikt isn't an app — it's a reusable settlement layer. Six consumers already share a single court.</p>
-    <div class="feat-grid">
-      <div class="card"><div class="ic">⚖️</div><span class="tag">trust-minimized</span><h3>AI jury via validator consensus</h3><p>A subcommittee of validators runs the inference; the verdict is the agreed, byte-identical output — not one bot's word.</p></div>
-      <div class="card"><div class="ic">🤖</div><span class="tag">flagship</span><h3>Agent-to-agent court</h3><p>Both parties can be contracts. Pull-payment settlement means a broken counterparty can never strand the honest one.</p></div>
-      <div class="card"><div class="ic">💵</div><span class="tag">ERC-20</span><h3>Real stablecoin settlement</h3><p>Deals and stakes can be denominated in any token, while panel fees stay native — agents settle real value.</p></div>
-      <div class="card"><div class="ic">🪙</div><span class="tag">novel layer</span><h3>Stake-backed appeals</h3><p>Frivolous appeals are slashed; honest ones are returned. Deterministic inference only changes its mind on better facts.</p></div>
-      <div class="card"><div class="ic">📜</div><span class="tag">the moat</span><h3>On-chain case law</h3><p>Every final ruling is recorded in a queryable precedent index. AI-authored, citable case law no arbiter has.</p></div>
-      <div class="card"><div class="ic">🏪</div><span class="tag">infrastructure</span><h3>Marketplace · reputation · governance</h3><p>Competing courts by price/SLA, a portable litigation record per party, and timelock-governed parameters.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- PROOF -->
-<section class="block" id="proof">
-  <div class="wrap">
-    <span class="eyebrow">Live proof</span>
-    <h2>Not a mockup — deployed and exercised on Shannon</h2>
-    <p class="lead">The determinism gate passed live, real disputes have been settled by AI panels, and the rulings are on-chain.</p>
-    <div class="proof">
-      <div class="proof-grid">
-        <div>
-          <h3 style="margin-top:0;font-size:16px;">Core contracts</h3>
-          <div class="addr"><span class="k">VerdiktCourt</span><a href="https://shannon-explorer.somnia.network/address/0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee" target="_blank" rel="noopener" class="mono">0xd427…66ee ↗</a></div>
-          <div class="addr"><span class="k">VerdiktEscrow</span><a href="https://shannon-explorer.somnia.network/address/0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6" target="_blank" rel="noopener" class="mono">0xED2c…6Ea6 ↗</a></div>
-          <div class="addr"><span class="k">VerdiktAgentEscrow</span><a href="https://shannon-explorer.somnia.network/address/0x8788a859a00057a4660d6Fb15DE373719A565C92" target="_blank" rel="noopener" class="mono">0x8788…5C92 ↗</a></div>
-          <div class="addr"><span class="k">VerdiktRegistry</span><a href="https://shannon-explorer.somnia.network/address/0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7" target="_blank" rel="noopener" class="mono">0x161e…4Ac7 ↗</a></div>
-          <div class="addr"><span class="k">All 11 contracts →</span><a href="https://github.com/Ridwannurudeen/verdikt/blob/master/deployments/shannon.json" target="_blank" rel="noopener">deployments/shannon.json ↗</a></div>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="glow"></div>
+      <div class="wrap">
+        <span class="pill"
+          ><span class="dot"></span> Live on Somnia Shannon · Somnia
+          Agentathon</span
+        >
+        <h1>
+          The settlement court for the<br /><span class="grad"
+            >on-chain agent economy</span
+          >
+        </h1>
+        <p class="sub">
+          On-chain escrow can't decide
+          <em>"was the service delivered as described?"</em> — price feeds
+          can't, and a single bot can't be trusted. Verdikt convenes a
+          <strong>consensus panel of validator-run AI agents</strong> that
+          review the evidence and return a binding verdict. Autonomous agents
+          couldn't sue each other. Now they can.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary btn-lg" href="/app/">Launch the demo →</a>
+          <a class="btn btn-ghost btn-lg" href="/app/caselaw.html"
+            >View live case law</a
+          >
+          <a class="btn btn-ghost btn-lg" href="/deck.html">Pitch deck</a>
         </div>
-        <div>
-          <h3 style="margin-top:0;font-size:16px;">Recorded rulings (live)</h3>
-          <div class="addr"><span class="k">Case #1 · escrow non-delivery</span><span class="verdict-pill v-payer">PAYER</span></div>
-          <div class="addr"><span class="k">Case #2 · delivery confirmed</span><span class="verdict-pill v-payee">PAYEE</span></div>
-          <div class="addr"><span class="k">Case #3 · no shipment</span><span class="verdict-pill v-payer">PAYER</span></div>
-          <div class="addr"><span class="k">Case #4 · never delivered</span><span class="verdict-pill v-payer">PAYER</span></div>
-          <div class="addr"><span class="k">Determinism gate</span><span class="verdict-pill v-payee">PAYEE 5/5 · PASS</span></div>
-          <div style="margin-top:14px;"><a class="btn btn-ghost" href="/app/caselaw.html">Open the case-law dashboard →</a></div>
+        <div class="trust">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#3fb950"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          No admin signer · no human in the settlement loop · per-juror
+          reasoning on-chain
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="wrap">
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="num" id="stat-rulings">4</div>
+            <div class="lbl">Rulings in the on-chain precedent index</div>
+          </div>
+          <div class="stat">
+            <div class="num">6</div>
+            <div class="lbl">Consumer protocols on one shared court</div>
+          </div>
+          <div class="stat">
+            <div class="num">11</div>
+            <div class="lbl">Solidity contracts deployed</div>
+          </div>
+          <div class="stat">
+            <div class="num">141</div>
+            <div class="lbl">Tests passing (incl. fuzz + invariant)</div>
+          </div>
+          <div class="stat">
+            <div class="num">5/5</div>
+            <div class="lbl">Determinism gate — byte-identical panel</div>
+          </div>
+        </div>
+        <div class="live-row">
+          <span class="dot"></span> Reading live from
+          <span class="mono">VerdiktRegistry</span> on Somnia Shannon (chain
+          50312)
         </div>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- FAQ -->
-<section class="block">
-  <div class="wrap">
-    <span class="eyebrow">FAQ</span>
-    <h2>Questions</h2>
-    <div class="faq">
-      <details open><summary>What is Verdikt? <span class="chev">⌄</span></summary><p>An on-chain arbitration court. When a deal is contested, the contract convenes a panel of validator-run LLM agents that review the evidence and return a binding verdict — <span class="mono">PAYEE</span>, <span class="mono">PAYER</span>, or <span class="mono">SPLIT</span> — under majority consensus. It's a reusable settlement primitive any contract or agent can call.</p></details>
-      <details><summary>How is the AI judgment trust-minimized? <span class="chev">⌄</span></summary><p>A subcommittee of Somnia validators each runs the same LLM inference, constrained to a fixed set of allowed outputs, and consensus is reached on a byte-identical result. No single off-chain bot decides — the verdict is the agreed output of the validator panel, with each juror's reasoning kept in an on-chain receipt.</p></details>
-      <details><summary>How is it different from Kleros? <span class="chev">⌄</span></summary><p>Kleros and similar systems use human jurors staking tokens — slow and uneconomical for small or fast disputes. Verdikt replaces the human jury with an AI panel reaching validator consensus in seconds, while keeping the economic security: a stake-backed appeal escalates to a larger 9-agent panel and slashes frivolous challenges.</p></details>
-      <details><summary>Is it actually live? <span class="chev">⌄</span></summary><p>Yes. The full stack is deployed on Somnia Shannon testnet. The determinism gate passed (a 5-agent panel returned a byte-identical verdict), real escrow disputes have been settled by live AI panels with no human in the loop, and four final rulings are recorded in the on-chain precedent index. Try the <a href="/app/">live demo</a>.</p></details>
-      <details><summary>What can build on it? <span class="chev">⌄</span></summary><p>Anything with a subjective dispute: escrow, parametric insurance, DAO grant clawbacks, freelance milestones, agent-to-agent deals, prediction-market resolution. Six consumers already settle on one shared court — the court doesn't know what any of them mean, which is the point.</p></details>
-      <details><summary>Is it audited? <span class="chev">⌄</span></summary><p>It's unaudited hackathon code on testnet. There is an internal security review (<span class="mono">SECURITY.md</span>) and a 128-test suite including fuzz and invariant tests. A third-party audit is a prerequisite for mainnet.</p></details>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="logo"><span class="badge">V</span> Verdikt</div>
-      <div class="foot-links">
-        <a href="/app/">Launch app</a>
-        <a href="/app/caselaw.html">Case law</a>
-        <a href="/deck.html">Pitch deck</a>
-        <a href="https://github.com/Ridwannurudeen/verdikt" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://shannon-explorer.somnia.network/address/0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee" target="_blank" rel="noopener">Explorer</a>
+    <!-- HOW IT WORKS -->
+    <section class="block" id="how">
+      <div class="wrap">
+        <span class="eyebrow">How it works</span>
+        <h2>A dispute, settled by an AI jury — autonomously</h2>
+        <p class="lead">
+          No human touches the settlement loop. The contract convenes the panel,
+          the panel rules, and anyone can finalize.
+        </p>
+        <div class="steps">
+          <div class="step">
+            <div class="n">1</div>
+            <h3>Open a case</h3>
+            <p>
+              A consumer contract calls
+              <span class="mono">openCase(evidence)</span> with the dispute and
+              the panel fee.
+            </p>
+          </div>
+          <div class="step">
+            <div class="n">2</div>
+            <h3>AI panel runs</h3>
+            <p>
+              5 Somnia validators each run the same LLM inference, constrained
+              to <span class="mono">PAYEE / PAYER / SPLIT</span>.
+            </p>
+          </div>
+          <div class="step">
+            <div class="n">3</div>
+            <h3>Majority verdict</h3>
+            <p>
+              Consensus on a byte-identical result. Each juror's reasoning is
+              kept in an on-chain receipt.
+            </p>
+          </div>
+          <div class="step">
+            <div class="n">4</div>
+            <h3>Stake to appeal</h3>
+            <p>
+              The loser can post a stake and force a re-trial by a larger
+              9-agent panel with new evidence.
+            </p>
+          </div>
+          <div class="step">
+            <div class="n">5</div>
+            <h3>Finalize</h3>
+            <p>
+              After the appeal window, anyone calls
+              <span class="mono">finalize</span> — funds settle, stake slashed
+              if upheld.
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="foot-note">Trustless AI arbitration for on-chain disputes · built on Somnia's Agentic L1 · Somnia Agora hackathon · unaudited testnet code.</div>
-  </div>
-</footer>
+    </section>
 
-<script type="module">
-  // Live stat: read the real ruling count from VerdiktRegistry on Somnia Shannon.
-  // Falls back silently to the static value if the RPC is unavailable.
-  try {
-    const { createPublicClient, http } = await import("https://esm.sh/viem@2.21.0?bundle");
-    const client = createPublicClient({ transport: http("https://api.infra.testnet.somnia.network/") });
-    const n = await client.readContract({
-      address: "0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7",
-      abi: [{ type:"function", name:"rulingsCount", stateMutability:"view", inputs:[], outputs:[{type:"uint256"}] }],
-      functionName: "rulingsCount",
-    });
-    const el = document.getElementById("stat-rulings");
-    if (el && n !== undefined) el.textContent = n.toString();
-  } catch (_) { /* keep static fallback */ }
-</script>
-</body>
+    <!-- FEATURES -->
+    <section class="block" id="features">
+      <div class="wrap">
+        <span class="eyebrow">Built as a primitive</span>
+        <h2>One court. Any protocol or agent can call it.</h2>
+        <p class="lead">
+          Verdikt isn't an app — it's a reusable settlement layer. Six consumers
+          already share a single court.
+        </p>
+        <div class="feat-grid">
+          <div class="card">
+            <div class="ic">⚖️</div>
+            <span class="tag">trust-minimized</span>
+            <h3>AI jury via validator consensus</h3>
+            <p>
+              A subcommittee of validators runs the inference; the verdict is
+              the agreed, byte-identical output — not one bot's word.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">🤖</div>
+            <span class="tag">flagship</span>
+            <h3>Agent-to-agent court</h3>
+            <p>
+              Both parties can be contracts. Pull-payment settlement means a
+              broken counterparty can never strand the honest one.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">💵</div>
+            <span class="tag">ERC-20</span>
+            <h3>Real stablecoin settlement</h3>
+            <p>
+              Deals and stakes can be denominated in any token, while panel fees
+              stay native — agents settle real value.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">🪙</div>
+            <span class="tag">novel layer</span>
+            <h3>Stake-backed appeals</h3>
+            <p>
+              Frivolous appeals are slashed; honest ones are returned.
+              Deterministic inference only changes its mind on better facts.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">📜</div>
+            <span class="tag">the moat</span>
+            <h3>On-chain case law</h3>
+            <p>
+              Every final ruling is recorded in a queryable precedent index.
+              AI-authored, citable case law no arbiter has.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">🏪</div>
+            <span class="tag">infrastructure</span>
+            <h3>Marketplace · reputation · governance</h3>
+            <p>
+              Competing courts by price/SLA, a portable litigation record per
+              party, and timelock-governed parameters.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section class="block" id="proof">
+      <div class="wrap">
+        <span class="eyebrow">Live proof</span>
+        <h2>Not a mockup — deployed and exercised on Shannon</h2>
+        <p class="lead">
+          The determinism gate passed live, real disputes have been settled by
+          AI panels, and the rulings are on-chain.
+        </p>
+        <div class="proof">
+          <div class="proof-grid">
+            <div>
+              <h3 style="margin-top: 0; font-size: 16px">Core contracts</h3>
+              <div class="addr">
+                <span class="k">VerdiktCourt</span
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee"
+                  target="_blank"
+                  rel="noopener"
+                  class="mono"
+                  >0xd427…66ee ↗</a
+                >
+              </div>
+              <div class="addr">
+                <span class="k">VerdiktEscrow</span
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6"
+                  target="_blank"
+                  rel="noopener"
+                  class="mono"
+                  >0xED2c…6Ea6 ↗</a
+                >
+              </div>
+              <div class="addr">
+                <span class="k">VerdiktAgentEscrow</span
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0x8788a859a00057a4660d6Fb15DE373719A565C92"
+                  target="_blank"
+                  rel="noopener"
+                  class="mono"
+                  >0x8788…5C92 ↗</a
+                >
+              </div>
+              <div class="addr">
+                <span class="k">VerdiktRegistry</span
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7"
+                  target="_blank"
+                  rel="noopener"
+                  class="mono"
+                  >0x161e…4Ac7 ↗</a
+                >
+              </div>
+              <div class="addr">
+                <span class="k">All 11 contracts →</span
+                ><a
+                  href="https://github.com/Ridwannurudeen/verdikt/blob/master/deployments/shannon.json"
+                  target="_blank"
+                  rel="noopener"
+                  >deployments/shannon.json ↗</a
+                >
+              </div>
+            </div>
+            <div>
+              <h3 style="margin-top: 0; font-size: 16px">
+                Recorded rulings (live)
+              </h3>
+              <div class="addr">
+                <span class="k">Case #1 · escrow non-delivery</span
+                ><span class="verdict-pill v-payer">PAYER</span>
+              </div>
+              <div class="addr">
+                <span class="k">Case #2 · delivery confirmed</span
+                ><span class="verdict-pill v-payee">PAYEE</span>
+              </div>
+              <div class="addr">
+                <span class="k">Case #3 · no shipment</span
+                ><span class="verdict-pill v-payer">PAYER</span>
+              </div>
+              <div class="addr">
+                <span class="k">Case #4 · never delivered</span
+                ><span class="verdict-pill v-payer">PAYER</span>
+              </div>
+              <div class="addr">
+                <span class="k">Determinism gate</span
+                ><span class="verdict-pill v-payee">PAYEE 5/5 · PASS</span>
+              </div>
+              <div style="margin-top: 14px">
+                <a class="btn btn-ghost" href="/app/caselaw.html"
+                  >Open the case-law dashboard →</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="block">
+      <div class="wrap">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions</h2>
+        <div class="faq">
+          <details open>
+            <summary>What is Verdikt? <span class="chev">⌄</span></summary>
+            <p>
+              An on-chain arbitration court. When a deal is contested, the
+              contract convenes a panel of validator-run LLM agents that review
+              the evidence and return a binding verdict —
+              <span class="mono">PAYEE</span>, <span class="mono">PAYER</span>,
+              or <span class="mono">SPLIT</span> — under majority consensus.
+              It's a reusable settlement primitive any contract or agent can
+              call.
+            </p>
+          </details>
+          <details>
+            <summary>
+              How is the AI judgment trust-minimized?
+              <span class="chev">⌄</span>
+            </summary>
+            <p>
+              A subcommittee of Somnia validators each runs the same LLM
+              inference, constrained to a fixed set of allowed outputs, and
+              consensus is reached on a byte-identical result. No single
+              off-chain bot decides — the verdict is the agreed output of the
+              validator panel, with each juror's reasoning kept in an on-chain
+              receipt.
+            </p>
+          </details>
+          <details>
+            <summary>
+              How is it different from Kleros? <span class="chev">⌄</span>
+            </summary>
+            <p>
+              Kleros and similar systems use human jurors staking tokens — slow
+              and uneconomical for small or fast disputes. Verdikt replaces the
+              human jury with an AI panel reaching validator consensus in
+              seconds, while keeping the economic security: a stake-backed
+              appeal escalates to a larger 9-agent panel and slashes frivolous
+              challenges.
+            </p>
+          </details>
+          <details>
+            <summary>Is it actually live? <span class="chev">⌄</span></summary>
+            <p>
+              Yes. The full stack is deployed on Somnia Shannon testnet. The
+              determinism gate passed (a 5-agent panel returned a byte-identical
+              verdict), real escrow disputes have been settled by live AI panels
+              with no human in the loop, and four final rulings are recorded in
+              the on-chain precedent index. Try the
+              <a href="/app/">live demo</a>.
+            </p>
+          </details>
+          <details>
+            <summary>What can build on it? <span class="chev">⌄</span></summary>
+            <p>
+              Anything with a subjective dispute: escrow, parametric insurance,
+              DAO grant clawbacks, freelance milestones, agent-to-agent deals,
+              prediction-market resolution. Six consumers already settle on one
+              shared court — the court doesn't know what any of them mean, which
+              is the point.
+            </p>
+          </details>
+          <details>
+            <summary>Is it audited? <span class="chev">⌄</span></summary>
+            <p>
+              It's unaudited hackathon code on testnet. There is an internal
+              security review (<span class="mono">SECURITY.md</span>) and a
+              141-test suite including fuzz and invariant tests. A third-party
+              audit is a prerequisite for mainnet.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="logo"><span class="badge">V</span> Verdikt</div>
+          <div class="foot-links">
+            <a href="/app/">Launch app</a>
+            <a href="/app/caselaw.html">Case law</a>
+            <a href="/deck.html">Pitch deck</a>
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+            <a
+              href="https://shannon-explorer.somnia.network/address/0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee"
+              target="_blank"
+              rel="noopener"
+              >Explorer</a
+            >
+          </div>
+        </div>
+        <div class="foot-note">
+          Trustless AI arbitration for on-chain disputes · built on Somnia's
+          Agentic L1 · Somnia Agentathon · unaudited testnet code.
+        </div>
+      </div>
+    </footer>
+
+    <script type="module">
+      // Live stat: read the real ruling count from VerdiktRegistry on Somnia Shannon.
+      // Falls back silently to the static value if the RPC is unavailable.
+      try {
+        const { createPublicClient, http } =
+          await import("https://esm.sh/viem@2.21.0?bundle");
+        const client = createPublicClient({
+          transport: http("https://api.infra.testnet.somnia.network/"),
+        });
+        const n = await client.readContract({
+          address: "0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7",
+          abi: [
+            {
+              type: "function",
+              name: "rulingsCount",
+              stateMutability: "view",
+              inputs: [],
+              outputs: [{ type: "uint256" }],
+            },
+          ],
+          functionName: "rulingsCount",
+        });
+        const el = document.getElementById("stat-rulings");
+        if (el && n !== undefined) el.textContent = n.toString();
+      } catch (_) {
+        /* keep static fallback */
+      }
+    </script>
+  </body>
 </html>

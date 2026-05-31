@@ -69,6 +69,13 @@ contract VerdiktCourtTest is Test {
         consumer.open{value: q - 1}(1, "x");
     }
 
+    function test_openCase_refundsExcessDeposit() public {
+        uint256 q = court.quoteOpen();
+        uint256 before = address(consumer).balance;
+        consumer.open{value: q + 1 ether}(42, "buyer never shipped");
+        assertEq(address(consumer).balance, before + 1 ether);
+    }
+
     function test_verdictReached_andFinalize() public {
         uint256 caseId = consumer.open{value: court.quoteOpen()}(7, "evidence");
         platform.fireSuccess(_lastReq(), "PAYEE");
@@ -117,6 +124,20 @@ contract VerdiktCourtTest is Test {
         uint256 dep = court.quoteAppeal(caseId);
         vm.expectRevert(bytes("window closed"));
         consumer.doAppeal{value: dep}(caseId, "late");
+    }
+
+    function test_appealDeadline_isSnapshottedAtRulingTime() public {
+        uint256 caseId = consumer.open{value: court.quoteOpen()}(1, "r0");
+        platform.fireSuccess(_lastReq(), "PAYER");
+
+        court.setAppealWindow(1);
+        vm.warp(block.timestamp + 2);
+
+        vm.expectRevert(bytes("appeal window open"));
+        court.finalize(caseId);
+
+        consumer.doAppeal{value: court.quoteAppeal(caseId)}(caseId, "new evidence");
+        assertEq(court.getCase(caseId).round, 1);
     }
 
     function test_handleVerdict_onlyPlatform() public {

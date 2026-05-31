@@ -133,6 +133,11 @@ contract VerdiktGrantClawbackTest is Test {
         uint256 before = dao.balance;
         vm.prank(dao);
         grant.dispute{value: fee + 1 ether}(grantId, "ev");
+        assertEq(dao.balance, before - fee - 1 ether);
+        assertEq(grant.pending(dao), 1 ether);
+
+        vm.prank(dao);
+        grant.withdraw();
         assertEq(dao.balance, before - fee);
     }
 }

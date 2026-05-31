@@ -70,6 +70,7 @@ contract VerdiktInsuranceTest is Test {
         uint256 policyId = _policy();
         uint256 premium = (COVERAGE * ins.premiumBps()) / 10000; // 0.05 ether
         assertEq(ins.totalPool(), poolBefore + premium);
+        assertEq(ins.lockedCoverage(), COVERAGE);
         (address ins_, uint256 cov, uint64 exp, VerdiktInsurance.PolicyStatus st, uint256 active) =
             ins.policies(policyId);
         assertEq(ins_, insured);
@@ -77,6 +78,27 @@ contract VerdiktInsuranceTest is Test {
         assertGt(exp, block.timestamp);
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Active));
         assertEq(active, 0);
+    }
+
+    function test_createPolicy_revertsWhenPoolCannotBackCoverage() public {
+        uint256 premium = (COVERAGE * ins.premiumBps()) / 10000;
+        vm.prank(insured);
+        vm.expectRevert(bytes("insufficient capacity"));
+        ins.createPolicy{value: premium}(COVERAGE, uint64(block.timestamp + 30 days));
+    }
+
+    function test_fundPool_mintsProRataShares_afterPremiumChangesSharePrice() public {
+        _fund(funder, 10 ether);
+        _policy(); // adds 0.05 ether premium without minting shares
+
+        uint256 poolBefore = ins.totalPool();
+        uint256 sharesBefore = ins.totalShares();
+        vm.prank(funder2);
+        ins.fundPool{value: 1 ether}();
+
+        uint256 expectedShares = (1 ether * sharesBefore) / poolBefore;
+        assertEq(ins.shares(funder2), expectedShares);
+        assertLt(expectedShares, 1 ether);
     }
 
     function test_fileClaim_byNonInsured_reverts() public {
@@ -96,10 +118,10 @@ contract VerdiktInsuranceTest is Test {
 
         uint256 caseId = _caseId(claimId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 before = insured.balance;
         court.finalize(caseId);
 
-        assertEq(insured.balance, before + COVERAGE);
+        assertEq(ins.pending(insured), COVERAGE);
+        assertEq(ins.lockedCoverage(), 0);
         (,,, VerdiktInsurance.PolicyStatus st, uint256 active) = ins.policies(policyId);
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Exhausted));
         assertEq(active, 0);
@@ -113,10 +135,10 @@ contract VerdiktInsuranceTest is Test {
 
         uint256 caseId = _caseId(claimId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 before = insured.balance;
         court.finalize(caseId);
 
-        assertEq(insured.balance, before); // no payout
+        assertEq(ins.pending(insured), 0); // no payout
+        assertEq(ins.lockedCoverage(), COVERAGE);
         (,,, VerdiktInsurance.PolicyStatus st,) = ins.policies(policyId);
         // policy still active (not expired)
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Active));
@@ -130,10 +152,10 @@ contract VerdiktInsuranceTest is Test {
 
         uint256 caseId = _caseId(claimId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 before = insured.balance;
         court.finalize(caseId);
 
-        assertEq(insured.balance, before + COVERAGE / 2);
+        assertEq(ins.pending(insured), COVERAGE / 2);
+        assertEq(ins.lockedCoverage(), 0);
         (,,, VerdiktInsurance.PolicyStatus st,) = ins.policies(policyId);
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Exhausted));
     }
@@ -151,10 +173,9 @@ contract VerdiktInsuranceTest is Test {
         ins.appealClaim{value: stake + agentDep}(claimId, "compelling new evidence");
         platform.fireSuccess(_lastReq(), "PAYEE"); // overturned
 
-        uint256 before = insured.balance;
         court.finalize(caseId);
         // insured gets coverage payout + stake returned
-        assertEq(insured.balance, before + COVERAGE + stake);
+        assertEq(ins.pending(insured), COVERAGE + stake);
     }
 
     function test_appeal_byInsured_upheld_slashesStake_treasuryCut() public {
@@ -173,10 +194,9 @@ contract VerdiktInsuranceTest is Test {
         uint256 cut = (stake * ins.keeperCutBps()) / 10000;
         uint256 toWinner = stake - cut;
         uint256 poolBefore = ins.totalPool();
-        uint256 trBefore = treasury.balance;
         court.finalize(caseId);
 
-        assertEq(treasury.balance, trBefore + cut);
+        assertEq(ins.pending(treasury), cut);
         // pool wins the stake (minus treasury cut)
         assertEq(ins.totalPool(), poolBefore + toWinner);
     }
@@ -194,12 +214,10 @@ contract VerdiktInsuranceTest is Test {
         ins.appealClaim{value: stake + agentDep}(claimId, "claim is fraudulent");
         platform.fireSuccess(_lastReq(), "PAYER"); // overturned
 
-        uint256 before = funder.balance;
-        uint256 insuredBefore = insured.balance;
         court.finalize(caseId);
 
-        assertEq(funder.balance, before + stake); // stake returned
-        assertEq(insured.balance, insuredBefore); // no payout
+        assertEq(ins.pending(funder), stake); // stake returned
+        assertEq(ins.pending(insured), 0); // no payout
     }
 
     function test_appeal_byPoolFunder_upheld_slashesStake_toInsured() public {
@@ -217,13 +235,11 @@ contract VerdiktInsuranceTest is Test {
 
         uint256 cut = (stake * ins.keeperCutBps()) / 10000;
         uint256 toWinner = stake - cut;
-        uint256 insuredBefore = insured.balance;
-        uint256 trBefore = treasury.balance;
         court.finalize(caseId);
 
         // insured gets coverage + slashed stake (minus treasury cut)
-        assertEq(insured.balance, insuredBefore + COVERAGE + toWinner);
-        assertEq(treasury.balance, trBefore + cut);
+        assertEq(ins.pending(insured), COVERAGE + toWinner);
+        assertEq(ins.pending(treasury), cut);
     }
 
     function test_appeal_byNonFunder_reverts_onPayeeVerdict() public {
@@ -236,8 +252,23 @@ contract VerdiktInsuranceTest is Test {
         uint256 stake = (COVERAGE * ins.appealStakeBps()) / 10000;
         uint256 agentDep = court.quoteAppeal(caseId);
         vm.prank(stranger);
-        vm.expectRevert(bytes("only pool funder"));
+        vm.expectRevert(bytes("pool stake too small"));
         ins.appealClaim{value: stake + agentDep}(claimId, "x");
+    }
+
+    function test_appeal_byMicroFunder_reverts() public {
+        _fund(funder, 10 ether);
+        _fund(funder2, 1 wei);
+        uint256 policyId = _policy();
+        uint256 claimId = _fileClaim(policyId, "ev0");
+        platform.fireSuccess(_lastReq(), "PAYEE");
+
+        uint256 caseId = _caseId(claimId);
+        uint256 stake = (COVERAGE * ins.appealStakeBps()) / 10000;
+        uint256 agentDep = court.quoteAppeal(caseId);
+        vm.prank(funder2);
+        vm.expectRevert(bytes("pool stake too small"));
+        ins.appealClaim{value: stake + agentDep}(claimId, "grief");
     }
 
     function test_withdrawPool_blockedWhileClaimFiled() public {
@@ -259,6 +290,8 @@ contract VerdiktInsuranceTest is Test {
         uint256 caseId = _caseId(claimId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
         court.finalize(caseId);
+        vm.warp(block.timestamp + 31 days);
+        ins.expirePolicy(policyId);
 
         // pool = 10 + 0.05; shares = 10. funder owns 60%, funder2 owns 40%.
         uint256 pool = ins.totalPool();
@@ -271,6 +304,29 @@ contract VerdiktInsuranceTest is Test {
         ins.withdrawPool(funderShares);
         assertEq(funder.balance, before + expectedF);
         assertEq(ins.shares(funder), 0);
+    }
+
+    function test_withdrawPool_revertsWhenCoverageLocked() public {
+        _fund(funder, 10 ether);
+        _policy();
+
+        uint256 shareCount = ins.shares(funder);
+        vm.prank(funder);
+        vm.expectRevert(bytes("coverage locked"));
+        ins.withdrawPool(shareCount);
+    }
+
+    function test_expirePolicy_releasesCoverage() public {
+        _fund(funder, 10 ether);
+        uint256 policyId = _policy();
+        assertEq(ins.lockedCoverage(), COVERAGE);
+
+        vm.warp(block.timestamp + 31 days);
+        ins.expirePolicy(policyId);
+
+        assertEq(ins.lockedCoverage(), 0);
+        (,,, VerdiktInsurance.PolicyStatus st,) = ins.policies(policyId);
+        assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Expired));
     }
 
     function test_expiredPolicy_cannotFileClaim() public {

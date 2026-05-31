@@ -39,8 +39,8 @@ sudo cp /tmp/nginx-verdikt.gudman.xyz.conf /etc/nginx/sites-available/
 sudo ln -sf /etc/nginx/sites-available/nginx-verdikt.gudman.xyz.conf \
             /etc/nginx/sites-enabled/
 
-# 3. Issue the Let's Encrypt cert (auto-edits the server block)
-sudo certbot --nginx -d verdikt.gudman.xyz
+# 3. Issue the Let's Encrypt cert without nginx auto-editing
+sudo certbot certonly --webroot -w /opt/verdikt/web -d verdikt.gudman.xyz
 
 # 4. Reload nginx
 sudo nginx -t && sudo systemctl reload nginx
@@ -50,7 +50,8 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ```bash
 # From the repo root:
-scp slides.html                           root@75.119.153.252:/opt/verdikt/web/index.html
+scp web/index.html                        root@75.119.153.252:/opt/verdikt/web/index.html
+scp slides.html                           root@75.119.153.252:/opt/verdikt/web/deck.html
 scp deploy/nginx-verdikt.gudman.xyz.conf  root@75.119.153.252:/tmp/
 ```
 
@@ -59,7 +60,7 @@ If your SSH user isn't `root`, swap accordingly and prepend `sudo` to the instal
 ## Re-deploy after editing `slides.html`
 
 ```bash
-scp slides.html root@75.119.153.252:/opt/verdikt/web/index.html
+scp slides.html root@75.119.153.252:/opt/verdikt/web/deck.html
 ```
 
 No nginx reload needed for content changes. `slides.html` is self-contained — reveal.js loads from `cdn.jsdelivr.net` at runtime.
@@ -71,7 +72,7 @@ curl -sI https://verdikt.gudman.xyz/ | head -5
 # expect: HTTP/2 200, content-type: text/html
 ```
 
-Open `https://verdikt.gudman.xyz` — arrow keys navigate slides, `f` toggles fullscreen, `?` shows help.
+Open `https://verdikt.gudman.xyz` for the product page, `/app/` for the live demo, and `/deck.html` for the slide deck.
 
 ## Source of truth
 

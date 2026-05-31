@@ -46,6 +46,7 @@ contract VerdiktReputation {
     /// @param party the disputing address whose reputation is updated.
     /// @param side which side of the dispute `party` was on (caller-asserted).
     function record(uint256 caseId, address party, Side side) external {
+        require(party != address(0), "zero party");
         require(!recorded[caseId][party], "already recorded");
         CaseView memory cv = court.getCase(caseId);
         require(cv.status == CaseStatus.Final, "not final");

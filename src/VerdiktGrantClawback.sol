@@ -120,10 +120,7 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
     }
 
     function _refundExcess(uint256 sent, uint256 used) internal {
-        if (sent > used) {
-            (bool ok,) = msg.sender.call{value: sent - used}("");
-            require(ok, "refund failed");
-        }
+        if (sent > used) pending[msg.sender] += sent - used;
     }
 
     receive() external payable {}

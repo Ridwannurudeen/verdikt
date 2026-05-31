@@ -1,50 +1,136 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>Verdikt — trustless AI arbitration on Somnia</title>
-  <meta name="description" content="Verdikt: a reusable AI-jury primitive for on-chain escrow disputes on Somnia's Agentic L1.">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
-  <style>
-    :root {
-      --bg: #0e1116;
-      --fg: #e6edf3;
-      --panel: #161b22;
-      --border: #30363d;
-      --blue: #79c0ff;
-      --orange: #ffa657;
-      --purple: #d2a8ff;
-      --muted: #7d8590;
-    }
-    .reveal-viewport, body, .reveal { background: var(--bg); }
-    .reveal { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--fg); }
-    .reveal .slides { text-align: left; }
-    .reveal .slides > section { padding: 32px 56px; }
-    .reveal h1 { color: var(--blue); font-size: 2.2em; text-transform: none; margin-bottom: 0.4em; }
-    .reveal h2 { color: var(--blue); font-size: 1.4em; text-transform: none; margin-bottom: 0.45em; }
-    .reveal h3 { color: var(--fg); font-size: 1.05em; text-transform: none; margin-top: 0.7em; }
-    .reveal p, .reveal li { color: var(--fg); font-size: 0.72em; line-height: 1.4; }
-    .reveal strong { color: var(--orange); }
-    .reveal code { background: var(--panel); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 0.9em; }
-    .reveal pre code { background: var(--panel); border: 1px solid var(--border); padding: 16px; display: block; }
-    .reveal ul { margin-left: 1.2em; }
-    .reveal li + li { margin-top: 0.3em; }
-    .reveal a { color: var(--blue); text-decoration: none; border-bottom: 1px dotted var(--blue); }
-    .reveal hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
-    .reveal .controls { color: var(--muted); }
-    .reveal .progress { color: var(--blue); }
-    .reveal .slide-number { color: var(--muted); font-family: inherit; background: transparent; }
-    .footer { position: fixed; bottom: 12px; left: 24px; color: var(--muted); font-size: 0.7em; z-index: 5; }
-  </style>
-</head>
-<body>
-  <div class="reveal">
-    <div class="slides">
-      <section data-markdown>
-        <textarea data-template>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>Verdikt — trustless AI arbitration on Somnia</title>
+    <meta
+      name="description"
+      content="Verdikt: a reusable AI-jury primitive for on-chain escrow disputes on Somnia's Agentic L1."
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
+    />
+    <style>
+      :root {
+        --bg: #0e1116;
+        --fg: #e6edf3;
+        --panel: #161b22;
+        --border: #30363d;
+        --blue: #79c0ff;
+        --orange: #ffa657;
+        --purple: #d2a8ff;
+        --muted: #7d8590;
+      }
+      .reveal-viewport,
+      body,
+      .reveal {
+        background: var(--bg);
+      }
+      .reveal {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        color: var(--fg);
+      }
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal .slides > section {
+        padding: 32px 56px;
+      }
+      .reveal h1 {
+        color: var(--blue);
+        font-size: 2.2em;
+        text-transform: none;
+        margin-bottom: 0.4em;
+      }
+      .reveal h2 {
+        color: var(--blue);
+        font-size: 1.4em;
+        text-transform: none;
+        margin-bottom: 0.45em;
+      }
+      .reveal h3 {
+        color: var(--fg);
+        font-size: 1.05em;
+        text-transform: none;
+        margin-top: 0.7em;
+      }
+      .reveal p,
+      .reveal li {
+        color: var(--fg);
+        font-size: 0.72em;
+        line-height: 1.4;
+      }
+      .reveal strong {
+        color: var(--orange);
+      }
+      .reveal code {
+        background: var(--panel);
+        color: var(--purple);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+      .reveal pre code {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        padding: 16px;
+        display: block;
+      }
+      .reveal ul {
+        margin-left: 1.2em;
+      }
+      .reveal li + li {
+        margin-top: 0.3em;
+      }
+      .reveal a {
+        color: var(--blue);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--blue);
+      }
+      .reveal hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 1.2em 0;
+      }
+      .reveal .controls {
+        color: var(--muted);
+      }
+      .reveal .progress {
+        color: var(--blue);
+      }
+      .reveal .slide-number {
+        color: var(--muted);
+        font-family: inherit;
+        background: transparent;
+      }
+      .footer {
+        position: fixed;
+        bottom: 12px;
+        left: 24px;
+        color: var(--muted);
+        font-size: 0.7em;
+        z-index: 5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
 # Verdikt
 
 **Trustless AI arbitration for on-chain escrow**
@@ -119,7 +205,7 @@ Reusability is the point: a settlement court any protocol or agent can call.
 ## What ships today
 
 - **11 contracts** — `VerdiktCourt` + **6 consumers** on one shared court
-- **128/128 tests** — solc 0.8.24, evm_version cancun, incl. invariant + fuzz
+- **141/141 tests** — solc 0.8.24, evm_version cancun, incl. invariant + fuzz
 - **Agent-to-agent court** — both parties can be contracts; pull-payment; **ERC-20** too
 - **Precedent layer** — on-chain, AI-authored, citable case law
 - **Marketplace** · **reputation** · **timelock** governance · keeper · dashboard
@@ -134,24 +220,30 @@ Reusability is the point: a settlement court any protocol or agent can call.
 - Unaudited hackathon code · addresses in `deployments/shannon.json`.
 
 `github.com/Ridwannurudeen/verdikt`
-        </textarea>
-      </section>
+        </textarea
+          >
+        </section>
+      </div>
     </div>
-  </div>
-  <div class="footer">verdikt · Somnia Agora hackathon · github.com/Ridwannurudeen/verdikt</div>
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
-  <script>
-    Reveal.initialize({
-      hash: true,
-      slideNumber: "c/t",
-      controls: true,
-      progress: true,
-      transition: "slide",
-      plugins: [ RevealMarkdown, RevealHighlight ]
-    });
-  </script>
-</body>
+    <div class="footer">
+      verdikt · Somnia Agora hackathon · github.com/Ridwannurudeen/verdikt
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
+    />
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: "c/t",
+        controls: true,
+        progress: true,
+        transition: "slide",
+        plugins: [RevealMarkdown, RevealHighlight],
+      });
+    </script>
+  </body>
 </html>

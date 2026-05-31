@@ -59,6 +59,8 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToDeal;
     /// @notice token amounts owed to each address, claimable via withdraw().
     mapping(address => uint256) public pending;
+    /// @notice native STT refunds from court-fee overpayment, claimable via withdrawNative().
+    mapping(address => uint256) public nativePending;
 
     event DealCreated(uint256 indexed dealId, address indexed payer, address indexed payee, uint256 amount);
     event Delivered(uint256 indexed dealId);
@@ -69,6 +71,8 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     event StakeSlashed(uint256 indexed dealId, address loser, address winner, uint256 toWinner, uint256 toTreasury);
     event StakeReturned(uint256 indexed dealId, address appellant, uint256 amount);
     event Withdrawn(address indexed to, uint256 amount);
+    event NativeRefundCredited(address indexed to, uint256 amount);
+    event NativeWithdrawn(address indexed to, uint256 amount);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
@@ -87,8 +91,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     function createDeal(address payee, uint256 amount, uint64 deliverBy) external returns (uint256 dealId) {
         require(amount > 0, "no funds");
         require(payee != address(0) && payee != msg.sender, "bad payee");
-        bool ok = token.transferFrom(msg.sender, address(this), amount);
-        require(ok, "transferFrom failed");
+        _safeTransferFrom(msg.sender, address(this), amount);
         dealId = nextDealId++;
         deals[dealId] = Deal({
             payer: msg.sender, payee: payee, amount: amount, status: DealStatus.Funded, deliverBy: deliverBy, caseId: 0
@@ -151,11 +154,11 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         }
 
         uint256 stake = (d.amount * appealStakeBps) / 10000;
+        require(stake > 0, "stake too low");
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= agentDep, "value too low");
 
-        bool ok = token.transferFrom(msg.sender, address(this), stake);
-        require(ok, "transferFrom failed");
+        _safeTransferFrom(msg.sender, address(this), stake);
 
         appeals[dealId] = AppealInfo({appellant: msg.sender, stake: stake, preAppealVerdict: cv.verdict, active: true});
 
@@ -204,9 +207,17 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         uint256 amt = pending[msg.sender];
         require(amt > 0, "nothing to withdraw");
         pending[msg.sender] = 0;
-        bool ok = token.transfer(msg.sender, amt);
-        require(ok, "transfer failed");
+        _safeTransfer(msg.sender, amt);
         emit Withdrawn(msg.sender, amt);
+    }
+
+    function withdrawNative() external returns (uint256 amount) {
+        amount = nativePending[msg.sender];
+        require(amount > 0, "nothing to withdraw");
+        nativePending[msg.sender] = 0;
+        (bool ok,) = msg.sender.call{value: amount}("");
+        require(ok, "withdraw failed");
+        emit NativeWithdrawn(msg.sender, amount);
     }
 
     // --- views ----------------------------------------------------------------
@@ -229,9 +240,21 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
 
     function _refundExcess(uint256 sent, uint256 used) internal {
         if (sent > used) {
-            (bool ok,) = msg.sender.call{value: sent - used}("");
-            require(ok, "refund failed");
+            nativePending[msg.sender] += sent - used;
+            emit NativeRefundCredited(msg.sender, sent - used);
         }
+    }
+
+    function _safeTransfer(address to, uint256 amount) internal {
+        (bool ok, bytes memory data) =
+            address(token).call(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
+        require(ok && (data.length == 0 || abi.decode(data, (bool))), "transfer failed");
+    }
+
+    function _safeTransferFrom(address from, address to, uint256 amount) internal {
+        (bool ok, bytes memory data) =
+            address(token).call(abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount));
+        require(ok && (data.length == 0 || abi.decode(data, (bool))), "transferFrom failed");
     }
 
     // --- admin ----------------------------------------------------------------
@@ -247,6 +270,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     }
 
     function setTreasury(address t) external onlyOwner {
+        require(t != address(0), "zero treasury");
         treasury = t;
     }
 

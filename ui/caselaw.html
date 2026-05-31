@@ -1,117 +1,226 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Verdikt — case law</title>
-<style>
-  :root { color-scheme: dark; }
-  html, body {
-    margin: 0;
-    background: #0e1116;
-    color: #e6edf3;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .wrap { max-width: 1000px; margin: 24px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
-  .panel { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 16px; }
-  h1 { font-size: 16px; margin: 0; font-weight: 600; }
-  h2 { font-size: 14px; margin: 0 0 12px; font-weight: 600; }
-  .header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .conn-info { color: #8b949e; font-size: 12px; }
-  .muted { color: #8b949e; font-size: 12px; }
-  a { color: #58a6ff; }
-  .hist { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #30363d; }
-  th { color: #8b949e; font-weight: 600; white-space: nowrap; }
-  td.mono { word-break: break-all; }
-  tr:last-child td { border-bottom: none; }
-  .badge {
-    display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px;
-    background: #21262d; color: #e6edf3; border: 1px solid #30363d; white-space: nowrap;
-  }
-  .badge.PAYEE { background: #1a3326; color: #3fb950; border-color: #238636; }
-  .badge.PAYER { background: #3a1d1d; color: #f85149; border-color: #b62324; }
-  .badge.SPLIT { background: #1c2a3a; color: #58a6ff; border-color: #1f6feb; }
-  .badge.NONE  { background: #21262d; color: #8b949e; border-color: #30363d; }
-  .badge.yes { background: #1a3326; color: #3fb950; border-color: #238636; }
-  .badge.no  { background: #21262d; color: #8b949e; border-color: #30363d; }
-  .empty { color: #8b949e; padding: 16px 0; }
-</style>
-</head>
-<body>
-<div class="wrap">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verdikt — case law</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        background: #0e1116;
+        color: #e6edf3;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", monospace;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 24px auto;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .panel {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0;
+        font-weight: 600;
+      }
+      h2 {
+        font-size: 14px;
+        margin: 0 0 12px;
+        font-weight: 600;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .conn-info {
+        color: #8b949e;
+        font-size: 12px;
+      }
+      .muted {
+        color: #8b949e;
+        font-size: 12px;
+      }
+      a {
+        color: #58a6ff;
+      }
+      .hist {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid #30363d;
+      }
+      th {
+        color: #8b949e;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      td.mono {
+        word-break: break-all;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+        background: #21262d;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+        white-space: nowrap;
+      }
+      .badge.PAYEE {
+        background: #1a3326;
+        color: #3fb950;
+        border-color: #238636;
+      }
+      .badge.PAYER {
+        background: #3a1d1d;
+        color: #f85149;
+        border-color: #b62324;
+      }
+      .badge.SPLIT {
+        background: #1c2a3a;
+        color: #58a6ff;
+        border-color: #1f6feb;
+      }
+      .badge.NONE {
+        background: #21262d;
+        color: #8b949e;
+        border-color: #30363d;
+      }
+      .badge.yes {
+        background: #1a3326;
+        color: #3fb950;
+        border-color: #238636;
+      }
+      .badge.no {
+        background: #21262d;
+        color: #8b949e;
+        border-color: #30363d;
+      }
+      .empty {
+        color: #8b949e;
+        padding: 16px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="panel header">
+        <h1>Verdikt — case law</h1>
+        <span id="meta" class="conn-info">loading caselaw.json…</span>
+      </div>
 
-  <div class="panel header">
-    <h1>Verdikt — case law</h1>
-    <span id="meta" class="conn-info">loading caselaw.json…</span>
-  </div>
+      <div class="panel">
+        <h2>Overview</h2>
+        <div id="summary" class="muted">—</div>
+        <div id="hist" class="hist"></div>
+      </div>
 
-  <div class="panel">
-    <h2>Overview</h2>
-    <div id="summary" class="muted">—</div>
-    <div id="hist" class="hist"></div>
-  </div>
-
-  <div class="panel">
-    <h2>Rulings</h2>
-    <div id="tableWrap">
-      <div class="empty">loading…</div>
+      <div class="panel">
+        <h2>Rulings</h2>
+        <div id="tableWrap">
+          <div class="empty">loading…</div>
+        </div>
+      </div>
     </div>
-  </div>
 
-</div>
+    <script type="module">
+      const VERDICTS = ["PAYEE", "PAYER", "SPLIT", "NONE"];
 
-<script type="module">
-const VERDICTS = ["PAYEE", "PAYER", "SPLIT", "NONE"];
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
 
-const $ = (id) => document.getElementById(id);
-const esc = (s) =>
-  String(s ?? "").replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      function badge(label, cls) {
+        return `<span class="badge ${esc(cls ?? label)}">${esc(label)}</span>`;
+      }
 
-function badge(label, cls) {
-  return `<span class="badge ${esc(cls ?? label)}">${esc(label)}</span>`;
-}
+      function fmtTime(unix) {
+        if (!unix) return "—";
+        return new Date(Number(unix) * 1000).toLocaleString();
+      }
 
-function fmtTime(unix) {
-  if (!unix) return "—";
-  return new Date(Number(unix) * 1000).toLocaleString();
-}
+      function receiptCell(receiptId) {
+        if (!receiptId || receiptId === "0") return "—";
+        const url = `https://agents.somnia.network/receipts/${encodeURIComponent(receiptId)}`;
+        return `${esc(receiptId)} · <a href="${url}" target="_blank" rel="noopener">View receipt</a>`;
+      }
 
-function receiptCell(receiptId) {
-  if (!receiptId || receiptId === "0") return "—";
-  const url = `https://agents.somnia.network/receipts/${encodeURIComponent(receiptId)}`;
-  return `${esc(receiptId)} · <a href="${url}" target="_blank" rel="noopener">View receipt</a>`;
-}
+      function render(rulings) {
+        $("meta").textContent =
+          `${rulings.length} ruling${rulings.length === 1 ? "" : "s"}`;
 
-function render(rulings) {
-  $("meta").textContent = `${rulings.length} ruling${rulings.length === 1 ? "" : "s"}`;
+        const finalized = rulings.filter((r) => r.finalized).length;
+        const appealed = rulings.filter((r) => r.appealed).length;
+        $("summary").textContent =
+          `total cases: ${rulings.length} · finalized: ${finalized} · appealed: ${appealed}`;
 
-  const finalized = rulings.filter((r) => r.finalized).length;
-  const appealed = rulings.filter((r) => r.appealed).length;
-  $("summary").textContent =
-    `total cases: ${rulings.length} · finalized: ${finalized} · appealed: ${appealed}`;
+        const hist = {};
+        for (const r of rulings) {
+          const v = r.verdict ?? "NONE";
+          hist[v] = (hist[v] ?? 0) + 1;
+        }
+        const order = [
+          ...VERDICTS,
+          ...Object.keys(hist).filter((k) => !VERDICTS.includes(k)),
+        ];
+        $("hist").innerHTML = order
+          .filter((v) => hist[v])
+          .map((v) => `${badge(v)} <span class="muted">${hist[v]}</span>`)
+          .join("&nbsp;&nbsp;");
 
-  const hist = {};
-  for (const r of rulings) {
-    const v = r.verdict ?? "NONE";
-    hist[v] = (hist[v] ?? 0) + 1;
-  }
-  const order = [...VERDICTS, ...Object.keys(hist).filter((k) => !VERDICTS.includes(k))];
-  $("hist").innerHTML = order
-    .filter((v) => hist[v])
-    .map((v) => `${badge(v)} <span class="muted">${hist[v]}</span>`)
-    .join("&nbsp;&nbsp;");
+        if (rulings.length === 0) {
+          $("tableWrap").innerHTML =
+            `<div class="empty">no rulings in snapshot.</div>`;
+          return;
+        }
 
-  if (rulings.length === 0) {
-    $("tableWrap").innerHTML = `<div class="empty">no rulings in snapshot.</div>`;
-    return;
-  }
-
-  const rows = rulings.map((r) => `
+        const rows = rulings
+          .map(
+            (r) => `
     <tr>
       <td>${esc(r.caseId)}</td>
       <td>${badge(r.verdict ?? "NONE")}</td>
@@ -123,9 +232,11 @@ function render(rulings) {
       <td>${esc(r.escrowRef ?? "—")}</td>
       <td>${fmtTime(r.rulingTime)}</td>
       <td class="mono">${receiptCell(r.receiptId)}</td>
-    </tr>`).join("");
+    </tr>`,
+          )
+          .join("");
 
-  $("tableWrap").innerHTML = `
+        $("tableWrap").innerHTML = `
     <table>
       <thead>
         <tr>
@@ -136,26 +247,27 @@ function render(rulings) {
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
-}
+      }
 
-async function load() {
-  try {
-    const res = await fetch("caselaw.json", { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("caselaw.json is not an array");
-    render(data);
-  } catch (e) {
-    $("meta").textContent = "failed to load caselaw.json";
-    $("summary").textContent = "";
-    $("tableWrap").innerHTML =
-      `<div class="empty">Could not load <code>caselaw.json</code> from this directory ` +
-      `(${esc(e.message)}). Run the indexer (<code>npm run index</code>) to generate it, ` +
-      `then serve this folder over HTTP.</div>`;
-  }
-}
+      async function load() {
+        try {
+          const res = await fetch("caselaw.json", { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (!Array.isArray(data))
+            throw new Error("caselaw.json is not an array");
+          render(data);
+        } catch (e) {
+          $("meta").textContent = "failed to load caselaw.json";
+          $("summary").textContent = "";
+          $("tableWrap").innerHTML =
+            `<div class="empty">Could not load <code>caselaw.json</code> from this directory ` +
+            `(${esc(e.message)}). Run the indexer (<code>npm run index</code>) to generate it, ` +
+            `then serve this folder over HTTP.</div>`;
+        }
+      }
 
-load();
-</script>
-</body>
+      load();
+    </script>
+  </body>
 </html>

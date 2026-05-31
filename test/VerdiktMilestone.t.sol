@@ -133,6 +133,11 @@ contract VerdiktMilestoneTest is Test {
         uint256 before = client.balance;
         vm.prank(client);
         milestone.dispute{value: fee + 1 ether}(id, "ev");
+        assertEq(client.balance, before - fee - 1 ether);
+        assertEq(milestone.pending(client), 1 ether);
+
+        vm.prank(client);
+        milestone.withdraw();
         assertEq(client.balance, before - fee);
     }
 }

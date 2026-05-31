@@ -6,6 +6,26 @@ import {VerdiktCourt} from "../src/VerdiktCourt.sol";
 import {VerdiktCourtRegistry} from "../src/VerdiktCourtRegistry.sol";
 import {MockAgentRequester} from "./mocks/MockAgentRequester.sol";
 
+contract RevertingQuoteCourt {
+    function quoteOpen() external pure returns (uint256) {
+        revert("quote unavailable");
+    }
+}
+
+contract FlakyQuoteCourt {
+    bool public shouldRevert;
+    uint256 public quote = 1 wei;
+
+    function setShouldRevert(bool v) external {
+        shouldRevert = v;
+    }
+
+    function quoteOpen() external view returns (uint256) {
+        require(!shouldRevert, "quote unavailable");
+        return quote;
+    }
+}
+
 contract VerdiktCourtRegistryTest is Test {
     MockAgentRequester platform;
     VerdiktCourtRegistry registry;
@@ -63,6 +83,12 @@ contract VerdiktCourtRegistryTest is Test {
         registry.registerCourt(address(0), "x", "y", 1);
     }
 
+    function test_register_revertsOnBadCourt() public {
+        RevertingQuoteCourt bad = new RevertingQuoteCourt();
+        vm.expectRevert(bytes("bad court"));
+        registry.registerCourt(address(bad), "bad", "bad", 1);
+    }
+
     function test_register_revertsOnDuplicate() public {
         vm.prank(opCheap);
         registry.registerCourt(address(cheap), "Cheap Court", "gpt-mini", 3600);
@@ -113,6 +139,19 @@ contract VerdiktCourtRegistryTest is Test {
         (address court, uint256 fee) = registry.cheapest();
         assertEq(court, address(pricey));
         assertEq(fee, pricey.quoteOpen());
+    }
+
+    function test_cheapest_skipsCourtWhoseQuoteReverts() public {
+        FlakyQuoteCourt flaky = new FlakyQuoteCourt();
+        vm.prank(opCheap);
+        registry.registerCourt(address(cheap), "Cheap Court", "gpt-mini", 3600);
+        registry.registerCourt(address(flaky), "Flaky Court", "broken", 1);
+
+        flaky.setShouldRevert(true);
+
+        (address court, uint256 fee) = registry.cheapest();
+        assertEq(court, address(cheap));
+        assertEq(fee, cheap.quoteOpen());
     }
 
     function test_setActive_removesFromCheapest() public {

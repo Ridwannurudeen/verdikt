@@ -7,6 +7,12 @@ import {VerdiktEscrow} from "../src/VerdiktEscrow.sol";
 import {IVerdiktCourt, Verdict, CaseStatus} from "../src/interfaces/IVerdiktCourt.sol";
 import {MockAgentRequester} from "./mocks/MockAgentRequester.sol";
 
+contract NonReceivingEscrowPayee {
+    function tryWithdraw(VerdiktEscrow e) external returns (uint256) {
+        return e.withdraw();
+    }
+}
+
 contract VerdiktEscrowTest is Test {
     MockAgentRequester platform;
     VerdiktCourt court;
@@ -45,14 +51,22 @@ contract VerdiktEscrowTest is Test {
         escrow.dispute{value: fee}(dealId, ev);
     }
 
+    function _assertWithdraw(address who, uint256 expected) internal {
+        assertEq(escrow.pending(who), expected, "pending mismatch");
+        uint256 before = who.balance;
+        vm.prank(who);
+        escrow.withdraw();
+        assertEq(who.balance, before + expected, "withdraw mismatch");
+        assertEq(escrow.pending(who), 0, "pending not cleared");
+    }
+
     function test_release_byPayer() public {
         uint256 dealId = _newDeal();
         vm.prank(payee);
         escrow.markDelivered(dealId);
-        uint256 before = payee.balance;
         vm.prank(payer);
         escrow.release(dealId);
-        assertEq(payee.balance, before + 1 ether);
+        _assertWithdraw(payee, 1 ether);
     }
 
     function test_autoRelease_afterDeadline() public {
@@ -60,9 +74,8 @@ contract VerdiktEscrowTest is Test {
         vm.prank(payee);
         escrow.markDelivered(dealId);
         vm.warp(block.timestamp + 2 days);
-        uint256 before = payee.balance;
         escrow.release(dealId); // anyone can poke after deadline
-        assertEq(payee.balance, before + 1 ether);
+        _assertWithdraw(payee, 1 ether);
     }
 
     function test_dispute_payeeWins() public {
@@ -72,9 +85,8 @@ contract VerdiktEscrowTest is Test {
 
         uint256 caseId = _caseId(dealId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 before = payee.balance;
         court.finalize(caseId);
-        assertEq(payee.balance, before + 1 ether);
+        _assertWithdraw(payee, 1 ether);
         (,,, VerdiktEscrow.DealStatus st,,) = escrow.deals(dealId);
         assertEq(uint8(st), uint8(VerdiktEscrow.DealStatus.Settled));
     }
@@ -86,9 +98,8 @@ contract VerdiktEscrowTest is Test {
 
         uint256 caseId = _caseId(dealId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 before = payer.balance;
         court.finalize(caseId);
-        assertEq(payer.balance, before + 1 ether);
+        _assertWithdraw(payer, 1 ether);
     }
 
     function test_dispute_split() public {
@@ -98,11 +109,9 @@ contract VerdiktEscrowTest is Test {
 
         uint256 caseId = _caseId(dealId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 pBefore = payer.balance;
-        uint256 eBefore = payee.balance;
         court.finalize(caseId);
-        assertEq(payer.balance, pBefore + 0.5 ether);
-        assertEq(payee.balance, eBefore + 0.5 ether);
+        assertEq(escrow.pending(payer), 0.5 ether);
+        assertEq(escrow.pending(payee), 0.5 ether);
     }
 
     function test_appeal_upheld_slashesStake() public {
@@ -117,11 +126,9 @@ contract VerdiktEscrowTest is Test {
         escrow.appeal{value: stake + agentDep}(dealId, "new evidence");
         platform.fireSuccess(_lastReq(), "PAYEE"); // upheld on appeal
 
-        uint256 payeeBefore = payee.balance;
-        uint256 treasBefore = treasury.balance;
         court.finalize(caseId); // round 1 == MAX_ROUND, finalize immediately
-        assertEq(payee.balance, payeeBefore + 1 ether + 0.095 ether);
-        assertEq(treasury.balance, treasBefore + 0.005 ether);
+        assertEq(escrow.pending(payee), 1 ether + 0.095 ether);
+        assertEq(escrow.pending(treasury), 0.005 ether);
     }
 
     function test_appeal_overturned_returnsStake() public {
@@ -136,9 +143,30 @@ contract VerdiktEscrowTest is Test {
         escrow.appeal{value: stake + agentDep}(dealId, "compelling new evidence");
         platform.fireSuccess(_lastReq(), "PAYER"); // overturned
 
-        uint256 before = payer.balance;
         court.finalize(caseId);
-        assertEq(payer.balance, before + 1.1 ether);
+        assertEq(escrow.pending(payer), 1.1 ether);
+    }
+
+    function test_settles_toNonReceivingPayee_doesNotBrick() public {
+        NonReceivingEscrowPayee badPayee = new NonReceivingEscrowPayee();
+        vm.prank(payer);
+        uint256 dealId = escrow.createDeal{value: 1 ether}(address(badPayee), uint64(block.timestamp + 1 days));
+
+        uint256 fee = court.quoteOpen();
+        vm.prank(payer);
+        escrow.dispute{value: fee}(dealId, "partial delivery");
+        platform.fireSuccess(_lastReq(), "SPLIT");
+
+        uint256 caseId = _caseId(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+
+        assertEq(escrow.pending(payer), 0.5 ether);
+        assertEq(escrow.pending(address(badPayee)), 0.5 ether);
+        _assertWithdraw(payer, 0.5 ether);
+
+        vm.expectRevert(bytes("withdraw failed"));
+        badPayee.tryWithdraw(escrow);
     }
 
     function test_dispute_onlyParty() public {

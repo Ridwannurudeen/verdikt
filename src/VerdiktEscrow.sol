@@ -7,6 +7,7 @@ import {IVerdiktCourt, IVerdiktConsumer, Verdict, CaseStatus, CaseView} from "./
 /// @notice A two-party escrow that resolves disputes through VerdiktCourt's AI panel.
 /// The novel layer: the losing party can appeal by posting a stake; if the larger
 /// appeal panel upholds the original verdict, the stake is slashed to the winner.
+/// Settlement uses pull payments so a reverting recipient cannot brick finalization.
 contract VerdiktEscrow is IVerdiktConsumer {
     IVerdiktCourt public immutable court;
     address public owner;
@@ -46,6 +47,8 @@ contract VerdiktEscrow is IVerdiktConsumer {
     mapping(uint256 => AppealInfo) public appeals;
     /// @notice court caseId => dealId, so onVerdict can route by escrowRef.
     mapping(uint256 => uint256) public caseToDeal;
+    /// @notice pull-payment ledger: settled value waiting for its owner to withdraw.
+    mapping(address => uint256) public pending;
 
     event DealCreated(uint256 indexed dealId, address indexed payer, address indexed payee, uint256 amount);
     event Delivered(uint256 indexed dealId);
@@ -55,6 +58,8 @@ contract VerdiktEscrow is IVerdiktConsumer {
     event DealSettled(uint256 indexed dealId, Verdict verdict, uint256 toPayer, uint256 toPayee);
     event StakeSlashed(uint256 indexed dealId, address loser, address winner, uint256 toWinner, uint256 toTreasury);
     event StakeReturned(uint256 indexed dealId, address appellant, uint256 amount);
+    event Credited(address indexed to, uint256 amount);
+    event Withdrawn(address indexed to, uint256 amount);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
@@ -102,7 +107,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
         );
         uint256 amount = d.amount;
         d.status = DealStatus.Settled;
-        _pay(d.payee, amount);
+        _credit(d.payee, amount);
         emit Released(dealId, d.payee, amount);
     }
 
@@ -139,6 +144,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
         }
 
         uint256 stake = (d.amount * appealStakeBps) / 10000;
+        require(stake > 0, "stake too low");
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= stake + agentDep, "value too low");
 
@@ -160,8 +166,8 @@ contract VerdiktEscrow is IVerdiktConsumer {
         d.status = DealStatus.Settled;
 
         (uint256 toPayer, uint256 toPayee) = _split(verdict, amount);
-        if (toPayer > 0) _pay(d.payer, toPayer);
-        if (toPayee > 0) _pay(d.payee, toPayee);
+        _credit(d.payer, toPayer);
+        _credit(d.payee, toPayee);
         emit DealSettled(escrowRef, verdict, toPayer, toPayee);
 
         AppealInfo storage a = appeals[escrowRef];
@@ -172,15 +178,26 @@ contract VerdiktEscrow is IVerdiktConsumer {
                 address winner = a.appellant == d.payer ? d.payee : d.payer;
                 uint256 cut = (a.stake * keeperCutBps) / 10000;
                 uint256 toWinner = a.stake - cut;
-                if (cut > 0) _pay(treasury, cut);
-                if (toWinner > 0) _pay(winner, toWinner);
+                _credit(treasury, cut);
+                _credit(winner, toWinner);
                 emit StakeSlashed(escrowRef, a.appellant, winner, toWinner, cut);
             } else {
                 // overturned: return stake to the appellant
-                _pay(a.appellant, a.stake);
+                _credit(a.appellant, a.stake);
                 emit StakeReturned(escrowRef, a.appellant, a.stake);
             }
         }
+    }
+
+    // --- pull payments --------------------------------------------------------
+
+    function withdraw() external returns (uint256 amount) {
+        amount = pending[msg.sender];
+        require(amount > 0, "nothing to withdraw");
+        pending[msg.sender] = 0;
+        (bool ok,) = msg.sender.call{value: amount}("");
+        require(ok, "withdraw failed");
+        emit Withdrawn(msg.sender, amount);
     }
 
     // --- views ----------------------------------------------------------------
@@ -201,16 +218,15 @@ contract VerdiktEscrow is IVerdiktConsumer {
 
     // --- internals ------------------------------------------------------------
 
-    function _pay(address to, uint256 amount) internal {
-        (bool ok,) = to.call{value: amount}("");
-        require(ok, "transfer failed");
+    function _credit(address to, uint256 amount) internal {
+        if (amount > 0) {
+            pending[to] += amount;
+            emit Credited(to, amount);
+        }
     }
 
     function _refundExcess(uint256 sent, uint256 used) internal {
-        if (sent > used) {
-            (bool ok,) = msg.sender.call{value: sent - used}("");
-            require(ok, "refund failed");
-        }
+        if (sent > used) _credit(msg.sender, sent - used);
     }
 
     // --- admin ----------------------------------------------------------------
@@ -226,6 +242,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
     }
 
     function setTreasury(address t) external onlyOwner {
+        require(t != address(0), "zero treasury");
         treasury = t;
     }
 

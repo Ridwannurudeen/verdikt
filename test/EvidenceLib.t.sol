@@ -117,8 +117,12 @@ contract EvidenceLibTest is Test {
 
         (,,,,, uint256 caseId) = escrow.deals(dealId);
         vm.warp(block.timestamp + court.appealWindow() + 1);
-        uint256 before = payer.balance;
         court.finalize(caseId);
+        assertEq(escrow.pending(payer), 1 ether);
+
+        uint256 before = payer.balance;
+        vm.prank(payer);
+        escrow.withdraw();
         assertEq(payer.balance, before + 1 ether);
 
         (,,, VerdiktEscrow.DealStatus st,,) = escrow.deals(dealId);

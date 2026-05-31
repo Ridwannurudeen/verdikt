@@ -8,6 +8,38 @@ import {IVerdiktCourt, Verdict, CaseStatus} from "../src/interfaces/IVerdiktCour
 import {MockAgentRequester} from "./mocks/MockAgentRequester.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 
+contract NoReturnERC20 {
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external {
+        allowance[msg.sender][spender] = amount;
+    }
+
+    function transfer(address to, uint256 amount) external {
+        _transfer(msg.sender, to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external {
+        uint256 allowed = allowance[from][msg.sender];
+        require(allowed >= amount, "insufficient allowance");
+        if (allowed != type(uint256).max) {
+            allowance[from][msg.sender] = allowed - amount;
+        }
+        _transfer(from, to, amount);
+    }
+
+    function _transfer(address from, address to, uint256 amount) internal {
+        require(balanceOf[from] >= amount, "insufficient balance");
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+    }
+}
+
 contract VerdiktTokenEscrowTest is Test {
     MockAgentRequester platform;
     VerdiktCourt court;
@@ -63,6 +95,23 @@ contract VerdiktTokenEscrowTest is Test {
         assertEq(uint8(st), uint8(VerdiktTokenEscrow.DealStatus.Funded));
     }
 
+    function test_createDeal_acceptsNoReturnToken() public {
+        NoReturnERC20 noReturn = new NoReturnERC20();
+        VerdiktTokenEscrow e = new VerdiktTokenEscrow(address(court), treasury, address(noReturn));
+        noReturn.mint(payer, AMOUNT);
+        vm.prank(payer);
+        noReturn.approve(address(e), type(uint256).max);
+
+        vm.prank(payer);
+        uint256 dealId = e.createDeal(payee, AMOUNT, uint64(block.timestamp + 1 days));
+
+        assertEq(noReturn.balanceOf(payer), 0);
+        assertEq(noReturn.balanceOf(address(e)), AMOUNT);
+        (,, uint256 amount, VerdiktTokenEscrow.DealStatus st,,) = e.deals(dealId);
+        assertEq(amount, AMOUNT);
+        assertEq(uint8(st), uint8(VerdiktTokenEscrow.DealStatus.Funded));
+    }
+
     function test_dispute_payeeWins_creditsAndWithdraws() public {
         uint256 dealId = _newDeal();
         _dispute(dealId, payer, "goods delivered as agreed");
@@ -83,6 +132,21 @@ contract VerdiktTokenEscrowTest is Test {
 
         (,,, VerdiktTokenEscrow.DealStatus st,,) = escrow.deals(dealId);
         assertEq(uint8(st), uint8(VerdiktTokenEscrow.DealStatus.Settled));
+    }
+
+    function test_dispute_overpaymentCreditsNativeRefund() public {
+        uint256 dealId = _newDeal();
+        uint256 fee = court.quoteOpen();
+        uint256 before = payer.balance;
+        vm.prank(payer);
+        escrow.dispute{value: fee + 1 ether}(dealId, "ev");
+
+        assertEq(payer.balance, before - fee - 1 ether);
+        assertEq(escrow.nativePending(payer), 1 ether);
+
+        vm.prank(payer);
+        escrow.withdrawNative();
+        assertEq(payer.balance, before - fee);
     }
 
     function test_dispute_payerWins_creditsAndWithdraws() public {

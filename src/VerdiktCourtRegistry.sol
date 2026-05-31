@@ -49,6 +49,10 @@ contract VerdiktCourtRegistry {
     {
         require(court != address(0), "zero court");
         require(listings[court].court == address(0), "already registered");
+        try IVerdiktCourt(court).quoteOpen() returns (uint256) {}
+        catch {
+            revert("bad court");
+        }
 
         id = courts.length;
         listings[court] = CourtListing({
@@ -128,11 +132,14 @@ contract VerdiktCourtRegistry {
             if (!listings[c].active) {
                 continue;
             }
-            uint256 q = IVerdiktCourt(c).quoteOpen();
-            if (!found || q < fee) {
-                found = true;
-                court = c;
-                fee = q;
+            try IVerdiktCourt(c).quoteOpen() returns (uint256 q) {
+                if (!found || q < fee) {
+                    found = true;
+                    court = c;
+                    fee = q;
+                }
+            } catch {
+                continue;
             }
         }
         require(found, "no active courts");

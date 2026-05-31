@@ -143,6 +143,12 @@ contract VerdiktReputationTest is Test {
         rep.record(caseId, payee, VerdiktReputation.Side.Payee);
     }
 
+    function test_record_revertsForZeroParty() public {
+        uint256 caseId = _driveToFinal("PAYEE");
+        vm.expectRevert(bytes("zero party"));
+        rep.record(caseId, address(0), VerdiktReputation.Side.Payee);
+    }
+
     function test_nonFinalCase_reverts() public {
         vm.prank(payer);
         uint256 dealId = escrow.createDeal{value: 1 ether}(payee, uint64(block.timestamp + 1 days));

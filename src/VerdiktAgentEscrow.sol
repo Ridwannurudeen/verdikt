@@ -146,6 +146,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         }
 
         uint256 stake = (d.amount * appealStakeBps) / 10000;
+        require(stake > 0, "stake too low");
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= stake + agentDep, "value too low");
 
@@ -247,6 +248,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     }
 
     function setTreasury(address t) external onlyOwner {
+        require(t != address(0), "zero treasury");
         treasury = t;
     }
 

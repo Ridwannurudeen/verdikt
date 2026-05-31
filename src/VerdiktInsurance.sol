@@ -9,6 +9,7 @@ import {IVerdiktCourt, IVerdiktConsumer, Verdict, CaseStatus, CaseView} from "./
 /// paying a premium (added to the pool) and file claims with evidence. The losing side can
 /// appeal by posting a stake; on uphold the stake is slashed to the counterparty minus a
 /// treasury cut, mirroring VerdiktEscrow's economics.
+/// Claim settlement uses pull payments so a reverting insured/funder cannot brick finalization.
 contract VerdiktInsurance is IVerdiktConsumer {
     IVerdiktCourt public immutable court;
     address public owner;
@@ -20,6 +21,8 @@ contract VerdiktInsurance is IVerdiktConsumer {
     uint256 public appealStakeBps = 1000;
     /// @dev cut of a slashed stake routed to the treasury (bps of the stake). 500 = 5%.
     uint256 public keeperCutBps = 500;
+    /// @dev minimum share of the pool required to appeal as the pool side. 100 = 1%.
+    uint256 public poolAppealMinSharesBps = 100;
 
     enum PolicyStatus {
         None,
@@ -61,6 +64,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
     mapping(address => uint256) public shares;
     uint256 public totalShares;
     uint256 public totalPool;
+    uint256 public lockedCoverage;
 
     /// @dev simple lock to prevent rug-on-claim: withdrawals are blocked while any claim is Filed.
     uint256 public openClaimCount;
@@ -72,6 +76,8 @@ contract VerdiktInsurance is IVerdiktConsumer {
     mapping(uint256 => AppealInfo) public appeals;
     /// @notice court caseId => claimId, so onVerdict can route by escrowRef.
     mapping(uint256 => uint256) public caseToClaim;
+    /// @notice pull-payment balances credited at settlement.
+    mapping(address => uint256) public pending;
 
     event PoolFunded(address indexed funder, uint256 amount, uint256 sharesMinted);
     event PolicyCreated(
@@ -83,6 +89,9 @@ contract VerdiktInsurance is IVerdiktConsumer {
     event StakeSlashed(uint256 indexed claimId, address loser, address winner, uint256 toWinner, uint256 toTreasury);
     event StakeReturned(uint256 indexed claimId, address appellant, uint256 amount);
     event PoolWithdrawn(address indexed funder, uint256 sharesBurned, uint256 amount);
+    event PolicyExpired(uint256 indexed policyId);
+    event Credited(address indexed to, uint256 amount);
+    event Withdrawn(address indexed to, uint256 amount);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
@@ -99,10 +108,19 @@ contract VerdiktInsurance is IVerdiktConsumer {
 
     function fundPool() external payable {
         require(msg.value > 0, "no funds");
-        shares[msg.sender] += msg.value;
-        totalShares += msg.value;
+        uint256 sharesMinted;
+        if (totalShares == 0) {
+            sharesMinted = msg.value;
+        } else {
+            require(totalPool > 0, "pool depleted");
+            sharesMinted = (msg.value * totalShares) / totalPool;
+            require(sharesMinted > 0, "deposit too small");
+        }
+
+        shares[msg.sender] += sharesMinted;
+        totalShares += sharesMinted;
         totalPool += msg.value;
-        emit PoolFunded(msg.sender, msg.value, msg.value);
+        emit PoolFunded(msg.sender, msg.value, sharesMinted);
     }
 
     /// @notice Burn `shareCount` shares and receive a pro-rata slice of the pool.
@@ -111,6 +129,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(openClaimCount == 0, "claims open");
         require(shareCount > 0 && shareCount <= shares[msg.sender], "bad shares");
         uint256 payout = (shareCount * totalPool) / totalShares;
+        require(payout <= availablePool(), "coverage locked");
         shares[msg.sender] -= shareCount;
         totalShares -= shareCount;
         totalPool -= payout;
@@ -125,14 +144,28 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(expiry > block.timestamp, "bad expiry");
         uint256 premium = (coverage * premiumBps) / 10000;
         require(msg.value >= premium, "premium too low");
+        uint256 poolAfterPremium = totalPool + premium;
+        require(poolAfterPremium >= lockedCoverage + coverage, "insufficient capacity");
 
         policyId = nextPolicyId++;
         policies[policyId] = Policy({
             insured: msg.sender, coverage: coverage, expiry: expiry, status: PolicyStatus.Active, activeClaimId: 0
         });
-        totalPool += premium;
+        totalPool = poolAfterPremium;
+        lockedCoverage += coverage;
         _refundExcess(msg.value, premium);
         emit PolicyCreated(policyId, msg.sender, coverage, premium, expiry);
+    }
+
+    function expirePolicy(uint256 policyId) external {
+        Policy storage p = policies[policyId];
+        require(p.status == PolicyStatus.Active, "policy inactive");
+        require(p.activeClaimId == 0, "claim open");
+        require(block.timestamp > p.expiry, "not expired");
+
+        p.status = PolicyStatus.Expired;
+        lockedCoverage -= p.coverage;
+        emit PolicyExpired(policyId);
     }
 
     // --- claim + appeal -------------------------------------------------------
@@ -171,7 +204,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
         // SPLIT splits the loss across both, so either side may appeal.
         bool fromPool;
         if (cv.verdict == Verdict.PAYEE) {
-            require(shares[msg.sender] > 0, "only pool funder");
+            require(_hasPoolAppealPower(msg.sender), "pool stake too small");
             fromPool = true;
         } else if (cv.verdict == Verdict.PAYER) {
             require(msg.sender == p.insured, "only insured");
@@ -181,12 +214,13 @@ contract VerdiktInsurance is IVerdiktConsumer {
             if (msg.sender == p.insured) {
                 fromPool = false;
             } else {
-                require(shares[msg.sender] > 0, "only party");
+                require(_hasPoolAppealPower(msg.sender), "pool stake too small");
                 fromPool = true;
             }
         }
 
         uint256 stake = (p.coverage * appealStakeBps) / 10000;
+        require(stake > 0, "stake too low");
         uint256 agentDep = court.quoteAppeal(c.caseId);
         require(msg.value >= stake + agentDep, "value too low");
 
@@ -214,10 +248,12 @@ contract VerdiktInsurance is IVerdiktConsumer {
         // PAYER leaves the policy usable if it hasn't lapsed; any payout exhausts coverage.
         if (payout > 0) {
             p.status = PolicyStatus.Exhausted;
+            lockedCoverage -= p.coverage;
             totalPool -= payout;
-            _pay(p.insured, payout);
+            _credit(p.insured, payout);
         } else if (block.timestamp > p.expiry) {
             p.status = PolicyStatus.Expired;
+            lockedCoverage -= p.coverage;
         }
         openClaimCount -= 1;
         emit ClaimSettled(escrowRef, verdict, payout);
@@ -229,10 +265,10 @@ contract VerdiktInsurance is IVerdiktConsumer {
                 // appeal failed: slash stake to the counterparty side (minus treasury cut).
                 uint256 cut = (a.stake * keeperCutBps) / 10000;
                 uint256 toWinner = a.stake - cut;
-                if (cut > 0) _pay(treasury, cut);
+                _credit(treasury, cut);
                 if (a.fromPool) {
                     // pool appellant lost -> insured wins the stake
-                    if (toWinner > 0) _pay(p.insured, toWinner);
+                    _credit(p.insured, toWinner);
                     emit StakeSlashed(escrowRef, a.appellant, p.insured, toWinner, cut);
                 } else {
                     // insured appellant lost -> pool wins the stake
@@ -240,10 +276,21 @@ contract VerdiktInsurance is IVerdiktConsumer {
                     emit StakeSlashed(escrowRef, a.appellant, address(this), toWinner, cut);
                 }
             } else {
-                _pay(a.appellant, a.stake);
+                _credit(a.appellant, a.stake);
                 emit StakeReturned(escrowRef, a.appellant, a.stake);
             }
         }
+    }
+
+    // --- pull payments --------------------------------------------------------
+
+    function withdraw() external returns (uint256 amount) {
+        amount = pending[msg.sender];
+        require(amount > 0, "nothing to withdraw");
+        pending[msg.sender] = 0;
+        (bool ok,) = msg.sender.call{value: amount}("");
+        require(ok, "withdraw failed");
+        emit Withdrawn(msg.sender, amount);
     }
 
     // --- internals ------------------------------------------------------------
@@ -259,11 +306,24 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(ok, "transfer failed");
     }
 
-    function _refundExcess(uint256 sent, uint256 used) internal {
-        if (sent > used) {
-            (bool ok,) = msg.sender.call{value: sent - used}("");
-            require(ok, "refund failed");
+    function _credit(address to, uint256 amount) internal {
+        if (amount > 0) {
+            pending[to] += amount;
+            emit Credited(to, amount);
         }
+    }
+
+    function _refundExcess(uint256 sent, uint256 used) internal {
+        if (sent > used) _credit(msg.sender, sent - used);
+    }
+
+    function _hasPoolAppealPower(address funder) internal view returns (bool) {
+        uint256 shareCount = shares[funder];
+        return shareCount > 0 && shareCount * 10000 >= totalShares * poolAppealMinSharesBps;
+    }
+
+    function availablePool() public view returns (uint256) {
+        return totalPool > lockedCoverage ? totalPool - lockedCoverage : 0;
     }
 
     // --- admin ----------------------------------------------------------------
@@ -283,7 +343,13 @@ contract VerdiktInsurance is IVerdiktConsumer {
         keeperCutBps = bps;
     }
 
+    function setPoolAppealMinSharesBps(uint256 bps) external onlyOwner {
+        require(bps <= 10000, "bps");
+        poolAppealMinSharesBps = bps;
+    }
+
     function setTreasury(address t) external onlyOwner {
+        require(t != address(0), "zero treasury");
         treasury = t;
     }
 
