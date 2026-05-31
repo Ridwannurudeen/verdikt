@@ -2,6 +2,9 @@
 cache/
 out/
 
+# Node deps (script/ determinism driver, keeper/)
+node_modules/
+
 # Commonly ignored directories
 .logs/
 .ignore/
