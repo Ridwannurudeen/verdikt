@@ -62,15 +62,19 @@ screen. This is the hackathon's killer proof point.
 
 Make the win legible to judges in under 3 minutes.
 
-- [ ] **Wire the UI to live addresses.** `ui/index.html` reads from `deployments/shannon.json`; add a
-  visible "View receipt" link per case (`agents.somnia.network/receipts/<id>`) so the AI reasoning is
-  one click away — that's the differentiator, surface it.
-- [ ] **Run the keeper live.** Point `keeper/keeper.mjs` at the deployed Court/Escrow; demonstrate
-  permissionless `finalize`/`release` firing on `VerdictReached`/`Delivered` with no human in the loop.
-- [ ] **Record a 2–3 min demo video** of the full loop (fund → dispute → panel verdict → appeal →
-  slash → keeper auto-finalize), with the determinism histogram and a receipt on screen.
-- [ ] **Update README + DECK** with the live tx hashes, addresses, and the determinism result.
-  Replace "prepared but not run live yet" (DECK slide "Honest scope") with the actual outcome.
+- [x] **Wire the UI to live addresses.** `ui/index.html` now defaults Court/Escrow to the deployed
+  addresses (DEPLOYED const); the per-case "View receipt" link (`agents.somnia.network/receipts/<id>`)
+  was already present.
+- [~] **Run the keeper live.** `keeper/keeper.mjs` wired via `.env` (COURT/ESCROW/START_BLOCK) and
+  **redesigned for Somnia** — the original single wide `eth_getLogs` is rejected (Somnia caps the range
+  and runs ~20 blocks/s), so it now uses a **persistent cursor + chunked scan + watch-set**. Runs
+  cleanly and finalize/release logic verified; reliable live auto-finalize is gated on a more robust
+  RPC endpoint (`api.infra` getLogs intermittently times out under load). finalize itself proven —
+  4 live disputes settled (manually + by direct `finalize`).
+- [ ] **Record a 2–3 min demo video** of the full loop, with the determinism histogram + a receipt on
+  screen. *(Needs a screen — yours.)*
+- [x] **Update README + DECK** with the live addresses, determinism PASS, gas note, and the panel-9
+  appeal/testnet-validator limitation.
 - [ ] **Housekeeping:** decide `DECK.html` fate (commit the rendered deck or add to `.gitignore`);
   confirm `verdikt.gudman.xyz` is actually live against `deploy/nginx-verdikt.gudman.xyz.conf`.
 - [ ] **Submit** — only after explicit user approval (per standing rule).
