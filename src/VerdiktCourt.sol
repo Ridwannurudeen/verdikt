@@ -15,6 +15,7 @@ import {IVerdiktCourt, IVerdiktConsumer, Verdict, CaseStatus, CaseView} from "./
 contract VerdiktCourt is IVerdiktCourt {
     IAgentRequester public immutable platform;
     address public owner;
+    address public pendingOwner;
 
     /// @dev LLM Inference agent id — fetch the real value from https://agents.somnia.network.
     uint256 public agentId;
@@ -54,6 +55,8 @@ contract VerdiktCourt is IVerdiktCourt {
     event Appealed(uint256 indexed caseId, uint8 newRound);
     event CaseFinalized(uint256 indexed caseId, Verdict verdict);
     event CaseErrored(uint256 indexed caseId, ResponseStatus status);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
@@ -249,6 +252,21 @@ contract VerdiktCourt is IVerdiktCourt {
     function sweep(address to) external onlyOwner {
         (bool ok,) = to.call{value: address(this).balance}("");
         require(ok, "sweep failed");
+    }
+
+    /// @notice Begin a 2-step ownership transfer. The new owner must call acceptOwnership.
+    function transferOwnership(address newOwner) external onlyOwner {
+        pendingOwner = newOwner;
+        emit OwnershipTransferStarted(owner, newOwner);
+    }
+
+    /// @notice Complete a pending ownership transfer initiated by transferOwnership.
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "not pending owner");
+        address previousOwner = owner;
+        owner = pendingOwner;
+        pendingOwner = address(0);
+        emit OwnershipTransferred(previousOwner, owner);
     }
 
     receive() external payable {}
