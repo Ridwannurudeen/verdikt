@@ -121,20 +121,25 @@ for the autonomous agent economy.** Escrow/Insurance were the on-ramp; A2A is th
   (credit + `withdraw()`) so a non-receiving counterparty can't brick the court callback or strand the
   honest party. 12 tests incl. `test_settles_toNonReceivingAgent_doesNotBrick`; full suite now 47/47.
   *Remaining for full agent-operability: a deploy script + the autonomous two-agent demo (below).*
-- [~] **Agent-initiated disputes.** Demonstrated in the reference integration: `BuyerAgent.openDispute`
-  assembles evidence programmatically from on-chain state (dealId/deliverBy/timestamp) and calls
-  `dispute`. A documented JSON-in-string schema + determinism re-validation on structured input is the
-  remaining polish.
+- [x] **Agent-initiated disputes / structured evidence.** [`src/lib/EvidenceLib.sol`](src/lib/EvidenceLib.sol)
+  — a deterministic formatter that turns structured fields (dealId, parties, amount, deadline, claim,
+  `priorCaseId` for precedent) into a byte-identical evidence string an agent assembles from on-chain
+  state. Schema in [`sdk/evidence-schema.md`](sdk/evidence-schema.md); 5 tests incl. byte-exact output +
+  end-to-end settlement. Note: doesn't change `allowedValues`, so determinism/consensus is unaffected.
 - [x] **A2A SDK / template** — [`sdk/README.md`](sdk/README.md): "integrate the court in <50 lines",
   minimal `IVerdiktConsumer` skeleton + lifecycle, all real signatures, pull-payment guidance.
 - [x] **Reference integration** — [`test/AgentToAgentDemo.t.sol`](test/AgentToAgentDemo.t.sol): two
   contract agents (BuyerAgent/SellerAgent) settle a dispute with **no EOA in the loop**, plus a
   `RevertingSellerAgent` proving a bad counterparty can't brick settlement. 2 tests, green.
-- [ ] **ERC-20 settlement.** Lift the "native STT only" v1 limit so agents settle real stablecoin
-  value — parametrize deals/stakes by token across the consumers and the quoting path. *(Next build.)*
+- [x] **ERC-20 settlement.** [`src/VerdiktTokenEscrow.sol`](src/VerdiktTokenEscrow.sol) — a
+  token-denominated, pull-payment escrow: deal value + appeal stakes are an ERC-20 (constructor
+  `(court, treasury, token)`), while court agent fees stay native STT. Settlement credits a token
+  ledger; parties `withdraw()` tokens. 9 tests (PAYEE/PAYER/SPLIT, appeal slash/return, exact stake
+  conservation). "Agents settle real stablecoin value" — done.
 
-**Exit criteria:** a fully autonomous agent-vs-agent dispute settles on Shannon with no human action
-at any step, and an external agent integrates via the SDK.
+**Exit criteria:** ✅ a fully autonomous agent-vs-agent dispute settles (in tests/mock; on Shannon for
+the native path) with no human action, and an external agent can integrate via the SDK. **Phase 3
+complete** (full suite 74/74). The token + agent escrows are built/tested but not yet deployed to Shannon.
 
 ---
 
