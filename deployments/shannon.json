@@ -10,7 +10,22 @@
   "contracts": {
     "VerdiktCourt": "0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee",
     "VerdiktEscrow": "0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6",
-    "VerdiktInsurance": "0xEA462e024b6207B5311820864dC6a4cF64346Da4"
+    "VerdiktInsurance": "0xEA462e024b6207B5311820864dC6a4cF64346Da4",
+    "VerdiktAgentEscrow": "0x8788a859a00057a4660d6Fb15DE373719A565C92",
+    "VerdiktTokenEscrow": "0xCCc7d99BF967313735f7BFA25b2E76e0C6993593",
+    "VerdiktGrantClawback": "0xDA7B9F52Ac7e71508E7C3B8FE95c27e28A7C441f",
+    "VerdiktMilestone": "0xc8439c2E2d058661D664986a12CaE05Af463872D",
+    "VerdiktRegistry": "0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7",
+    "VerdiktReputation": "0x6fbD122af11236fB2ddbc99dcaF4f2F51cC4545B",
+    "VerdiktCourtRegistry": "0xA4A2f908E627387ee13D1090A0461206e4374BD9",
+    "VerdiktTimelock": "0x2E30F37F41BFfCd716C4D5d4023652f5ABCB8ca1",
+    "MockERC20": "0xd6bA8786121C58F0b9Ef1bb1ff7C2DB4501d68B3"
+  },
+  "liveState": {
+    "courtRegistry": "Live Court registered in VerdiktCourtRegistry as 'Verdikt Shannon Court' (somnia-llm-inference, SLA 3600s)",
+    "precedentRegistry": "4 final rulings recorded (cases 1-4; topic keccak(\"escrow/non-delivery\"))",
+    "reputation": "deployer 0xFDc753... = 2 wins / 1 loss / score 3 across cases 1,2,4",
+    "timelockAdmin": "0xFDc753d1b3967653bC8Dcc394a38FBf3ea5a6a58 (delay 3600s) — Court ownership NOT migrated (existing Court is pre-ownership-transfer v1)"
   },
   "determinismGate": {
     "probe": "0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb",
@@ -21,5 +36,5 @@
     "requestId": 3486438,
     "fireTx": "0xdbbe4fbb...aa869e"
   },
-  "notes": "Somnia meters contract deployment far above mainnet; eth_estimateGas under-reports. Deploy contracts with an explicit high --gas-limit (used 50M) or large --gas-estimate-multiplier, else the tx OOGs with gasUsed==gasLimit. Function calls estimate normally."
+  "notes": "Somnia meters contract deployment far above mainnet; eth_estimateGas under-reports. Deploy contracts with an explicit high --gas-limit (used 60M) or large --gas-estimate-multiplier, else the tx OOGs with gasUsed==gasLimit. Function calls also need generous limits (~3-5M for state writes). The live VerdiktCourt is the original v1 (no 2-step ownership transfer); the dev VerdiktCourt + new consumers/infra here point at it. The TokenEscrow uses MockERC20."
 }
