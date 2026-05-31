@@ -105,10 +105,12 @@ panel, and the verdict is delivered programmatically via `onVerdict(escrowRef, v
 no UI, no wallet prompt. This phase makes that the headline product: **Verdikt is the settlement court
 for the autonomous agent economy.** Escrow/Insurance were the on-ramp; A2A is the destination.
 
-- [ ] **`src/VerdiktAgentEscrow.sol` — machine-native escrow.** Both counterparties are contracts/
-  agents, not EOAs. Funding, delivery attestation, and dispute are all callable by code; settlement
-  routes back through the consumer's `onVerdict` callback. The whole lifecycle runs with zero human
-  in the loop — the proof that the court is agent-operable end to end.
+- [x] **`src/VerdiktAgentEscrow.sol` — machine-native escrow.** Built on `feat/agent-escrow` (commit
+  `3dd373f`). Both counterparties may be contracts/agents; lifecycle is fully code-callable and
+  settlement routes through `onVerdict`. Key change vs `VerdiktEscrow`: **pull-payment settlement**
+  (credit + `withdraw()`) so a non-receiving counterparty can't brick the court callback or strand the
+  honest party. 12 tests incl. `test_settles_toNonReceivingAgent_doesNotBrick`; full suite now 47/47.
+  *Remaining for full agent-operability: a deploy script + the autonomous two-agent demo (below).*
 - [ ] **Agent-initiated disputes.** Expose `openCase(escrowRef, evidence)` as a first-class agent
   action with **structured, machine-generated evidence** (a documented JSON-in-string schema the
   agent assembles from on-chain state / its own logs), so panels judge data an agent produced — not
