@@ -101,42 +101,37 @@ Deterministic inference doesn't randomly change its mind — **only better facts
 
 ---
 
-## Two consumers, one primitive
+## N protocols, one court
 
-### `VerdiktEscrow`
+Six consumers settle on the same court — the court doesn't know what any of them mean:
 
-Two-party deal. Payer funds, payee delivers, anyone can release after the deadline. Appeal stake = 10% of deal.
+- `VerdiktEscrow` — two-party deal; appeal stake = 10%
+- `VerdiktInsurance` — parametric claims-arbitration pool
+- **`VerdiktAgentEscrow`** — machine-native, pull-payment: *agents can't sue each other — now they can*
+- **`VerdiktTokenEscrow`** — ERC-20 settlement (agents settle real stablecoin value)
+- `VerdiktGrantClawback` — DAO grant clawback · `VerdiktMilestone` — freelance milestone
 
-### `VerdiktInsurance`
-
-Parametric claims-arbitration pool. Funders earn shares; insured pays a 5% premium; pool funders can appeal a `PAYEE` verdict; `withdrawPool` is locked while a claim is open.
-
-The court doesn't know what `Escrow` or `Insurance` mean — that's the point.
+That reusability is the point: Verdikt is a settlement court any protocol or agent can call.
 
 ---
 
 ## What ships today
 
-- **3 contracts** (`Court`, `Escrow`, `Insurance`) + 3 interfaces
-- **35/35 tests passing** — forge 1.7.1, solc 0.8.24, evm_version paris
-- **Deploy scripts** for Shannon (`Deploy.s.sol`, `DeployInsurance.s.sol`)
-- **Auto-keeper** — Node + viem, watches `VerdictReached` / `Delivered`, drives `finalize` and `release`
-- **Demo UI** — single-page HTML, viem from esm.sh, no build step
-- **Determinism gate** — probe contract + driver that prints a per-validator histogram
+- **11 Solidity contracts** — `VerdiktCourt` + **6 consumers** (Escrow, Insurance, **AgentEscrow**, **TokenEscrow**, GrantClawback, Milestone) on one shared court
+- **128/128 tests** — solc 0.8.24, evm_version cancun, incl. invariant + fuzz
+- **Agent-to-agent court** — both parties can be contracts; pull-payment settlement; **ERC-20** too
+- **Precedent layer** — on-chain, AI-authored, citable case law (`priorCaseId`)
+- **Marketplace** of competing courts · **reputation** · **timelock** governance
+- Auto-keeper · demo UI · case-law indexer + dashboard · security/economics/portability docs
 
 ---
 
-## Honest scope
+## Live on Shannon
 
-- Shannon testnet only · unaudited hackathon code
-- Determinism gate is **prepared but not run live yet** — needs funded key + real `LLM_AGENT_ID`
-- If panel outputs diverge, fallback is binary `PAYEE/PAYER` and/or `chainOfThought=false`
-- All values in native **STT** — no ERC-20 in v1
-
-### Asks
-
-1. Validate the panel converges (run the determinism gate)
-2. Plug in a third consumer — the court is reusable by design
+- **Determinism gate: PASS** — a panel of 5 returned **PAYEE 5/5, byte-identical**. The premise the whole design rests on holds.
+- **Full stack deployed + exercised** — disputes settled by real AI panels with **no human in the loop** (PAYER and PAYEE outcomes); **4 rulings recorded in the precedent index**; reputation populated on-chain.
+- Appeal panel (9 agents) needs ≥9 validators; Shannon caps ~6, so the staked-appeal path is unit-tested and runs live on a larger set.
+- Unaudited hackathon code · all addresses in `deployments/shannon.json`.
 
 `github.com/Ridwannurudeen/verdikt`
         </textarea>
