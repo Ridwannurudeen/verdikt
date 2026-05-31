@@ -6,10 +6,26 @@ DNS already points `verdikt.gudman.xyz` → `75.119.153.252` (same VPS as `forum
 
 ```
 /opt/verdikt/web/
-└── index.html      ← slides.html (self-contained reveal.js deck)
+├── index.html         ← web/index.html   (product landing page)
+├── deck.html          ← slides.html      (reveal.js pitch deck)
+└── app/
+    ├── index.html     ← ui/index.html    (interactive escrow demo, wired to live contracts)
+    ├── caselaw.html   ← ui/caselaw.html  (case-law dashboard)
+    └── caselaw.json   (snapshot of on-chain rulings)
 ```
 
-The site root serves the deck; `verdikt.gudman.xyz/` is what you paste into the form.
+`verdikt.gudman.xyz/` is the product landing; `/app/` is the live demo; `/deck.html` is the deck.
+
+## Re-deploy (run on your laptop, from the repo root)
+
+```bash
+scp web/index.html    root@75.119.153.252:/opt/verdikt/web/index.html
+scp slides.html       root@75.119.153.252:/opt/verdikt/web/deck.html
+scp ui/index.html     root@75.119.153.252:/opt/verdikt/web/app/index.html
+scp ui/caselaw.html   root@75.119.153.252:/opt/verdikt/web/app/caselaw.html
+```
+
+No nginx reload needed for content changes (static files, `try_files`).
 
 ## One-time setup (run on the VPS)
 
