@@ -91,18 +91,20 @@ The court doesn't know what `Escrow` or `Insurance` mean — that's the point.
 - **Auto-keeper** — Node + viem, watches `VerdictReached` / `Delivered`, drives `finalize` and `release`
 - **Demo UI** — single-page HTML, viem from esm.sh, no build step
 - **Determinism gate** — probe contract + driver that prints a per-validator histogram
+- **🟢 LIVE on Shannon** — Court/Escrow/Insurance deployed; **determinism gate PASSED (PAYEE 5/5, byte-identical)**; a full escrow dispute settled end-to-end by a real on-chain AI panel — no human in the loop
 
 ---
 
 ## Honest scope
 
 - Shannon testnet only · unaudited hackathon code
-- Determinism gate is **prepared but not run live yet** — needs funded key + real `LLM_AGENT_ID`
-- If panel outputs diverge, fallback is binary `PAYEE/PAYER` and/or `chainOfThought=false`
+- Determinism gate **PASSED live** — panel 5 → PAYEE 5/5, byte-identical convergence
+- Appeal escalates the panel 5 → 9; panel 9 exceeds Shannon testnet's validator count, so the staked-appeal path is fully unit-tested and runs live only on a mainnet-scale validator set
+- Somnia meters contract deployment well above mainnet — deploy with explicit high gas
 - All values in native **STT** — no ERC-20 in v1
 
 ### Asks
-1. Validate the panel converges (run the determinism gate)
+1. ✅ Panel convergence validated live — what's the testnet validator count (for panel 9 appeals)?
 2. Plug in a third consumer — the court is reusable by design
 
 `github.com/Ridwannurudeen/verdikt`

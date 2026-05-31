@@ -89,6 +89,21 @@ PASS: panel converged byte-identically.
 
 Driver details (env, exit codes, optional CLI args) are in [`script/README-determinism.md`](script/README-determinism.md).
 
+## Live on Shannon (chain 50312)
+
+Deployed and exercised end-to-end (addresses in [`deployments/shannon.json`](deployments/shannon.json)):
+
+| Contract | Address |
+| --- | --- |
+| VerdiktCourt | `0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee` |
+| VerdiktEscrow | `0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6` |
+| VerdiktInsurance | `0xEA462e024b6207B5311820864dC6a4cF64346Da4` |
+
+- **Determinism gate: PASS** — panel of 5 returned PAYEE 5/5 (byte-identical).
+- **Full dispute settled live** — `createDeal → dispute → on-chain AI panel → verdict → finalize`, settling to the winner with no human in the loop (verified for PAYER and PAYEE outcomes).
+- **Gas note:** Somnia meters contract *deployment* well above mainnet; `eth_estimateGas` under-reports, so deploy with an explicit high `--gas-limit` (we used 50M). Function calls also need generous limits (a `createDeal` costs ~865k gas). See `deployments/shannon.json`.
+- **Appeal panel (round 1 = 9 agents)** exceeds the testnet validator subcommittee size, so the staked-appeal path is unit-tested but runs live only on a larger validator set.
+
 ## Status / roadmap
 
 - [x] Court + Escrow contracts, full unit test suite (35/35)

@@ -24,6 +24,10 @@ loadEnv({ path: resolve(__dirname, "..", ".env") });
 
 const DEFAULT_RPC = "https://api.infra.testnet.somnia.network/";
 const DEFAULT_POLL_MS = 30_000;
+// Somnia caps eth_getLogs to a few hundred blocks, and the chain is fast, so a single
+// scan from START_BLOCK to latest is rejected. Scan only a bounded recent window each tick
+// (START_BLOCK acts as a floor) — a keeper on a fast chain watches recent blocks anyway.
+const MAX_LOG_RANGE = 400n;
 
 const COURT_ABI = parseAbi([
     "function finalize(uint256 caseId)",
@@ -85,28 +89,20 @@ function readEnv() {
     };
 }
 
-async function discoverCases(publicClient, court, fromBlock) {
-    const logs = await publicClient.getLogs({
-        address: court,
-        event: COURT_ABI.find((f) => f.type === "event" && f.name === "VerdictReached"),
-        fromBlock,
-        toBlock: "latest",
-    });
-    const ids = new Set();
-    for (const log of logs) ids.add(log.args.caseId);
-    return ids;
-}
+const VERDICT_EVENT = COURT_ABI.find((f) => f.type === "event" && f.name === "VerdictReached");
+const DELIVERED_EVENT = ESCROW_ABI.find((f) => f.type === "event" && f.name === "Delivered");
 
-async function discoverDeals(publicClient, escrow, fromBlock) {
-    const logs = await publicClient.getLogs({
-        address: escrow,
-        event: ESCROW_ABI.find((f) => f.type === "event" && f.name === "Delivered"),
-        fromBlock,
-        toBlock: "latest",
-    });
-    const ids = new Set();
-    for (const log of logs) ids.add(log.args.dealId);
-    return ids;
+// Scan [fromBlock, toBlock] in <= MAX_LOG_RANGE chunks (Somnia rejects wider getLogs ranges).
+async function scanLogs(publicClient, address, event, fromBlock, toBlock) {
+    const out = [];
+    let start = fromBlock;
+    while (start <= toBlock) {
+        const end = start + MAX_LOG_RANGE - 1n < toBlock ? start + MAX_LOG_RANGE - 1n : toBlock;
+        const logs = await publicClient.getLogs({ address, event, fromBlock: start, toBlock: end });
+        out.push(...logs);
+        start = end + 1n;
+    }
+    return out;
 }
 
 async function tryFinalize(ctx, caseId) {
@@ -168,37 +164,42 @@ async function tryRelease(ctx, dealId) {
 }
 
 async function tick(ctx) {
-    let actions = 0;
+    // Incrementally scan blocks since the cursor and accumulate ids into persistent watch
+    // sets, so a case seen once stays watched until settled even after its event scrolls past
+    // the getLogs window (Somnia runs ~20 blocks/s; a fixed lookback would lose it).
     try {
-        const caseIds = await discoverCases(ctx.publicClient, ctx.court, ctx.startBlock);
-        for (const id of caseIds) {
-            if (ctx.settledCases.has(id)) continue;
-            try {
-                const before = ctx.settledCases.size;
-                await tryFinalize(ctx, id);
-                if (ctx.settledCases.size > before) actions += 1;
-            } catch (err) {
-                console.error(`[finalize] caseId=${id} error: ${err.shortMessage ?? err.message}`);
-            }
+        const latest = await ctx.publicClient.getBlockNumber();
+        if (ctx.cursor <= latest) {
+            const caseLogs = await scanLogs(ctx.publicClient, ctx.court, VERDICT_EVENT, ctx.cursor, latest);
+            for (const l of caseLogs) ctx.watchedCases.add(l.args.caseId);
+            const dealLogs = await scanLogs(ctx.publicClient, ctx.escrow, DELIVERED_EVENT, ctx.cursor, latest);
+            for (const l of dealLogs) ctx.watchedDeals.add(l.args.dealId);
+            ctx.cursor = latest + 1n;
         }
     } catch (err) {
-        console.error(`[discover cases] error: ${err.shortMessage ?? err.message}`);
+        console.error(`[scan] error: ${err.shortMessage ?? err.message}`);
     }
 
-    try {
-        const dealIds = await discoverDeals(ctx.publicClient, ctx.escrow, ctx.startBlock);
-        for (const id of dealIds) {
-            if (ctx.releasedDeals.has(id)) continue;
-            try {
-                const before = ctx.releasedDeals.size;
-                await tryRelease(ctx, id);
-                if (ctx.releasedDeals.size > before) actions += 1;
-            } catch (err) {
-                console.error(`[release] dealId=${id} error: ${err.shortMessage ?? err.message}`);
-            }
+    let actions = 0;
+    for (const id of ctx.watchedCases) {
+        if (ctx.settledCases.has(id)) continue;
+        try {
+            const before = ctx.settledCases.size;
+            await tryFinalize(ctx, id);
+            if (ctx.settledCases.size > before) actions += 1;
+        } catch (err) {
+            console.error(`[finalize] caseId=${id} error: ${err.shortMessage ?? err.message}`);
         }
-    } catch (err) {
-        console.error(`[discover deals] error: ${err.shortMessage ?? err.message}`);
+    }
+    for (const id of ctx.watchedDeals) {
+        if (ctx.releasedDeals.has(id)) continue;
+        try {
+            const before = ctx.releasedDeals.size;
+            await tryRelease(ctx, id);
+            if (ctx.releasedDeals.size > before) actions += 1;
+        } catch (err) {
+            console.error(`[release] dealId=${id} error: ${err.shortMessage ?? err.message}`);
+        }
     }
 
     if (actions === 0) console.log("[idle] no actionable items");
@@ -232,8 +233,11 @@ async function main() {
         court: cfg.court,
         escrow: cfg.escrow,
         startBlock: cfg.startBlock,
+        cursor: cfg.startBlock,
         appealWindow,
         maxRound: Number(maxRound),
+        watchedCases: new Set(),
+        watchedDeals: new Set(),
         settledCases: new Set(),
         releasedDeals: new Set(),
     };
