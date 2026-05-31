@@ -177,19 +177,30 @@ The new Phase 3/4 contracts are built/tested but not yet deployed to Shannon.
 The end state: Verdikt is invisible infrastructure — the default subjective-dispute settlement layer
 an agentic chain just *has*, the way it has price oracles.
 
-- [ ] **Mainnet + audit:** swap to mainnet `IAgentRequester` (`0x5E5205...`, chain 5031), parametrize
-  network in deploy scripts, gate launch on a real external audit of Court + one consumer.
-- [ ] **Remove owner trust:** migrate Court admin (`setAgentId`/`setPerAgentPrice`/`setAppealWindow`/
-  `setRequestTimeout`/`sweep`) to a timelock/multisig, then toward governance.
-- [ ] **Arbitration marketplace:** competing court configs (panel size, consensus type, agent models)
-  that consumers/agents choose by SLA and price — Verdikt as a meta-layer over many juries.
-- [ ] **Cross-domain reputation:** portable, receipt-backed history of how each party (human *or*
-  agent) behaves across disputes — an agent's litigation record becomes a credential.
-- [ ] **Economic design:** treasury-cut calibration, anti-frivolous-appeal stake sizing backed by
-  simulation, and a sustainable fee model for the Court itself. Governance + token over parameters and
-  treasury *only if* it earns its place (per "no speculative generality").
-- [ ] **Beyond Somnia:** generalize the receipt/consensus pattern to any chain with verifiable agent
-  inference — Verdikt as the portable arbitration standard for the agent economy at large.
+- [~] **Mainnet + audit:** deploy scripts already take the platform via `SOMNIA_PLATFORM` env
+  (set the mainnet `IAgentRequester` `0x5E5205…`, chain 5031). The external audit is third-party and
+  out of scope here; the internal audit + invariant suite ([`SECURITY.md`](SECURITY.md),
+  `test/Invariant.t.sol`) is the gate we control. New Phase 3–5 contracts not yet deployed.
+- [x] **Remove owner trust.** [`src/VerdiktTimelock.sol`](src/VerdiktTimelock.sol) — a generic
+  delayed-execution governor (queue→delay→execute, MIN/MAX delay) that can own the Court; plus a
+  **2-step `transferOwnership`/`acceptOwnership`** added to `VerdiktCourt` so a live deployment can
+  migrate admin to the timelock. 11 tests (full migration + governed `setAppealWindow`).
+- [x] **Arbitration marketplace.** [`src/VerdiktCourtRegistry.sol`](src/VerdiktCourtRegistry.sol) —
+  operators list competing courts (name, model, SLA, live `quoteOpen`); `cheapest()` shops by live
+  price. Verdikt as a meta-layer over many juries. 15 tests.
+- [x] **Cross-domain reputation.** [`src/VerdiktReputation.sol`](src/VerdiktReputation.sol) — a
+  portable, court-verified litigation record per party (wins/losses/splits, `scoreOf`); an agent's
+  dispute history becomes a credential. 7 tests.
+- [x] **Economic design.** [`ECONOMICS.md`](ECONOMICS.md) — fee model, anti-frivolous-appeal
+  break-even math (`p* = (f+S)/(A+S)`, worked table), treasury-cut calibration, and a reasoned
+  "no token yet" argument with the conditions under which one would earn its place.
+- [x] **Beyond Somnia.** [`PORTABILITY.md`](PORTABILITY.md) — separates the 4-call Somnia surface from
+  the chain-agnostic core (~95%), proposes an `IInferencePlatform` adapter so the Court runs on any
+  chain with verifiable agent inference, and a 7-item portability checklist.
+
+**Exit criteria:** ✅ governance path (timelock), ✅ marketplace, ✅ reputation, ✅ econ + portability
+design. **Phase 5 substantially complete** (full suite 128/128). Remaining: external audit + mainnet
+deploy (require funded mainnet key + a real auditor); richer verdict types from Phase 4 (live validation).
 
 **Exit criteria:** audited, non-owner-controlled Court on mainnet that multiple external protocols and
 autonomous agents depend on as shared infrastructure.
