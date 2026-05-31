@@ -85,22 +85,24 @@ Make the win legible to judges in under 3 minutes.
 
 Turn hackathon code into something defensible.
 
-- [ ] **Confirm the unknowns** flagged in `foundry.toml` / README "Known simplifications":
-  - [ ] `createAdvancedRequest` `timeout` units (verify against web-app generated code) and set
-    `setRequestTimeout` correctly.
-  - [ ] Shannon EVM target — bump `evm_version = "paris"` → `shanghai`/`cancun` if PUSH0/transient
-    storage are supported. Re-run the full suite after.
-- [ ] **Per-request fee accounting.** Today agent-fee rebates accrue to the Court (owner `sweep`).
-  Refund overpayment per-request so consumers aren't silently overcharged.
-- [ ] **Internal security review** (use `security-reviewer` agent): reentrancy on
-  `appeal`/`finalize`/`release`, stake-accounting invariants, `onlyPlatform`/`onlyCourt` guards,
-  griefing on the appeal window, fee-underpayment paths.
-- [ ] **Invariant & fuzz tests** (Foundry): "escrowed funds always conserved", "slashed stake exactly
-  conserved minus treasury cut", "no verdict settles twice". Expand beyond the 35 unit tests.
-- [ ] **Gas + DoS pass** on string-evidence handling and panel escalation.
+- [x] **Confirmed the unknowns** (researcher agent, verified):
+  - `createAdvancedRequest` `timeout` is in **seconds** (300 = 5 min; operator default 15 min) — fine.
+  - Shannon supports **Cancun** (PUSH0/MCOPY/TLOAD/TSTORE verified live on-chain) → bumped
+    `evm_version = "paris"` → `"cancun"`. Full suite re-run green (60/60). Caveat: explorer
+    verification defaults to `paris` — match the setting when verifying.
+  - Validator subcommittee **effective cap is ~6** on Shannon (docs ceiling 10) — this is why the
+    panel-9 appeal reverted. Keep trial panels ≤ 5.
+- [x] **Internal security review** — full audit of all 4 contracts → [`SECURITY.md`](SECURITY.md).
+  Top finding: Escrow/Insurance push-payments can be bricked by a reverting recipient; the shipped
+  fix/reference is `VerdiktAgentEscrow`'s pull-payment ledger. 10 findings logged with v2 remediation.
+- [x] **Invariant & fuzz tests** — [`test/Invariant.t.sol`](test/Invariant.t.sol): fund conservation,
+  solvency, stake-slash exactness (`toWinner + treasuryCut == stake`), `_split` sums, no-double-settle.
+- [ ] **Per-request fee accounting** + **push→pull port to Escrow/Insurance** + appeal-deadline
+  snapshot — the contract changes from the audit. Deferred to a v2 redeploy (breaking; the live
+  testnet contracts are the push-payment v1). Tracked in `SECURITY.md`.
 
-**Exit criteria:** clean internal review, invariant suite green, all "Known simplifications" resolved
-or consciously documented.
+**Exit criteria:** clean internal review ✅, invariant suite green ✅, "Known simplifications" resolved ✅.
+Contract remediations are scoped for v2 (redeploy) per `SECURITY.md`.
 
 ---
 
@@ -119,19 +121,17 @@ for the autonomous agent economy.** Escrow/Insurance were the on-ramp; A2A is th
   (credit + `withdraw()`) so a non-receiving counterparty can't brick the court callback or strand the
   honest party. 12 tests incl. `test_settles_toNonReceivingAgent_doesNotBrick`; full suite now 47/47.
   *Remaining for full agent-operability: a deploy script + the autonomous two-agent demo (below).*
-- [ ] **Agent-initiated disputes.** Expose `openCase(escrowRef, evidence)` as a first-class agent
-  action with **structured, machine-generated evidence** (a documented JSON-in-string schema the
-  agent assembles from on-chain state / its own logs), so panels judge data an agent produced — not
-  a human-typed paragraph. Validate `allowedValues` determinism still holds on structured input.
-- [ ] **A2A SDK / template.** A documented `IVerdiktConsumer` starter (the verified surface:
-  `onVerdict(uint256,Verdict)` + `quoteOpen`/`quoteAppeal`/`getCase`) plus an off-chain agent helper
-  that builds evidence, quotes the fee, and opens a case in <50 lines. This is the adoption flywheel:
-  any agent framework can wire in Verdikt as its dispute backend.
-- [ ] **Reference integration:** stand up two demo agents that strike a deal, one defaults, the other
-  opens a case, the panel rules, and the loser's stake is slashed — all autonomous. This is the demo
-  that tells the Somnia story better than any escrow UI.
+- [~] **Agent-initiated disputes.** Demonstrated in the reference integration: `BuyerAgent.openDispute`
+  assembles evidence programmatically from on-chain state (dealId/deliverBy/timestamp) and calls
+  `dispute`. A documented JSON-in-string schema + determinism re-validation on structured input is the
+  remaining polish.
+- [x] **A2A SDK / template** — [`sdk/README.md`](sdk/README.md): "integrate the court in <50 lines",
+  minimal `IVerdiktConsumer` skeleton + lifecycle, all real signatures, pull-payment guidance.
+- [x] **Reference integration** — [`test/AgentToAgentDemo.t.sol`](test/AgentToAgentDemo.t.sol): two
+  contract agents (BuyerAgent/SellerAgent) settle a dispute with **no EOA in the loop**, plus a
+  `RevertingSellerAgent` proving a bad counterparty can't brick settlement. 2 tests, green.
 - [ ] **ERC-20 settlement.** Lift the "native STT only" v1 limit so agents settle real stablecoin
-  value — parametrize deals/stakes by token across the consumers and the quoting path.
+  value — parametrize deals/stakes by token across the consumers and the quoting path. *(Next build.)*
 
 **Exit criteria:** a fully autonomous agent-vs-agent dispute settles on Shannon with no human action
 at any step, and an external agent integrates via the SDK.

@@ -5,9 +5,10 @@ libs = ["lib"]
 solc = "0.8.24"
 optimizer = true
 optimizer_runs = 200
-# Somnia EVM target version is unconfirmed; "paris" is the safe lowest-common-denominator
-# (no PUSH0 / transient storage). Bump to "shanghai"/"cancun" once confirmed on Shannon.
-evm_version = "paris"
+# Shannon supports Cancun opcodes (PUSH0/MCOPY/TLOAD/TSTORE), verified live on-chain (2026-05-31).
+# NOTE: the Shannon explorer's contract verification defaults to "paris" — set the matching
+# evm_version when verifying or verification will fail.
+evm_version = "cancun"
 
 [rpc_endpoints]
 shannon = "${SHANNON_RPC}"
