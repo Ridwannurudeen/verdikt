@@ -21,17 +21,33 @@ VerdiktEscrow (consumer)            VerdiktCourt (reusable arbitration primitive
 - **`src/VerdiktCourt.sol`** — the reusable AI-jury engine. Builds an `inferString` request with `allowedValues = [PAYEE, PAYER, SPLIT]` (so panel outputs are byte-identical and Majority consensus is meaningful), dispatches a panel via `createAdvancedRequest`, decodes the consensus verdict in `handleVerdict`, manages the appeal window + escalation (panel 5 → 9), and finalizes. Any contract can consume it.
 - **`src/interfaces/`** — `IAgentRequester` (Somnia platform, verbatim from the docs), `ILLMAgent` (inference method signatures), `IVerdiktCourt`.
 
-## Consumers
+## Consumers — N protocols, one court
+
+Six independent consumers settle on the same Court, proving it as a shared primitive:
 
 - **`src/VerdiktEscrow.sol`** — two-party escrow with stake-backed appeals (slash on upheld, return on overturned). The flagship demo of the court as a settlement layer.
-- **`src/VerdiktInsurance.sol`** — parametric claims-arbitration pool. Funders deposit STT into a shared pool and receive shares; insured users buy policies (premium routed to the pool) and file claims that the court arbitrates. `PAYEE` pays full coverage from the pool, `SPLIT` pays half, `PAYER` pays nothing. Either side can appeal by posting a stake — on uphold the stake is slashed to the counterparty minus a treasury cut, mirroring the escrow economics. Withdrawals are locked while any claim is open.
+- **`src/VerdiktInsurance.sol`** — parametric claims-arbitration pool. Funders deposit STT and receive shares; insured users buy policies and file claims the court arbitrates (`PAYEE` pays full coverage, `SPLIT` half, `PAYER` nothing). Either side can appeal; withdrawals lock while a claim is open.
+- **`src/VerdiktAgentEscrow.sol`** — machine-native escrow for the **agent-to-agent court**: both counterparties may be contracts/agents and the whole lifecycle is code-callable. Settles via **pull payments** (`pending[]` ledger + `withdraw()`) so a non-receiving counterparty can't brick the court callback. *Autonomous agents can't sue each other — now they can.*
+- **`src/VerdiktTokenEscrow.sol`** — ERC-20-denominated, pull-payment escrow: deal value + stakes in a token, court fees still native STT. *Agents settle real stablecoin value.*
+- **`src/VerdiktGrantClawback.sol`** — DAO grant escrow (`PAYER` = clawback to the DAO, `PAYEE` = release to grantee).
+- **`src/VerdiktMilestone.sol`** — freelance milestone escrow (`PAYEE` = pay freelancer, `PAYER` = refund client).
+
+## Protocol layers
+
+- **`src/lib/EvidenceLib.sol`** — deterministic structured-evidence formatter; an agent assembles dispute evidence (parties, amount, deadline, claim, `priorCaseId` for precedent) into a byte-identical string. Schema in [`sdk/evidence-schema.md`](sdk/evidence-schema.md).
+- **`src/VerdiktRegistry.sol`** — the **precedent layer**: a permissionless, append-only index of *final* rulings (queryable by topic/consumer). On-chain, AI-authored, citable case law.
+- **`src/VerdiktReputation.sol`** — a portable, court-verified litigation record per party (wins/losses/splits, `scoreOf`). An agent's dispute history becomes a credential.
+- **`src/VerdiktCourtRegistry.sol`** — the **arbitration marketplace**: operators list competing courts; `cheapest()` shops by live price/SLA. Verdikt as a meta-layer over many juries.
+- **`src/VerdiktTimelock.sol`** — delayed-execution governor that can own the Court (via 2-step `transferOwnership`/`acceptOwnership`), removing single-key owner trust.
+- **SDK + tooling** — [`sdk/README.md`](sdk/README.md) (integrate in <50 lines), `keeper/` (permissionless auto-finalize/release), `indexer/` + `ui/caselaw.html` (case-law dashboard).
+- **Design** — [`SECURITY.md`](SECURITY.md) (audit), [`ECONOMICS.md`](ECONOMICS.md) (fee model + anti-frivolous-appeal math), [`PORTABILITY.md`](PORTABILITY.md) (beyond Somnia).
 
 ## How it maps to the judging criteria
 
 - **Agent-First Design** — disputes are resolved by a panel of agents convened *by the contract itself* via `createAdvancedRequest`; the court is an open primitive any agent/contract can invoke autonomously.
 - **Autonomous Performance** — no human in the settlement loop: dispute → panel verdict → (optional staked appeal → larger panel) → permissionless `finalize` settles and slashes. A keeper can drive `finalize` / auto-release.
 - **Innovation** — a stake-secured *appeal* layer on top of consensus-AI verdicts; the appeal re-tries with **new evidence** (the honest design given deterministic inference) and slashes frivolous appeals.
-- **Functionality** — full lifecycle implemented and unit-tested (35/35 passing) against a platform mock; deploys to Shannon testnet.
+- **Functionality** — full lifecycle implemented and unit-tested (**128/128 passing**, incl. invariant/fuzz) against a platform mock; the full stack is **deployed and exercised live on Shannon** (determinism gate PASS, disputes settled, precedent + reputation recorded on-chain).
 
 ## Somnia integration (verified against docs.somnia.network)
 
@@ -44,7 +60,7 @@ VerdiktEscrow (consumer)            VerdiktCourt (reusable arbitration primitive
 
 ```bash
 forge build
-forge test            # 35/35
+forge test            # 128/128 (solc 0.8.24, evm_version cancun)
 ```
 
 ## Deploy (Shannon testnet)
@@ -91,31 +107,43 @@ Driver details (env, exit codes, optional CLI args) are in [`script/README-deter
 
 ## Live on Shannon (chain 50312)
 
-Deployed and exercised end-to-end (addresses in [`deployments/shannon.json`](deployments/shannon.json)):
+The full stack is deployed and exercised end-to-end (all addresses in [`deployments/shannon.json`](deployments/shannon.json)):
 
 | Contract | Address |
 | --- | --- |
 | VerdiktCourt | `0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee` |
 | VerdiktEscrow | `0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6` |
 | VerdiktInsurance | `0xEA462e024b6207B5311820864dC6a4cF64346Da4` |
+| VerdiktAgentEscrow | `0x8788a859a00057a4660d6Fb15DE373719A565C92` |
+| VerdiktTokenEscrow | `0xCCc7d99BF967313735f7BFA25b2E76e0C6993593` |
+| VerdiktGrantClawback | `0xDA7B9F52Ac7e71508E7C3B8FE95c27e28A7C441f` |
+| VerdiktMilestone | `0xc8439c2E2d058661D664986a12CaE05Af463872D` |
+| VerdiktRegistry (precedent) | `0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7` |
+| VerdiktReputation | `0x6fbD122af11236fB2ddbc99dcaF4f2F51cC4545B` |
+| VerdiktCourtRegistry (marketplace) | `0xA4A2f908E627387ee13D1090A0461206e4374BD9` |
+| VerdiktTimelock | `0x2E30F37F41BFfCd716C4D5d4023652f5ABCB8ca1` |
 
-- **Determinism gate: PASS** — panel of 5 returned PAYEE 5/5 (byte-identical).
-- **Full dispute settled live** — `createDeal → dispute → on-chain AI panel → verdict → finalize`, settling to the winner with no human in the loop (verified for PAYER and PAYEE outcomes).
-- **Gas note:** Somnia meters contract *deployment* well above mainnet; `eth_estimateGas` under-reports, so deploy with an explicit high `--gas-limit` (we used 50M). Function calls also need generous limits (a `createDeal` costs ~865k gas). See `deployments/shannon.json`.
-- **Appeal panel (round 1 = 9 agents)** exceeds the testnet validator subcommittee size, so the staked-appeal path is unit-tested but runs live only on a larger validator set.
+- **Determinism gate: PASS** — panel of 5 returned PAYEE 5/5 (byte-identical), the premise the whole design rests on.
+- **Disputes settled live** — `createDeal → dispute → on-chain AI panel → verdict → finalize` settles to the winner with no human in the loop (verified for PAYER and PAYEE outcomes).
+- **Precedent index is live** — 4 final rulings recorded into `VerdiktRegistry` (machine-generated case law on-chain); the live Court is listed in the marketplace; reputation is populated (the deployer's record reads 2 wins / 1 loss / score 3).
+- **Gas note:** Somnia meters contract *deployment* well above mainnet; `eth_estimateGas` under-reports, so deploy with an explicit high `--gas-limit` (we used 50–60M). State-write calls also need generous limits (a `createDeal` costs ~865k gas). See `deployments/shannon.json`.
+- **Appeal panel (round 1 = 9 agents)** exceeds Shannon testnet's validator subcommittee (~6), so the staked-appeal path is unit-tested but runs live only on a larger validator set.
 
 ## Status / roadmap
 
-- [x] Court + Escrow contracts, full unit test suite (35/35)
-- [x] Deploy + determinism-probe scripts
-- [x] Run determinism gate on Shannon — **PASS, panel converged byte-identically** (PAYEE 5/5, 100%; probe `0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb`, requestId 3486438, fire tx `0xdbbe4fbb…aa869e`)
-- [x] Keeper (auto-finalize / auto-release) and minimal demo UI
-- [x] Second consumer (insurance claim) to demonstrate the court as a primitive
+The full [`ROADMAP.md`](ROADMAP.md) (Phases 0–5) is built, tested (128/128), and deployed live on Shannon:
 
-Keeper lives in `keeper/keeper.mjs` — a single Node script that polls Shannon for ruled cases past their appeal window and delivered deals past `deliverBy`, then calls `finalize` / `release` permissionlessly. Minimal browser demo at `ui/index.html` — open via `python -m http.server -d ui 8080`.
+- [x] **Phase 0** — Court/Escrow/Insurance + determinism gate **PASS** on Shannon; full dispute settled live.
+- [x] **Phase 1** — keeper (`keeper/keeper.mjs`, cursor-scan for Somnia) + demo UI (`ui/index.html`); README/deck with live results.
+- [x] **Phase 2** — security audit ([`SECURITY.md`](SECURITY.md)), invariant/fuzz tests, `evm_version` confirmed cancun.
+- [x] **Phase 3** — agent-to-agent court (`VerdiktAgentEscrow`), ERC-20 settlement (`VerdiktTokenEscrow`), structured evidence (`EvidenceLib`), A2A SDK.
+- [x] **Phase 4** — 6 consumers on one court, precedent registry (`VerdiktRegistry`), case-law indexer + dashboard.
+- [x] **Phase 5** — arbitration marketplace, reputation, timelock governance, economics + portability designs.
+
+Keeper polls Shannon for ruled cases past their appeal window and delivered deals past `deliverBy`, then calls `finalize`/`release` permissionlessly. Browser demo at `ui/index.html`; case-law dashboard at `ui/caselaw.html`.
 
 ## Known simplifications
 
+- v1 escrow/insurance use push payments; the pull-payment pattern (`VerdiktAgentEscrow`) is the v2 fix for the bricking risk in [`SECURITY.md`](SECURITY.md) #1/#2.
 - Agent-fee rebates accrue to the court (owner `sweep`), not refunded per-request.
-- `evm_version = paris` until the Shannon EVM target is confirmed.
-- `createAdvancedRequest` `timeout` units to confirm against the web-app generated code.
+- Richer verdict types (graded SPLIT %) are deferred — they change the Court's `allowedValues` and need live determinism re-validation.
