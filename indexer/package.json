@@ -1,0 +1,17 @@
+{
+  "name": "verdikt-indexer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Chunk-scan VerdiktCourt events into a case-law snapshot (caselaw.json) on Shannon.",
+  "scripts": {
+    "index": "node index.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
