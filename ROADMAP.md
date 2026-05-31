@@ -25,11 +25,9 @@ The whole pitch rests on one unproven claim: *a validator subcommittee converges
 LLM verdict.* Until that's shown live, everything else is theory. This phase turns theory into a
 working on-chain demo.
 
-- [ ] 🔴🟡 **Look up the LLM Inference agent ID** and paste it into `.env` (`LLM_AGENT_ID=`). No
-  registration or API key needed — it's a pre-deployed Phase-1 base agent. Open the **testnet** agent
-  explorer (agents.testnet.somnia.network, to match the Shannon platform addr), select **LLM
-  Inference**, copy its numeric id. Verify it resolves on Shannon before spending gas. This single
-  value unblocks every item below. *(User action — I just need the id.)*
+- [x] **LLM Inference agent ID obtained + set** in `.env`: `12847293847561029384` (pre-deployed
+  Phase-1 base agent from the testnet explorer; no registration/API key). Resolved live on Shannon —
+  the Court holds it and panels dispatch against it.
 - [x] **Fund the deployer** — confirmed `0xFDc753d1b3967653bC8Dcc394a38FBf3ea5a6a58` holds **100 STT**
   on Shannon; covers all deploys (~0.10 STT) + panel fees (5 ≈ 0.40, 9 ≈ 0.72) many times over.
 - [x] **Dry-run all scripts** — `forge build` green (lint warnings only); `Deploy`, `ProbeDeploy`,
