@@ -7,7 +7,9 @@ enum Verdict {
     NONE,
     PAYEE,
     PAYER,
-    SPLIT
+    SPLIT,
+    UNDECIDABLE // panel abstained: evidence insufficient. Consumers settle to the safe default
+    // (refund the payer/depositor — burden of proof on the claimant).
 }
 
 enum CaseStatus {

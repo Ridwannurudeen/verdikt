@@ -115,12 +115,13 @@ contract VerdiktMilestone is IVerdiktConsumer {
     // --- internals ------------------------------------------------------------
 
     /// @dev PAYER refunds the client; PAYEE pays the freelancer.
+    /// UNDECIDABLE (panel abstained) refunds the client — burden of proof is on the freelancer.
     function _split(Verdict verdict, uint256 amount, uint256 caseId)
         internal
         view
         returns (uint256 toClient, uint256 toFreelancer)
     {
-        if (verdict == Verdict.PAYER) return (amount, 0);
+        if (verdict == Verdict.PAYER || verdict == Verdict.UNDECIDABLE) return (amount, 0);
         if (verdict == Verdict.PAYEE) return (0, amount);
         toClient = (amount * (10000 - court.splitBps(caseId))) / 10000;
         toFreelancer = amount - toClient;

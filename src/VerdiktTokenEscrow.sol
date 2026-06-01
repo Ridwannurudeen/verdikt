@@ -238,17 +238,18 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
 
     function _loser(Deal storage d, Verdict verdict) internal view returns (address) {
         if (verdict == Verdict.PAYEE) return d.payer;
-        if (verdict == Verdict.PAYER) return d.payee;
+        if (verdict == Verdict.PAYER || verdict == Verdict.UNDECIDABLE) return d.payee;
         return address(0); // SPLIT has no single loser
     }
 
+    /// @dev UNDECIDABLE (panel abstained) refunds the payer — burden of proof is on the claimant.
     function _split(Verdict verdict, uint256 amount, uint256 caseId)
         internal
         view
         returns (uint256 toPayer, uint256 toPayee)
     {
         if (verdict == Verdict.PAYEE) return (0, amount);
-        if (verdict == Verdict.PAYER) return (amount, 0);
+        if (verdict == Verdict.PAYER || verdict == Verdict.UNDECIDABLE) return (amount, 0);
         toPayer = (amount * (10000 - court.splitBps(caseId))) / 10000;
         toPayee = amount - toPayer;
     }

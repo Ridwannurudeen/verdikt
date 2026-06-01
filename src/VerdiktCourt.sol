@@ -30,6 +30,9 @@ contract VerdiktCourt is IVerdiktCourt {
     /// when false (default) the original 3-label set (PAYEE/PAYER/SPLIT=50/50) is used. Graded
     /// widens the agreement space, so its byte-identical convergence must be validated live before use.
     bool public gradedSplit;
+    /// @dev when true, the panel may abstain with UNDECIDABLE if evidence is insufficient, instead of
+    /// being forced to pick a winner. Opt-in: it widens the label set, so validate convergence live.
+    bool public allowAbstention;
     uint8 public constant override MAX_ROUND = 1; // round 0 = trial (panel 5), round 1 = appeal (panel 9)
 
     struct Case {
@@ -233,10 +236,11 @@ contract VerdiktCourt is IVerdiktCourt {
     /// fence to break out and issue instructions to the panel.
     function _buildPayload(Case storage c) internal view returns (bytes memory) {
         PromptVersion storage pv = _promptVersions[c.promptVersion];
+        uint256 extra = allowAbstention ? 1 : 0;
         string[] memory allowed;
         string memory instruction;
         if (gradedSplit) {
-            allowed = new string[](5);
+            allowed = new string[](5 + extra);
             allowed[0] = "PAYER";
             allowed[1] = "SPLIT25";
             allowed[2] = "SPLIT50";
@@ -244,11 +248,17 @@ contract VerdiktCourt is IVerdiktCourt {
             allowed[4] = "PAYEE";
             instruction = pv.instructionGraded;
         } else {
-            allowed = new string[](3);
+            allowed = new string[](3 + extra);
             allowed[0] = "PAYEE";
             allowed[1] = "PAYER";
             allowed[2] = "SPLIT";
             instruction = pv.instructionNonGraded;
+        }
+        if (allowAbstention) {
+            allowed[allowed.length - 1] = "UNDECIDABLE";
+            instruction = string.concat(
+                instruction, " If the evidence is genuinely insufficient to determine the outcome, respond UNDECIDABLE."
+            );
         }
         string memory prompt = string.concat(_verifiedFacts(c), pv.preamble, _sanitizeEvidence(c.evidence), instruction);
         return abi.encodeWithSelector(ILLMAgent.inferString.selector, prompt, pv.system, true, allowed);
@@ -305,6 +315,7 @@ contract VerdiktCourt is IVerdiktCourt {
         if (h == keccak256("SPLIT25")) return (Verdict.SPLIT, 2500);
         if (h == keccak256("SPLIT50")) return (Verdict.SPLIT, 5000);
         if (h == keccak256("SPLIT75")) return (Verdict.SPLIT, 7500);
+        if (h == keccak256("UNDECIDABLE")) return (Verdict.UNDECIDABLE, 0);
         return (Verdict.NONE, 0);
     }
 
@@ -423,6 +434,12 @@ contract VerdiktCourt is IVerdiktCourt {
     /// authoritative. Governable via the timelock.
     function setAttestationRegistry(address registry) external onlyOwner {
         attestationRegistry = IVerdiktAttestationRegistry(registry);
+    }
+
+    /// @notice Allow the panel to abstain (UNDECIDABLE) on insufficient evidence. Off by default;
+    /// widens the label set, so validate live convergence before enabling. Governable via the timelock.
+    function setAllowAbstention(bool on) external onlyOwner {
+        allowAbstention = on;
     }
 
     function setGradedSplit(bool on) external onlyOwner {

@@ -306,7 +306,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
     function _payout(Verdict verdict, uint256 coverage, uint256 caseId) internal view returns (uint256) {
         if (verdict == Verdict.PAYEE) return coverage;
         if (verdict == Verdict.SPLIT) return (coverage * court.splitBps(caseId)) / 10000;
-        return 0; // PAYER (or NONE) -> no payout
+        return 0; // PAYER / UNDECIDABLE (abstained) / NONE -> no payout (burden of proof on the claimant)
     }
 
     function _sameRuling(Verdict current, uint16 currentBps, Verdict previous, uint16 previousBps)

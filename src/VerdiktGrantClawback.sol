@@ -113,12 +113,13 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
     // --- internals ------------------------------------------------------------
 
     /// @dev PAYER claws the grant back to the DAO funder; PAYEE releases to the grantee.
+    /// UNDECIDABLE (panel abstained) claws back to the funder — burden of proof is on the grantee.
     function _split(Verdict verdict, uint256 amount, uint256 caseId)
         internal
         view
         returns (uint256 toFunder, uint256 toGrantee)
     {
-        if (verdict == Verdict.PAYER) return (amount, 0);
+        if (verdict == Verdict.PAYER || verdict == Verdict.UNDECIDABLE) return (amount, 0);
         if (verdict == Verdict.PAYEE) return (0, amount);
         toFunder = (amount * (10000 - court.splitBps(caseId))) / 10000;
         toGrantee = amount - toFunder;
