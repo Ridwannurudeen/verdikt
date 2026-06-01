@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import {IAgentRequester, Response, Request, ConsensusType, ResponseStatus} from "./interfaces/IAgentRequester.sol";
 import {ILLMAgent} from "./interfaces/ILLMAgent.sol";
 import {IVerdiktCourt, IVerdiktConsumer, Verdict, CaseStatus, CaseView} from "./interfaces/IVerdiktCourt.sol";
+import {IVerdiktAttestationRegistry} from "./interfaces/IVerdiktAttestationRegistry.sol";
 
 /// @title VerdiktCourt
 /// @notice A reusable on-chain arbitration primitive for Somnia's Agentic L1.
@@ -69,6 +70,10 @@ contract VerdiktCourt is IVerdiktCourt {
     mapping(uint256 => PromptVersion) private _promptVersions;
     uint256 public promptVersionCount;
     uint256 public activePromptVersion;
+
+    /// @notice Optional registry of trusted attestors; when set, the Court folds VERIFIED facts about
+    /// a case into the panel prompt as authoritative (above the parties' untrusted claims).
+    IVerdiktAttestationRegistry public attestationRegistry;
 
     event CaseOpened(uint256 indexed caseId, address indexed consumer, uint256 indexed escrowRef);
     event VerdictRequested(
@@ -245,8 +250,23 @@ contract VerdiktCourt is IVerdiktCourt {
             allowed[2] = "SPLIT";
             instruction = pv.instructionNonGraded;
         }
-        string memory prompt = string.concat(pv.preamble, _sanitizeEvidence(c.evidence), instruction);
+        string memory prompt = string.concat(_verifiedFacts(c), pv.preamble, _sanitizeEvidence(c.evidence), instruction);
         return abi.encodeWithSelector(ILLMAgent.inferString.selector, prompt, pv.system, true, allowed);
+    }
+
+    /// @dev Authoritative on-chain attested facts for a case, rendered ahead of the untrusted party
+    /// evidence. Empty when no registry is set or no attestor has posted. Read once at dispatch, so
+    /// all jurors in a panel see the same bytes (determinism preserved).
+    function _verifiedFacts(Case storage c) internal view returns (string memory) {
+        IVerdiktAttestationRegistry reg = attestationRegistry;
+        if (address(reg) == address(0)) return "";
+        string memory facts = reg.factsFor(reg.subjectFor(c.consumer, c.escrowRef));
+        if (bytes(facts).length == 0) return "";
+        return string.concat(
+            "AUTHORITATIVE VERIFIED FACTS (attested on-chain by court-registered oracles; these outrank any conflicting party claim below):\n",
+            facts,
+            "\n"
+        );
     }
 
     /// @dev Strip '<' and '>' from untrusted evidence so it can never forge the <evidence>
@@ -397,6 +417,12 @@ contract VerdiktCourt is IVerdiktCourt {
         version = ++promptVersionCount;
         _promptVersions[version] = PromptVersion(system, preamble, instructionNonGraded, instructionGraded, true);
         emit PromptVersionPublished(version);
+    }
+
+    /// @notice Wire (or unset) the attestation registry whose verified facts the panel treats as
+    /// authoritative. Governable via the timelock.
+    function setAttestationRegistry(address registry) external onlyOwner {
+        attestationRegistry = IVerdiktAttestationRegistry(registry);
     }
 
     function setGradedSplit(bool on) external onlyOwner {
