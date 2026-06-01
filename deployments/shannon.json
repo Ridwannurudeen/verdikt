@@ -45,6 +45,23 @@
       "precedentRegistry": "4 final rulings recorded against v2 Escrow 0xcA6F33 (cases 1-4: PAYER, PAYEE, PAYER, PAYEE)"
     }
   },
+  "v3": {
+    "label": "graded-split production stack",
+    "deployedAt": "2026-06-01",
+    "deployMethod": "forge create --gas-limit 60000000 (no broadcast artifact)",
+    "note": "First stack running with gradedSplit ENABLED on the Court (5-label PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE). Only the graded core was deployed: Court + Escrow + Registry. The v2 AgentEscrow and the other v1 consumers were NOT redeployed. UI (ui/) and website (web/) Court/Escrow/Registry point HERE; the website's AgentEscrow link still points at v2.",
+    "contracts": {
+      "VerdiktCourt": "0xCbF57dD589FB61E0288b926282Be98A124cB95aA",
+      "VerdiktEscrow": "0x0127fA0FE43E08Aad7ec94faaAF93020f19e3fb8",
+      "VerdiktRegistry": "0x077cc142e91639d6Cd5B143AC75c63bE08eeb537"
+    },
+    "config": {"gradedSplit": true, "appealWindow": "60s (shortened for live demo)"},
+    "liveState": {
+      "gradedDispute": "Deal #1 (0.01 STT): a 3-of-4-deliverables dispute -> live panel of 5 ruled SPLIT75 (payeeBps 7500) byte-identical -> finalized -> payee credited 0.0075 STT (75%), payer 0.0025 STT (25%). A genuine non-50/50 graded settlement, live on-chain.",
+      "precedentRegistry": "1 final ruling recorded (case 1, topic keccak(\"escrow/partial-delivery\") = 0x38cf4c9a...)",
+      "wiringVerified": "Escrow.court and Registry.court -> v3 Court; Court.quoteOpen = 0.4 STT; Court.gradedSplit = true (verified on-chain 2026-06-01)"
+    }
+  },
   "determinismGate": {
     "probe": "0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb",
     "result": "PASS",

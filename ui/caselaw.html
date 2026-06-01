@@ -223,7 +223,7 @@
             (r) => `
     <tr>
       <td>${esc(r.caseId)}</td>
-      <td>${badge(r.verdict ?? "NONE")}</td>
+      <td>${badge(r.verdict ?? "NONE")}${r.verdict === "SPLIT" && r.payeeBps != null ? ` <span class="muted">${r.payeeBps / 100}% payee</span>` : ""}</td>
       <td>${esc(r.round ?? "—")}</td>
       <td>${esc(r.status ?? "—")}</td>
       <td>${badge(r.appealed ? "yes" : "no", r.appealed ? "yes" : "no")}</td>
