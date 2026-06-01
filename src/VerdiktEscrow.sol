@@ -165,7 +165,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
         uint256 amount = d.amount;
         d.status = DealStatus.Settled;
 
-        (uint256 toPayer, uint256 toPayee) = _split(verdict, amount);
+        (uint256 toPayer, uint256 toPayee) = _split(verdict, amount, d.caseId);
         _credit(d.payer, toPayer);
         _credit(d.payee, toPayee);
         emit DealSettled(escrowRef, verdict, toPayer, toPayee);
@@ -208,12 +208,17 @@ contract VerdiktEscrow is IVerdiktConsumer {
         return address(0); // SPLIT has no single loser
     }
 
-    function _split(Verdict verdict, uint256 amount) internal pure returns (uint256 toPayer, uint256 toPayee) {
+    /// @dev SPLIT honors the court's graded payee share (basis points); plain SPLIT returns 5000 (50/50).
+    function _split(Verdict verdict, uint256 amount, uint256 caseId)
+        internal
+        view
+        returns (uint256 toPayer, uint256 toPayee)
+    {
         if (verdict == Verdict.PAYEE) return (0, amount);
         if (verdict == Verdict.PAYER) return (amount, 0);
-        // SPLIT (or NONE fallback treated as split to avoid stranding funds)
-        uint256 half = amount / 2;
-        return (half, amount - half);
+        // payer's floored share; the payee receives the remainder wei (never stranded).
+        toPayer = (amount * (10000 - court.splitBps(caseId))) / 10000;
+        toPayee = amount - toPayer;
     }
 
     // --- internals ------------------------------------------------------------

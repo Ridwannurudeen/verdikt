@@ -169,9 +169,14 @@ the chain routes through one shared Court.
       permissionless, append-only index of FINAL rulings: `record(caseId, topic)` reads `court.getCase`,
       stores the verdict + receiptId, and indexes by topic/consumer. Queryable case law that
       `EvidenceLib.priorCaseId` cites. 7 tests.
-- [ ] **Richer verdict types** beyond `PAYEE/PAYER/SPLIT` (e.g. graded SPLIT %) — **deferred**: it
-      changes the Court's core `allowedValues`/verdict space and the convergence claim needs _live_
-      determinism validation (can't verify offline). Scoped for a v2 with a live re-run.
+- [~] **Richer verdict types** beyond `PAYEE/PAYER/SPLIT` — **built in code, gated on a live re-run.**
+      `VerdiktCourt` now has an opt-in `gradedSplit` mode offering `PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE`
+      (payee share in 25% buckets), exposed via `splitBps(caseId)`; `VerdiktEscrow` settles to that ratio
+      (remainder wei to the payee). Off by default, so the live 3-label determinism behavior is unchanged.
+      8 tests in [`test/GradedSplit.t.sol`](test/GradedSplit.t.sol) (149 total). **Still required before
+      shipping:** a live Shannon determinism probe of the 5-label set — graded widens the agreement space,
+      so byte-identical convergence is not yet proven on-chain. Coarse 25% buckets were chosen to keep
+      convergence plausible.
 - [x] **Observability.** [`indexer/index.mjs`](indexer/index.mjs) — chunk-scans Court events
       (VerdictReached/Appealed/CaseFinalized) into a `caselaw.json` snapshot (cursor-based, Somnia-safe);
       [`ui/caselaw.html`](ui/caselaw.html) — a case-law dashboard with verdict badges + receipt links.

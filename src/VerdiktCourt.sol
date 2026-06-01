@@ -25,6 +25,10 @@ contract VerdiktCourt is IVerdiktCourt {
     uint256 public requestTimeout = 300;
     /// @dev how long after a ruling an appeal may be filed.
     uint64 public override appealWindow = 1 hours;
+    /// @dev when true, the panel chooses a graded verdict (PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE);
+    /// when false (default) the original 3-label set (PAYEE/PAYER/SPLIT=50/50) is used. Graded
+    /// widens the agreement space, so its byte-identical convergence must be validated live before use.
+    bool public gradedSplit;
     uint8 public constant override MAX_ROUND = 1; // round 0 = trial (panel 5), round 1 = appeal (panel 9)
 
     struct Case {
@@ -33,6 +37,7 @@ contract VerdiktCourt is IVerdiktCourt {
         uint8 round;
         CaseStatus status;
         Verdict verdict;
+        uint16 payeeBps;
         uint256 platformRequestId;
         uint256 receiptId;
         uint64 rulingTime;
@@ -145,7 +150,7 @@ contract VerdiktCourt is IVerdiktCourt {
             return;
         }
 
-        Verdict v = _parse(abi.decode(responses[0].result, (string)));
+        (Verdict v, uint16 bps) = _parse(abi.decode(responses[0].result, (string)));
         if (v == Verdict.NONE) {
             c.status = CaseStatus.Errored;
             emit CaseErrored(caseId, ResponseStatus.Failed);
@@ -153,6 +158,7 @@ contract VerdiktCourt is IVerdiktCourt {
         }
 
         c.verdict = v;
+        c.payeeBps = bps;
         c.receiptId = responses[0].receipt;
         c.rulingTime = uint64(block.timestamp);
         c.appealDeadline = uint64(block.timestamp + appealWindow);
@@ -187,15 +193,31 @@ contract VerdiktCourt is IVerdiktCourt {
     }
 
     function _buildPayload(Case storage c) internal view returns (bytes memory) {
-        string[] memory allowed = new string[](3);
-        allowed[0] = "PAYEE";
-        allowed[1] = "PAYER";
-        allowed[2] = "SPLIT";
-        string memory prompt = string.concat(
-            "Escrow dispute. Review the evidence and decide who is right.\n\nEVIDENCE:\n",
-            c.evidence,
-            "\n\nRespond with exactly one of: PAYEE (release to the seller/payee), PAYER (refund the buyer/payer), or SPLIT (50/50)."
-        );
+        string[] memory allowed;
+        string memory prompt;
+        if (gradedSplit) {
+            allowed = new string[](5);
+            allowed[0] = "PAYER";
+            allowed[1] = "SPLIT25";
+            allowed[2] = "SPLIT50";
+            allowed[3] = "SPLIT75";
+            allowed[4] = "PAYEE";
+            prompt = string.concat(
+                "Escrow dispute. Review the evidence and decide how to apportion the funds between the payer (buyer) and payee (seller).\n\nEVIDENCE:\n",
+                c.evidence,
+                "\n\nRespond with exactly one label for the payee's share: PAYER (payee gets 0%, full refund to buyer), SPLIT25 (payee 25%), SPLIT50 (payee 50%), SPLIT75 (payee 75%), or PAYEE (payee 100%)."
+            );
+        } else {
+            allowed = new string[](3);
+            allowed[0] = "PAYEE";
+            allowed[1] = "PAYER";
+            allowed[2] = "SPLIT";
+            prompt = string.concat(
+                "Escrow dispute. Review the evidence and decide who is right.\n\nEVIDENCE:\n",
+                c.evidence,
+                "\n\nRespond with exactly one of: PAYEE (release to the seller/payee), PAYER (refund the buyer/payer), or SPLIT (50/50)."
+            );
+        }
         return abi.encodeWithSelector(ILLMAgent.inferString.selector, prompt, SYSTEM_PROMPT, true, allowed);
     }
 
@@ -207,12 +229,17 @@ contract VerdiktCourt is IVerdiktCourt {
         return platform.getAdvancedRequestDeposit(panel) + perAgentPrice * panel;
     }
 
-    function _parse(string memory v) internal pure returns (Verdict) {
+    /// @dev Maps a verdict label to (enum, payee basis points). Graded labels are accepted
+    /// regardless of `gradedSplit`; the flag only governs which labels the panel is offered.
+    function _parse(string memory v) internal pure returns (Verdict, uint16) {
         bytes32 h = keccak256(bytes(v));
-        if (h == keccak256("PAYEE")) return Verdict.PAYEE;
-        if (h == keccak256("PAYER")) return Verdict.PAYER;
-        if (h == keccak256("SPLIT")) return Verdict.SPLIT;
-        return Verdict.NONE;
+        if (h == keccak256("PAYEE")) return (Verdict.PAYEE, 10000);
+        if (h == keccak256("PAYER")) return (Verdict.PAYER, 0);
+        if (h == keccak256("SPLIT")) return (Verdict.SPLIT, 5000);
+        if (h == keccak256("SPLIT25")) return (Verdict.SPLIT, 2500);
+        if (h == keccak256("SPLIT50")) return (Verdict.SPLIT, 5000);
+        if (h == keccak256("SPLIT75")) return (Verdict.SPLIT, 7500);
+        return (Verdict.NONE, 0);
     }
 
     function _refundExcess(uint256 sent, uint256 used) internal {
@@ -230,6 +257,10 @@ contract VerdiktCourt is IVerdiktCourt {
 
     function quoteAppeal(uint256 caseId) public view override returns (uint256) {
         return _depositFor(_panelSize(cases[caseId].round + 1));
+    }
+
+    function splitBps(uint256 caseId) external view override returns (uint16) {
+        return cases[caseId].payeeBps;
     }
 
     function getCase(uint256 caseId) external view override returns (CaseView memory) {
@@ -261,6 +292,12 @@ contract VerdiktCourt is IVerdiktCourt {
 
     function setRequestTimeout(uint256 t) external onlyOwner {
         requestTimeout = t;
+    }
+
+    /// @notice Toggle graded split verdicts (PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE). Off by default
+    /// so the original 3-label determinism behavior is preserved until graded convergence is validated live.
+    function setGradedSplit(bool on) external onlyOwner {
+        gradedSplit = on;
     }
 
     /// @notice Withdraw accumulated agent-fee rebates (dust returned by the platform).

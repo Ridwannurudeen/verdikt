@@ -43,6 +43,9 @@ interface IVerdiktCourt {
     function quoteOpen() external view returns (uint256);
     function quoteAppeal(uint256 caseId) external view returns (uint256);
     function getCase(uint256 caseId) external view returns (CaseView memory);
+    /// @notice Payee share of the disputed amount in basis points for a ruled case:
+    /// PAYEE = 10000, PAYER = 0, SPLIT = 5000 (or a graded value when graded mode is on).
+    function splitBps(uint256 caseId) external view returns (uint16);
     function appealWindow() external view returns (uint64);
     function MAX_ROUND() external view returns (uint8);
 }
