@@ -7,6 +7,7 @@
   "treasury": "0xFDc753d1b3967653bC8Dcc394a38FBf3ea5a6a58",
   "platform": "0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776",
   "llmAgentId": "12847293847561029384",
+  "contractsNote": "The top-level `contracts` are the original v1 stack (push-payment Court + all 12 contracts). The hardened-core redeploy lives under `v2` below; the UI (ui/) and website (web/) point at v2.",
   "contracts": {
     "VerdiktCourt": "0xd427dcb15a03F6d3D92bd19a44a18c1e149C66ee",
     "VerdiktEscrow": "0xED2cBf8778BF397BE576bd4E033B7C1c4A056Ea6",
@@ -26,6 +27,23 @@
     "precedentRegistry": "4 final rulings recorded (cases 1-4; topic keccak(\"escrow/non-delivery\"))",
     "reputation": "deployer 0xFDc753... = 2 wins / 1 loss / score 3 across cases 1,2,4",
     "timelockAdmin": "0xFDc753d1b3967653bC8Dcc394a38FBf3ea5a6a58 (delay 3600s) — Court ownership NOT migrated (existing Court is pre-ownership-transfer v1)"
+  },
+  "v2": {
+    "label": "hardened-core redeploy",
+    "deployedAt": "2026-05-31",
+    "deployMethod": "forge create --gas-limit 60000000 (no broadcast artifact — addresses recorded here + in ui/ and web/)",
+    "note": "Codex audit-pass contracts: pull-payment Escrow, appeal-deadline snapshot, ERC-20 safe-transfer, 2-step ownership on Court. Only the hardened core was redeployed; the other 8 v1 contracts (Insurance/TokenEscrow/GrantClawback/Milestone/Reputation/CourtRegistry/Timelock/MockERC20) still run against the v1 Court.",
+    "contracts": {
+      "VerdiktCourt": "0x629728a60aBc63b59f046c9755707a8291074fEe",
+      "VerdiktEscrow": "0xcA6F334d676539B1296F5AF86E264e13393Aba34",
+      "VerdiktAgentEscrow": "0x1EB8BB4eE927CB60f580F7CdC5AF0A1214914A43",
+      "VerdiktRegistry": "0x34D3323538C56b653CE04618Cfc2170eA9EBF2e2"
+    },
+    "liveState": {
+      "wiringVerified": "Escrow.court and AgentEscrow.court -> v2 Court 0x629728; Court.quoteOpen = 0.4 STT (verified on-chain 2026-06-01)",
+      "ownership": "v2 Court owner = deployer 0xFDc753... (2-step transferOwnership/acceptOwnership now available, unlike v1)",
+      "precedentRegistry": "4 final rulings recorded against v2 Escrow 0xcA6F33 (cases 1-4: PAYER, PAYEE, PAYER, PAYEE)"
+    }
   },
   "determinismGate": {
     "probe": "0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb",

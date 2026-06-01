@@ -1,1 +1,6 @@
-[]
+[
+  { "caseId": "1", "consumer": "0xcA6F334d676539B1296F5AF86E264e13393Aba34", "escrowRef": "1", "verdict": "PAYER", "round": 0, "receiptId": null, "rulingTime": 1780257781, "appealed": false, "finalized": true, "status": "Final" },
+  { "caseId": "2", "consumer": "0xcA6F334d676539B1296F5AF86E264e13393Aba34", "escrowRef": "2", "verdict": "PAYEE", "round": 0, "receiptId": null, "rulingTime": 1780257822, "appealed": false, "finalized": true, "status": "Final" },
+  { "caseId": "3", "consumer": "0xcA6F334d676539B1296F5AF86E264e13393Aba34", "escrowRef": "3", "verdict": "PAYER", "round": 0, "receiptId": null, "rulingTime": 1780257832, "appealed": false, "finalized": true, "status": "Final" },
+  { "caseId": "4", "consumer": "0xcA6F334d676539B1296F5AF86E264e13393Aba34", "escrowRef": "4", "verdict": "PAYEE", "round": 0, "receiptId": null, "rulingTime": 1780257836, "appealed": false, "finalized": true, "status": "Final" }
+]
