@@ -139,9 +139,8 @@ contract EscrowHandler is Test {
 
         settled[dealId] = true;
 
-        uint256 paid =
-            (escrow.pending(payer) - payerBefore) + (escrow.pending(payee) - payeeBefore)
-                + (escrow.pending(treasury) - treasBefore);
+        uint256 paid = (escrow.pending(payer) - payerBefore) + (escrow.pending(payee) - payeeBefore)
+            + (escrow.pending(treasury) - treasBefore);
         totalPaidOut += paid;
 
         // obligation discharged: the deal amount plus any stake leaves the escrow's custody.

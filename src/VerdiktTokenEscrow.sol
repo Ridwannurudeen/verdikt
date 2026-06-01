@@ -246,8 +246,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     }
 
     function _safeTransfer(address to, uint256 amount) internal {
-        (bool ok, bytes memory data) =
-            address(token).call(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
+        (bool ok, bytes memory data) = address(token).call(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
         require(ok && (data.length == 0 || abi.decode(data, (bool))), "transfer failed");
     }
 
