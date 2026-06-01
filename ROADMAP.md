@@ -67,12 +67,16 @@ Make the win legible to judges in under 3 minutes.
 - [x] **Wire the UI to live addresses.** `ui/index.html` now defaults Court/Escrow to the deployed
       addresses (DEPLOYED const); the per-case "View receipt" link (`agents.somnia.network/receipts/<id>`)
       was already present.
-- [~] **Run the keeper live.** `keeper/keeper.mjs` wired via `.env` (COURT/ESCROW/START_BLOCK) and
-  **redesigned for Somnia** — the original single wide `eth_getLogs` is rejected (Somnia caps the range
-  and runs ~20 blocks/s), so it now uses a **persistent cursor + chunked scan + watch-set**. Runs
-  cleanly and finalize/release logic verified; reliable live auto-finalize is gated on a more robust
-  RPC endpoint (`api.infra` getLogs intermittently times out under load). finalize itself proven —
-  4 live disputes settled (manually + by direct `finalize`).
+- [x] **Run the keeper live — auto-finalize PROVEN on-chain.** `keeper/keeper.mjs` now reliably and
+  autonomously settles cases (verified 2026-06-01: it auto-finalized live v3 case #2,
+  tx `0xa35d73b2…`, status → Final, payee credited). Two fixes got it there: (1) a **correctness bug** —
+  `tryFinalize` read `getCase` by named field (`c.status`) but viem decodes a multi-value view as a
+  positional array, so every check saw `undefined`/`NaN` and returned early; it never finalized (the
+  earlier "4 disputes settled" were all manual). Now reads positionally like `tryRelease`. (2) **Robustness** —
+  discovery switched from a fragile `eth_getLogs` cursor (Somnia intermittently returns empty-success
+  under load → a moving cursor misses events forever) to **enumerating authoritative state**
+  (`Court.nextCaseId` / `Escrow.nextDealId` + `getCase`), and the client runs over a **viem `fallback`
+  transport** across both Shannon RPCs with retries, so a single endpoint hiccup transparently fails over.
 - [ ] **Record a 2–3 min demo video** of the full loop, with the determinism histogram + a receipt on
       screen. _(Needs a screen — yours.)_
 - [x] **Update README + DECK** with the live addresses, determinism PASS, gas note, and the panel-9
