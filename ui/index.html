@@ -289,6 +289,8 @@
               <div class="v" id="aiStake"></div>
               <div class="k">Pre-appeal verdict</div>
               <div class="v" id="aiPre"></div>
+              <div class="k">Pre-appeal payee share</div>
+              <div class="v" id="aiPreShare"></div>
             </div>
           </div>
         </div>
@@ -327,6 +329,8 @@
             <div class="v" id="cvStatus"></div>
             <div class="k">Verdict</div>
             <div class="v" id="cvVerdict"></div>
+            <div class="k">Payee share</div>
+            <div class="v" id="cvPayeeShare"></div>
             <div class="k">Receipt ID</div>
             <div class="v" id="cvReceipt"></div>
             <div class="k">Ruling time</div>
@@ -454,6 +458,7 @@
             { name: "appellant", type: "address" },
             { name: "stake", type: "uint256" },
             { name: "preAppealVerdict", type: "uint8" },
+            { name: "preAppealPayeeBps", type: "uint16" },
             { name: "active", type: "bool" },
           ],
         },
@@ -500,6 +505,13 @@
         },
         {
           type: "function",
+          name: "appealDeadlineOf",
+          stateMutability: "view",
+          inputs: [{ name: "caseId", type: "uint256" }],
+          outputs: [{ type: "uint64" }],
+        },
+        {
+          type: "function",
           name: "MAX_ROUND",
           stateMutability: "view",
           inputs: [],
@@ -532,6 +544,13 @@
             },
           ],
         },
+        {
+          type: "function",
+          name: "splitBps",
+          stateMutability: "view",
+          inputs: [{ name: "caseId", type: "uint256" }],
+          outputs: [{ type: "uint16" }],
+        },
       ];
 
       const DEAL_STATUS = [
@@ -557,7 +576,7 @@
         publicClient: null,
         walletClient: null,
         currentDeal: null, // { id, payer, payee, amount, status, deliverBy, caseId }
-        currentAppeal: null, // { appellant, stake, preAppealVerdict, active }
+        currentAppeal: null, // { appellant, stake, preAppealVerdict, preAppealPayeeBps, active }
         currentCase: null, // CaseView or null
         pendingSettlement: 0n,
       };
@@ -804,9 +823,13 @@
         } catch {
           return toast("amount: invalid decimal", "err");
         }
-        const deliverBy = BigInt(
-          Math.floor(new Date(deliverByLocal).getTime() / 1000),
-        );
+        const deliverByMs = new Date(deliverByLocal).getTime();
+        if (!Number.isFinite(deliverByMs))
+          return toast("deliverBy: invalid date", "err");
+        const deliverBySec = Math.floor(deliverByMs / 1000);
+        if (deliverBySec <= Math.floor(Date.now() / 1000))
+          return toast("deliverBy must be in the future", "err");
+        const deliverBy = BigInt(deliverBySec);
 
         const receipt = await sendTx({
           address: state.cfg.escrow,
@@ -839,7 +862,10 @@
 
       function fmtDate(unix) {
         if (!unix || unix === 0n) return "—";
-        const d = new Date(Number(unix) * 1000);
+        const seconds = Number(unix);
+        if (!Number.isFinite(seconds) || seconds <= 0) return "—";
+        const d = new Date(seconds * 1000);
+        if (Number.isNaN(d.getTime())) return "—";
         return `${d.toLocaleString()} (${unix.toString()})`;
       }
 
@@ -848,7 +874,12 @@
         if (!idStr) return toast("deal id required", "err");
         if (!state.cfg.escrow) return toast("escrow not configured", "err");
         if (!state.publicClient) return toast("rpc not configured", "err");
-        const id = BigInt(idStr);
+        let id;
+        try {
+          id = BigInt(idStr);
+        } catch {
+          return toast("deal id must be an integer", "err");
+        }
         try {
           const [dealRaw, appealRaw] = await Promise.all([
             state.publicClient.readContract({
@@ -874,11 +905,18 @@
             deliverBy,
             caseId,
           };
-          const [appellant, stake, preAppealVerdict, active] = appealRaw;
+          const [
+            appellant,
+            stake,
+            preAppealVerdict,
+            preAppealPayeeBps,
+            active,
+          ] = appealRaw;
           state.currentAppeal = {
             appellant,
             stake,
             preAppealVerdict: Number(preAppealVerdict),
+            preAppealPayeeBps: Number(preAppealPayeeBps),
             active,
           };
           renderDeal();
@@ -973,6 +1011,10 @@
             `${formatEther(state.currentAppeal.stake)} STT`;
           $("aiPre").textContent =
             VERDICT[state.currentAppeal.preAppealVerdict] ?? "?";
+          $("aiPreShare").textContent =
+            state.currentAppeal.preAppealVerdict === 3
+              ? `${state.currentAppeal.preAppealPayeeBps / 100}%`
+              : "—";
         } else {
           $("appealInfo").classList.add("hidden");
         }
@@ -1121,17 +1163,30 @@
         if (!state.cfg.court) return toast("court not configured", "err");
         if (!state.publicClient) return toast("rpc not configured", "err");
         try {
-          const [cv, appealWindow, maxRound] = await Promise.all([
+          let caseId;
+          try {
+            caseId = BigInt(idStr);
+          } catch {
+            return toast("case id must be an integer", "err");
+          }
+          const [cv, payeeBps, appealDeadline, maxRound] = await Promise.all([
             state.publicClient.readContract({
               address: state.cfg.court,
               abi: COURT_ABI,
               functionName: "getCase",
-              args: [BigInt(idStr)],
+              args: [caseId],
             }),
             state.publicClient.readContract({
               address: state.cfg.court,
               abi: COURT_ABI,
-              functionName: "appealWindow",
+              functionName: "splitBps",
+              args: [caseId],
+            }),
+            state.publicClient.readContract({
+              address: state.cfg.court,
+              abi: COURT_ABI,
+              functionName: "appealDeadlineOf",
+              args: [caseId],
             }),
             state.publicClient.readContract({
               address: state.cfg.court,
@@ -1148,6 +1203,8 @@
             `<span class="badge">${CASE_STATUS[Number(cv.status)] ?? "?"}</span>`;
           $("cvVerdict").innerHTML =
             `<span class="badge">${VERDICT[Number(cv.verdict)] ?? "?"}</span>`;
+          $("cvPayeeShare").textContent =
+            Number(cv.verdict) === 3 ? `${Number(payeeBps) / 100}%` : "—";
           if (cv.receiptId > 0n) {
             const url = `https://agents.somnia.network/receipts/${cv.receiptId}`;
             $("cvReceipt").innerHTML =
@@ -1160,7 +1217,7 @@
           const canFinalize =
             Number(cv.status) === 2 &&
             (Number(cv.round) === Number(maxRound) ||
-              now > cv.rulingTime + appealWindow);
+              (appealDeadline > 0n && now > appealDeadline));
           $("finalizeBtn").classList.toggle("hidden", !canFinalize);
         } catch (e) {
           toast(`load case: ${errMsg(e)}`, "err");
@@ -1170,11 +1227,17 @@
       async function finalizeCase() {
         const idStr = $("caseIdInput").value.trim();
         if (!idStr) return toast("case id required", "err");
+        let caseId;
+        try {
+          caseId = BigInt(idStr);
+        } catch {
+          return toast("case id must be an integer", "err");
+        }
         const r = await sendTx({
           address: state.cfg.court,
           abi: COURT_ABI,
           functionName: "finalize",
-          args: [BigInt(idStr)],
+          args: [caseId],
         });
         if (r) {
           await loadCase();

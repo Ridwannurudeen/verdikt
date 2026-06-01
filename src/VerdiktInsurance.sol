@@ -55,6 +55,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
         address appellant;
         uint256 stake;
         Verdict preAppealVerdict;
+        uint16 preAppealPayeeBps;
         bool fromPool; // true if appellant is a pool funder (counterparty = insured); false if insured (counterparty = pool)
         bool active;
     }
@@ -99,6 +100,8 @@ contract VerdiktInsurance is IVerdiktConsumer {
     }
 
     constructor(address court_, address treasury_) {
+        require(court_ != address(0), "zero court");
+        require(treasury_ != address(0), "zero treasury");
         court = IVerdiktCourt(court_);
         owner = msg.sender;
         treasury = treasury_;
@@ -225,7 +228,12 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(msg.value >= stake + agentDep, "value too low");
 
         appeals[claimId] = AppealInfo({
-            appellant: msg.sender, stake: stake, preAppealVerdict: cv.verdict, fromPool: fromPool, active: true
+            appellant: msg.sender,
+            stake: stake,
+            preAppealVerdict: cv.verdict,
+            preAppealPayeeBps: court.splitBps(c.caseId),
+            fromPool: fromPool,
+            active: true
         });
 
         court.appeal{value: agentDep}(c.caseId, newEvidence);
@@ -241,7 +249,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(c.status == ClaimStatus.Filed, "not filed");
 
         Policy storage p = policies[c.policyId];
-        uint256 payout = _payout(verdict, p.coverage);
+        uint256 payout = _payout(verdict, p.coverage, c.caseId);
 
         c.status = ClaimStatus.Settled;
         p.activeClaimId = 0;
@@ -261,7 +269,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
         AppealInfo storage a = appeals[escrowRef];
         if (a.active) {
             a.active = false;
-            if (verdict == a.preAppealVerdict) {
+            if (_sameRuling(verdict, court.splitBps(c.caseId), a.preAppealVerdict, a.preAppealPayeeBps)) {
                 // appeal failed: slash stake to the counterparty side (minus treasury cut).
                 uint256 cut = (a.stake * keeperCutBps) / 10000;
                 uint256 toWinner = a.stake - cut;
@@ -295,10 +303,19 @@ contract VerdiktInsurance is IVerdiktConsumer {
 
     // --- internals ------------------------------------------------------------
 
-    function _payout(Verdict verdict, uint256 coverage) internal pure returns (uint256) {
+    function _payout(Verdict verdict, uint256 coverage, uint256 caseId) internal view returns (uint256) {
         if (verdict == Verdict.PAYEE) return coverage;
-        if (verdict == Verdict.SPLIT) return coverage / 2;
+        if (verdict == Verdict.SPLIT) return (coverage * court.splitBps(caseId)) / 10000;
         return 0; // PAYER (or NONE) -> no payout
+    }
+
+    function _sameRuling(Verdict current, uint16 currentBps, Verdict previous, uint16 previousBps)
+        internal
+        pure
+        returns (bool)
+    {
+        if (current != previous) return false;
+        return current != Verdict.SPLIT || currentBps == previousBps;
     }
 
     function _pay(address to, uint256 amount) internal {

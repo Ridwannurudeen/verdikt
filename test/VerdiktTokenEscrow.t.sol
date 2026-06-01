@@ -40,6 +40,42 @@ contract NoReturnERC20 {
     }
 }
 
+contract FeeOnTransferERC20 {
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        uint256 allowed = allowance[from][msg.sender];
+        require(allowed >= amount, "insufficient allowance");
+        if (allowed != type(uint256).max) {
+            allowance[from][msg.sender] = allowed - amount;
+        }
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    function _transfer(address from, address to, uint256 amount) internal {
+        require(balanceOf[from] >= amount, "insufficient balance");
+        uint256 fee = amount / 100;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount - fee;
+    }
+}
+
 contract VerdiktTokenEscrowTest is Test {
     MockAgentRequester platform;
     VerdiktCourt court;
@@ -110,6 +146,18 @@ contract VerdiktTokenEscrowTest is Test {
         (,, uint256 amount, VerdiktTokenEscrow.DealStatus st,,) = e.deals(dealId);
         assertEq(amount, AMOUNT);
         assertEq(uint8(st), uint8(VerdiktTokenEscrow.DealStatus.Funded));
+    }
+
+    function test_createDeal_rejectsFeeOnTransferToken() public {
+        FeeOnTransferERC20 feeToken = new FeeOnTransferERC20();
+        VerdiktTokenEscrow e = new VerdiktTokenEscrow(address(court), treasury, address(feeToken));
+        feeToken.mint(payer, AMOUNT);
+        vm.prank(payer);
+        feeToken.approve(address(e), type(uint256).max);
+
+        vm.prank(payer);
+        vm.expectRevert(bytes("fee token unsupported"));
+        e.createDeal(payee, AMOUNT, uint64(block.timestamp + 1 days));
     }
 
     function test_dispute_payeeWins_creditsAndWithdraws() public {
@@ -189,6 +237,20 @@ contract VerdiktTokenEscrowTest is Test {
         assertEq(token.balanceOf(payee), eBefore + (AMOUNT - AMOUNT / 2));
     }
 
+    function test_dispute_gradedSplit75_creditsPayeeShare() public {
+        court.setGradedSplit(true);
+        uint256 dealId = _newDeal();
+        _dispute(dealId, payer, "mostly delivered");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+
+        uint256 caseId = _caseId(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+
+        assertEq(escrow.pending(payer), AMOUNT / 4);
+        assertEq(escrow.pending(payee), AMOUNT - AMOUNT / 4);
+    }
+
     function test_appeal_upheld_slashesStake() public {
         uint256 dealId = _newDeal();
         _dispute(dealId, payer, "ev0");
@@ -238,6 +300,25 @@ contract VerdiktTokenEscrowTest is Test {
         vm.prank(payer);
         escrow.withdraw();
         assertEq(token.balanceOf(payer), before + AMOUNT + stake);
+    }
+
+    function test_gradedSplitAppeal_changedBpsReturnsStake() public {
+        court.setGradedSplit(true);
+        uint256 dealId = _newDeal();
+        _dispute(dealId, payer, "partial delivery");
+        platform.fireSuccess(_lastReq(), "SPLIT25");
+
+        uint256 caseId = _caseId(dealId);
+        uint256 stake = (AMOUNT * escrow.appealStakeBps()) / 10000;
+        uint256 agentDep = court.quoteAppeal(caseId);
+        vm.prank(payer);
+        escrow.appeal{value: agentDep}(dealId, "more delivery evidence");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+
+        court.finalize(caseId);
+        assertEq(escrow.pending(payer), AMOUNT / 4 + stake);
+        assertEq(escrow.pending(payee), AMOUNT - AMOUNT / 4);
+        assertEq(escrow.pending(treasury), 0);
     }
 
     function test_dispute_onlyParty() public {

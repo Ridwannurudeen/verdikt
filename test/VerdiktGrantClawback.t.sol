@@ -107,6 +107,17 @@ contract VerdiktGrantClawbackTest is Test {
         assertEq(grantee.balance, granteeBefore + 0.5 ether);
     }
 
+    function test_gradedSplit75_releasesThreeQuarters() public {
+        court.setGradedSplit(true);
+        uint256 grantId = _newGrant();
+        _dispute(grantId, dao, "mostly delivered");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+        _finalize(grantId);
+
+        assertEq(grant.pending(dao), 0.25 ether);
+        assertEq(grant.pending(grantee), 0.75 ether);
+    }
+
     function test_dispute_onlyParty() public {
         uint256 grantId = _newGrant();
         uint256 fee = court.quoteOpen();

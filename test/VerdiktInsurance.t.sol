@@ -160,6 +160,21 @@ contract VerdiktInsuranceTest is Test {
         assertEq(uint8(st), uint8(VerdiktInsurance.PolicyStatus.Exhausted));
     }
 
+    function test_fileClaim_gradedSplit75_paysThreeQuarters() public {
+        court.setGradedSplit(true);
+        _fund(funder, 10 ether);
+        uint256 policyId = _policy();
+        uint256 claimId = _fileClaim(policyId, "mostly valid loss");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+
+        uint256 caseId = _caseId(claimId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+
+        assertEq(ins.pending(insured), (COVERAGE * 7500) / 10000);
+        assertEq(ins.lockedCoverage(), 0);
+    }
+
     function test_appeal_byInsured_overturned_returnsStake() public {
         _fund(funder, 10 ether);
         uint256 policyId = _policy();
@@ -240,6 +255,25 @@ contract VerdiktInsuranceTest is Test {
         // insured gets coverage + slashed stake (minus treasury cut)
         assertEq(ins.pending(insured), COVERAGE + toWinner);
         assertEq(ins.pending(treasury), cut);
+    }
+
+    function test_gradedSplitAppeal_changedBpsReturnsStake() public {
+        court.setGradedSplit(true);
+        _fund(funder, 10 ether);
+        uint256 policyId = _policy();
+        uint256 claimId = _fileClaim(policyId, "partial loss");
+        platform.fireSuccess(_lastReq(), "SPLIT25");
+
+        uint256 caseId = _caseId(claimId);
+        uint256 stake = (COVERAGE * ins.appealStakeBps()) / 10000;
+        uint256 agentDep = court.quoteAppeal(caseId);
+        vm.prank(insured);
+        ins.appealClaim{value: stake + agentDep}(claimId, "larger loss evidence");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+
+        court.finalize(caseId);
+        assertEq(ins.pending(insured), (COVERAGE * 7500) / 10000 + stake);
+        assertEq(ins.pending(treasury), 0);
     }
 
     function test_appeal_byNonFunder_reverts_onPayeeVerdict() public {

@@ -147,6 +147,25 @@ contract VerdiktEscrowTest is Test {
         assertEq(escrow.pending(payer), 1.1 ether);
     }
 
+    function test_gradedSplitAppeal_changedBpsReturnsStake() public {
+        court.setGradedSplit(true);
+        uint256 dealId = _newDeal();
+        _dispute(dealId, payer, "partial delivery");
+        platform.fireSuccess(_lastReq(), "SPLIT25");
+
+        uint256 caseId = _caseId(dealId);
+        uint256 stake = 0.1 ether;
+        uint256 agentDep = court.quoteAppeal(caseId);
+        vm.prank(payer);
+        escrow.appeal{value: stake + agentDep}(dealId, "more delivery evidence");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+
+        court.finalize(caseId);
+        assertEq(escrow.pending(payer), 0.25 ether + stake);
+        assertEq(escrow.pending(payee), 0.75 ether);
+        assertEq(escrow.pending(treasury), 0);
+    }
+
     function test_settles_toNonReceivingPayee_doesNotBrick() public {
         NonReceivingEscrowPayee badPayee = new NonReceivingEscrowPayee();
         vm.prank(payer);

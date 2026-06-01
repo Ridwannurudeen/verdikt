@@ -39,6 +39,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
         address appellant;
         uint256 stake;
         Verdict preAppealVerdict;
+        uint16 preAppealPayeeBps;
         bool active;
     }
 
@@ -67,6 +68,8 @@ contract VerdiktEscrow is IVerdiktConsumer {
     }
 
     constructor(address court_, address treasury_) {
+        require(court_ != address(0), "zero court");
+        require(treasury_ != address(0), "zero treasury");
         court = IVerdiktCourt(court_);
         owner = msg.sender;
         treasury = treasury_;
@@ -148,7 +151,13 @@ contract VerdiktEscrow is IVerdiktConsumer {
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= stake + agentDep, "value too low");
 
-        appeals[dealId] = AppealInfo({appellant: msg.sender, stake: stake, preAppealVerdict: cv.verdict, active: true});
+        appeals[dealId] = AppealInfo({
+            appellant: msg.sender,
+            stake: stake,
+            preAppealVerdict: cv.verdict,
+            preAppealPayeeBps: court.splitBps(d.caseId),
+            active: true
+        });
 
         court.appeal{value: agentDep}(d.caseId, newEvidence);
         _refundExcess(msg.value, stake + agentDep);
@@ -173,7 +182,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
         AppealInfo storage a = appeals[escrowRef];
         if (a.active) {
             a.active = false;
-            if (verdict == a.preAppealVerdict) {
+            if (_sameRuling(verdict, court.splitBps(d.caseId), a.preAppealVerdict, a.preAppealPayeeBps)) {
                 // appeal failed: slash stake to the appellant's counterparty (minus treasury cut)
                 address winner = a.appellant == d.payer ? d.payee : d.payer;
                 uint256 cut = (a.stake * keeperCutBps) / 10000;
@@ -219,6 +228,15 @@ contract VerdiktEscrow is IVerdiktConsumer {
         // payer's floored share; the payee receives the remainder wei (never stranded).
         toPayer = (amount * (10000 - court.splitBps(caseId))) / 10000;
         toPayee = amount - toPayer;
+    }
+
+    function _sameRuling(Verdict current, uint16 currentBps, Verdict previous, uint16 previousBps)
+        internal
+        pure
+        returns (bool)
+    {
+        if (current != previous) return false;
+        return current != Verdict.SPLIT || currentBps == previousBps;
     }
 
     // --- internals ------------------------------------------------------------

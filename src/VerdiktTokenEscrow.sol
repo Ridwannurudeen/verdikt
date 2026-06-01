@@ -49,6 +49,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         address appellant;
         uint256 stake;
         Verdict preAppealVerdict;
+        uint16 preAppealPayeeBps;
         bool active;
     }
 
@@ -80,6 +81,9 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     }
 
     constructor(address court_, address treasury_, address token_) {
+        require(court_ != address(0), "zero court");
+        require(treasury_ != address(0), "zero treasury");
+        require(token_ != address(0), "zero token");
         court = IVerdiktCourt(court_);
         token = IERC20(token_);
         owner = msg.sender;
@@ -91,7 +95,9 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     function createDeal(address payee, uint256 amount, uint64 deliverBy) external returns (uint256 dealId) {
         require(amount > 0, "no funds");
         require(payee != address(0) && payee != msg.sender, "bad payee");
+        uint256 beforeBalance = token.balanceOf(address(this));
         _safeTransferFrom(msg.sender, address(this), amount);
+        require(token.balanceOf(address(this)) - beforeBalance == amount, "fee token unsupported");
         dealId = nextDealId++;
         deals[dealId] = Deal({
             payer: msg.sender, payee: payee, amount: amount, status: DealStatus.Funded, deliverBy: deliverBy, caseId: 0
@@ -158,9 +164,17 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= agentDep, "value too low");
 
+        uint256 beforeBalance = token.balanceOf(address(this));
         _safeTransferFrom(msg.sender, address(this), stake);
+        require(token.balanceOf(address(this)) - beforeBalance == stake, "fee token unsupported");
 
-        appeals[dealId] = AppealInfo({appellant: msg.sender, stake: stake, preAppealVerdict: cv.verdict, active: true});
+        appeals[dealId] = AppealInfo({
+            appellant: msg.sender,
+            stake: stake,
+            preAppealVerdict: cv.verdict,
+            preAppealPayeeBps: court.splitBps(d.caseId),
+            active: true
+        });
 
         court.appeal{value: agentDep}(d.caseId, newEvidence);
         _refundExcess(msg.value, agentDep);
@@ -177,7 +191,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         uint256 amount = d.amount;
         d.status = DealStatus.Settled;
 
-        (uint256 toPayer, uint256 toPayee) = _split(verdict, amount);
+        (uint256 toPayer, uint256 toPayee) = _split(verdict, amount, d.caseId);
         if (toPayer > 0) pending[d.payer] += toPayer;
         if (toPayee > 0) pending[d.payee] += toPayee;
         emit DealSettled(escrowRef, verdict, toPayer, toPayee);
@@ -185,7 +199,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         AppealInfo storage a = appeals[escrowRef];
         if (a.active) {
             a.active = false;
-            if (verdict == a.preAppealVerdict) {
+            if (_sameRuling(verdict, court.splitBps(d.caseId), a.preAppealVerdict, a.preAppealPayeeBps)) {
                 // appeal failed: slash stake to the appellant's counterparty (minus treasury cut)
                 address winner = a.appellant == d.payer ? d.payee : d.payer;
                 uint256 cut = (a.stake * keeperCutBps) / 10000;
@@ -228,12 +242,24 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         return address(0); // SPLIT has no single loser
     }
 
-    function _split(Verdict verdict, uint256 amount) internal pure returns (uint256 toPayer, uint256 toPayee) {
+    function _split(Verdict verdict, uint256 amount, uint256 caseId)
+        internal
+        view
+        returns (uint256 toPayer, uint256 toPayee)
+    {
         if (verdict == Verdict.PAYEE) return (0, amount);
         if (verdict == Verdict.PAYER) return (amount, 0);
-        // SPLIT (or NONE fallback treated as split to avoid stranding funds)
-        uint256 half = amount / 2;
-        return (half, amount - half);
+        toPayer = (amount * (10000 - court.splitBps(caseId))) / 10000;
+        toPayee = amount - toPayer;
+    }
+
+    function _sameRuling(Verdict current, uint16 currentBps, Verdict previous, uint16 previousBps)
+        internal
+        pure
+        returns (bool)
+    {
+        if (current != previous) return false;
+        return current != Verdict.SPLIT || currentBps == previousBps;
     }
 
     // --- internals ------------------------------------------------------------

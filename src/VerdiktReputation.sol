@@ -38,6 +38,7 @@ contract VerdiktReputation {
     event ReputationRecorded(address indexed party, uint256 indexed caseId, Side side, Verdict verdict);
 
     constructor(address court_) {
+        require(court_ != address(0), "zero court");
         court = IVerdiktCourt(court_);
     }
 

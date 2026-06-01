@@ -17,6 +17,7 @@ contract VerdiktRegistry {
         address consumer;
         uint256 escrowRef;
         Verdict verdict;
+        uint16 payeeBps;
         uint256 receiptId;
         uint64 rulingTime;
         bytes32 topic;
@@ -34,6 +35,7 @@ contract VerdiktRegistry {
     );
 
     constructor(address court_) {
+        require(court_ != address(0), "zero court");
         court = IVerdiktCourt(court_);
     }
 
@@ -48,6 +50,7 @@ contract VerdiktRegistry {
             consumer: cv.consumer,
             escrowRef: cv.escrowRef,
             verdict: cv.verdict,
+            payeeBps: court.splitBps(caseId),
             receiptId: cv.receiptId,
             rulingTime: cv.rulingTime,
             topic: topic

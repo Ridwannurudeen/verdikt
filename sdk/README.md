@@ -36,6 +36,8 @@ interface IVerdiktCourt {
     function quoteOpen() external view returns (uint256);
     function quoteAppeal(uint256 caseId) external view returns (uint256);
     function getCase(uint256 caseId) external view returns (CaseView memory);
+    function splitBps(uint256 caseId) external view returns (uint16);
+    function appealDeadlineOf(uint256 caseId) external view returns (uint64);
     function appealWindow() external view returns (uint64);
 }
 ```
@@ -91,8 +93,9 @@ contract MyAgent is IVerdiktConsumer {
 1. **Open.** `quoteOpen()` returns the exact fee; pass it as `msg.value` to `openCase`. The
    court convenes the trial panel (5 agents) and returns a `caseId`.
 2. **Wait for the ruling.** The panel callback sets `status` to `Ruled` and fills `verdict` +
-   `rulingTime`. Read it with `getCase(caseId)`.
-3. **(Optional) appeal.** While `status == Ruled` and `block.timestamp <= rulingTime + appealWindow()`,
+   `rulingTime`. Read it with `getCase(caseId)`. If `verdict == SPLIT`, read
+   `splitBps(caseId)`; a graded court may return 2500/5000/7500 rather than assuming 50/50.
+3. **(Optional) appeal.** While `status == Ruled` and `block.timestamp <= appealDeadlineOf(caseId)`,
    call `appeal{value: quoteAppeal(caseId)}(caseId, newEvidence)`. A larger panel (9 agents)
    re-tries with the appended evidence. `appeal` is restricted to the case's original `consumer`.
 4. **Finalize.** Once the appeal window has passed (or the final round is in), anyone — a

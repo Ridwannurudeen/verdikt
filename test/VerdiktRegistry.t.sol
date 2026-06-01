@@ -69,6 +69,7 @@ contract VerdiktRegistryTest is Test {
         assertEq(r.consumer, cv.consumer);
         assertEq(r.escrowRef, cv.escrowRef);
         assertEq(uint8(r.verdict), uint8(cv.verdict));
+        assertEq(r.payeeBps, court.splitBps(caseId));
         assertEq(r.receiptId, cv.receiptId);
         assertEq(r.rulingTime, cv.rulingTime);
         assertEq(r.topic, TOPIC);
@@ -87,6 +88,16 @@ contract VerdiktRegistryTest is Test {
         uint256[] memory byC = registry.rulingsByConsumer(cv.consumer);
         assertEq(byC.length, 1);
         assertEq(byC[0], caseId);
+    }
+
+    function test_record_storesGradedSplitBps() public {
+        court.setGradedSplit(true);
+        uint256 caseId = _finalCase("SPLIT75");
+        registry.record(caseId, TOPIC);
+
+        VerdiktRegistry.Ruling memory r = registry.getRuling(caseId);
+        assertEq(uint8(r.verdict), uint8(Verdict.SPLIT));
+        assertEq(r.payeeBps, 7500);
     }
 
     function test_record_permissionless() public {

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// @notice Verdict labels. Index into the allowedValues array passed to the LLM agent
-/// (PAYEE=1, PAYER=2, SPLIT=3); NONE=0 means unparseable / not yet ruled.
+/// @notice Verdict labels. Graded SPLIT labels resolve to SPLIT plus a basis-point share
+/// readable through splitBps(caseId); NONE=0 means unparseable / not yet ruled.
 enum Verdict {
     NONE,
     PAYEE,
@@ -46,6 +46,7 @@ interface IVerdiktCourt {
     /// @notice Payee share of the disputed amount in basis points for a ruled case:
     /// PAYEE = 10000, PAYER = 0, SPLIT = 5000 (or a graded value when graded mode is on).
     function splitBps(uint256 caseId) external view returns (uint16);
+    function appealDeadlineOf(uint256 caseId) external view returns (uint64);
     function appealWindow() external view returns (uint64);
     function MAX_ROUND() external view returns (uint8);
 }

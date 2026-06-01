@@ -53,7 +53,7 @@
             "name": "What is Verdikt?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Verdikt is an on-chain arbitration court. When a deal is contested, the contract convenes a panel of validator-run LLM agents that review the evidence and return a binding verdict (PAYEE / PAYER / SPLIT) under majority consensus. It is a reusable settlement primitive any contract or agent can call."
+              "text": "Verdikt is an on-chain arbitration court. When a deal is contested, the contract convenes a panel of validator-run LLM agents that review the evidence and return a binding verdict (PAYEE / PAYER / SPLIT, with optional graded split percentages) under majority consensus. It is a reusable settlement primitive any contract or agent can call."
             }
           },
           {
@@ -681,7 +681,7 @@
             <div class="lbl">Solidity contracts deployed</div>
           </div>
           <div class="stat">
-            <div class="num">141</div>
+            <div class="num">168</div>
             <div class="lbl">Tests passing (incl. fuzz + invariant)</div>
           </div>
           <div class="stat">
@@ -721,7 +721,8 @@
             <h3>AI panel runs</h3>
             <p>
               5 Somnia validators each run the same LLM inference, constrained
-              to <span class="mono">PAYEE / PAYER / SPLIT</span>.
+              to <span class="mono">PAYEE / PAYER / SPLIT</span> or the opt-in
+              graded split set.
             </p>
           </div>
           <div class="step">
@@ -990,7 +991,7 @@
             <p>
               It's unaudited hackathon code on testnet. There is an internal
               security review (<span class="mono">SECURITY.md</span>) and a
-              141-test suite including fuzz and invariant tests. A third-party
+              168-test suite including fuzz and invariant tests. A third-party
               audit is a prerequisite for mainnet.
             </p>
           </details>

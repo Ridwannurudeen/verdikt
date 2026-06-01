@@ -29,6 +29,10 @@ contract MockConsumer is IVerdiktConsumer {
         court.retry{value: msg.value}(caseId);
     }
 
+    function withdrawCourtRefund() external returns (uint256) {
+        return VerdiktCourt(payable(address(court))).withdrawRefund();
+    }
+
     function onVerdict(uint256 ref, Verdict v) external override {
         lastRef = ref;
         lastVerdict = v;
@@ -42,6 +46,8 @@ contract VerdiktCourtTest is Test {
     MockAgentRequester platform;
     VerdiktCourt court;
     MockConsumer consumer;
+
+    receive() external payable {}
 
     function setUp() public {
         platform = new MockAgentRequester();
@@ -69,11 +75,45 @@ contract VerdiktCourtTest is Test {
         consumer.open{value: q - 1}(1, "x");
     }
 
-    function test_openCase_refundsExcessDeposit() public {
+    function test_openCase_creditsExcessRefund() public {
         uint256 q = court.quoteOpen();
         uint256 before = address(consumer).balance;
         consumer.open{value: q + 1 ether}(42, "buyer never shipped");
+        assertEq(address(consumer).balance, before);
+        assertEq(court.pendingRefunds(address(consumer)), 1 ether);
+
+        consumer.withdrawCourtRefund();
         assertEq(address(consumer).balance, before + 1 ether);
+        assertEq(court.pendingRefunds(address(consumer)), 0);
+    }
+
+    function test_sweep_preservesPendingRefunds() public {
+        uint256 q = court.quoteOpen();
+        consumer.open{value: q + 1 ether}(42, "buyer never shipped");
+        (bool ok,) = payable(address(court)).call{value: 2 ether}("");
+        require(ok, "fund court");
+
+        court.sweep(address(this));
+        assertEq(court.pendingRefunds(address(consumer)), 1 ether);
+        assertEq(address(court).balance, 1 ether);
+
+        consumer.withdrawCourtRefund();
+        assertEq(address(court).balance, 0);
+    }
+
+    function test_quoteAppeal_revertsUnknownCase() public {
+        vm.expectRevert(bytes("unknown case"));
+        court.quoteAppeal(999);
+    }
+
+    function test_quoteAppeal_revertsAfterMaxRound() public {
+        uint256 caseId = consumer.open{value: court.quoteOpen()}(1, "r0");
+        platform.fireSuccess(_lastReq(), "PAYER");
+        consumer.doAppeal{value: court.quoteAppeal(caseId)}(caseId, "r1");
+        platform.fireSuccess(_lastReq(), "PAYER");
+
+        vm.expectRevert(bytes("no rounds left"));
+        court.quoteAppeal(caseId);
     }
 
     function test_verdictReached_andFinalize() public {

@@ -107,6 +107,17 @@ contract VerdiktMilestoneTest is Test {
         assertEq(freelancer.balance, freelancerBefore + 0.5 ether);
     }
 
+    function test_gradedSplit75_paysFreelancerThreeQuarters() public {
+        court.setGradedSplit(true);
+        uint256 id = _newMilestone();
+        _dispute(id, client, "mostly complete");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+        _finalize(id);
+
+        assertEq(milestone.pending(client), 0.25 ether);
+        assertEq(milestone.pending(freelancer), 0.75 ether);
+    }
+
     function test_dispute_onlyParty() public {
         uint256 id = _newMilestone();
         uint256 fee = court.quoteOpen();

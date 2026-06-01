@@ -45,6 +45,8 @@ contract VerdiktMilestone is IVerdiktConsumer {
     event Withdrawn(address indexed who, uint256 amount);
 
     constructor(address court_, address treasury_) {
+        require(court_ != address(0), "zero court");
+        require(treasury_ != address(0), "zero treasury");
         court = IVerdiktCourt(court_);
         treasury = treasury_;
     }
@@ -93,7 +95,7 @@ contract VerdiktMilestone is IVerdiktConsumer {
         uint256 amount = m.amount;
         m.status = MilestoneStatus.Settled;
 
-        (uint256 toClient, uint256 toFreelancer) = _split(verdict, amount);
+        (uint256 toClient, uint256 toFreelancer) = _split(verdict, amount, m.caseId);
         if (toClient > 0) pending[m.client] += toClient;
         if (toFreelancer > 0) pending[m.freelancer] += toFreelancer;
         emit MilestoneSettled(escrowRef, verdict, toClient, toFreelancer);
@@ -113,12 +115,15 @@ contract VerdiktMilestone is IVerdiktConsumer {
     // --- internals ------------------------------------------------------------
 
     /// @dev PAYER refunds the client; PAYEE pays the freelancer.
-    function _split(Verdict verdict, uint256 amount) internal pure returns (uint256 toClient, uint256 toFreelancer) {
+    function _split(Verdict verdict, uint256 amount, uint256 caseId)
+        internal
+        view
+        returns (uint256 toClient, uint256 toFreelancer)
+    {
         if (verdict == Verdict.PAYER) return (amount, 0);
         if (verdict == Verdict.PAYEE) return (0, amount);
-        // SPLIT (or NONE fallback treated as split to avoid stranding funds)
-        uint256 half = amount / 2;
-        return (half, amount - half);
+        toClient = (amount * (10000 - court.splitBps(caseId))) / 10000;
+        toFreelancer = amount - toClient;
     }
 
     function _refundExcess(uint256 sent, uint256 used) internal {

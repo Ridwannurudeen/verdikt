@@ -41,6 +41,7 @@ const DEFAULT_POLL_MS = 30_000;
 const COURT_ABI = parseAbi([
   "function finalize(uint256 caseId)",
   "function appealWindow() view returns (uint64)",
+  "function appealDeadlineOf(uint256 caseId) view returns (uint64)",
   "function nextCaseId() view returns (uint256)",
   "function getCase(uint256 caseId) view returns (address consumer, uint256 escrowRef, uint8 round, uint8 status, uint8 verdict, uint256 receiptId, uint64 rulingTime)",
   "function MAX_ROUND() view returns (uint8)",
@@ -89,8 +90,13 @@ function parseRpcs(value) {
 }
 
 function readEnv() {
-  const { PRIVATE_KEY, SHANNON_RPC, COURT_ADDRESS, ESCROW_ADDRESS, POLL_INTERVAL_MS } =
-    process.env;
+  const {
+    PRIVATE_KEY,
+    SHANNON_RPC,
+    COURT_ADDRESS,
+    ESCROW_ADDRESS,
+    POLL_INTERVAL_MS,
+  } = process.env;
   if (!PRIVATE_KEY || !/^0x[0-9a-fA-F]{64}$/.test(PRIVATE_KEY)) {
     die("PRIVATE_KEY missing or not a 0x-prefixed 32-byte hex string");
   }
@@ -131,7 +137,23 @@ async function tryFinalize(ctx, caseId) {
   if (status !== CASE_RULED) return;
 
   const now = ctx.latestTimestamp;
-  const windowEnd = rulingTime + ctx.appealWindow;
+  let windowEnd = rulingTime + ctx.appealWindow;
+  if (ctx.hasAppealDeadlineView) {
+    try {
+      const deadline = await ctx.publicClient.readContract({
+        address: ctx.court,
+        abi: COURT_ABI,
+        functionName: "appealDeadlineOf",
+        args: [caseId],
+      });
+      if (deadline > 0n) windowEnd = deadline;
+    } catch (err) {
+      ctx.hasAppealDeadlineView = false;
+      console.error(
+        `[scan] appealDeadlineOf unavailable; using legacy appealWindow math: ${err.shortMessage ?? err.message}`,
+      );
+    }
+  }
   // MAX_ROUND rulings can finalize immediately; otherwise wait out the appeal window.
   if (round < ctx.maxRound && now <= windowEnd) return;
 
@@ -252,6 +274,17 @@ async function main() {
       functionName: "MAX_ROUND",
     }),
   ]);
+  let hasAppealDeadlineView = true;
+  try {
+    await publicClient.readContract({
+      address: cfg.court,
+      abi: COURT_ABI,
+      functionName: "appealDeadlineOf",
+      args: [0n],
+    });
+  } catch {
+    hasAppealDeadlineView = false;
+  }
 
   console.log(`verdikt-keeper`);
   console.log(`  rpcs         : ${cfg.rpcs.join(", ")} (auto-failover)`);
@@ -260,6 +293,9 @@ async function main() {
   console.log(`  escrow       : ${cfg.escrow}`);
   console.log(`  pollInterval : ${cfg.pollMs}ms`);
   console.log(`  appealWindow : ${appealWindow}s`);
+  console.log(
+    `  deadlineView : ${hasAppealDeadlineView ? "appealDeadlineOf" : "legacy"}`,
+  );
   console.log(`  maxRound     : ${maxRound}`);
 
   const ctx = {
@@ -269,6 +305,7 @@ async function main() {
     escrow: cfg.escrow,
     latestTimestamp: 0n,
     appealWindow,
+    hasAppealDeadlineView,
     maxRound: Number(maxRound),
     settledCases: new Set(),
     releasedDeals: new Set(),

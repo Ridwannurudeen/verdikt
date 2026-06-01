@@ -30,6 +30,7 @@ const CASE_STATUS = ["None", "Pending", "Ruled", "Final", "Errored"];
 // their ABI wire type uint8.
 const COURT_ABI = parseAbi([
   "function getCase(uint256 caseId) view returns ((address consumer, uint256 escrowRef, uint8 round, uint8 status, uint8 verdict, uint256 receiptId, uint64 rulingTime))",
+  "function splitBps(uint256 caseId) view returns (uint16)",
   "event VerdictReached(uint256 indexed caseId, uint8 verdict, uint8 round, uint256 receiptId)",
   "event Appealed(uint256 indexed caseId, uint8 newRound)",
   "event CaseFinalized(uint256 indexed caseId, uint8 verdict)",
@@ -152,6 +153,7 @@ async function main() {
         verdict: null,
         round: null,
         receiptId: null,
+        payeeBps: null,
         rulingTime: null,
         appealed: false,
         finalized: false,
@@ -183,17 +185,27 @@ async function main() {
   // Fill current on-chain status/verdict/consumer/escrowRef from getCase.
   for (const row of table.values()) {
     try {
-      const c = await publicClient.readContract({
-        address: cfg.court,
-        abi: COURT_ABI,
-        functionName: "getCase",
-        args: [BigInt(row.caseId)],
-      });
+      const caseId = BigInt(row.caseId);
+      const [c, payeeBps] = await Promise.all([
+        publicClient.readContract({
+          address: cfg.court,
+          abi: COURT_ABI,
+          functionName: "getCase",
+          args: [caseId],
+        }),
+        publicClient.readContract({
+          address: cfg.court,
+          abi: COURT_ABI,
+          functionName: "splitBps",
+          args: [caseId],
+        }),
+      ]);
       row.consumer = c.consumer;
       row.escrowRef = c.escrowRef.toString();
       row.round = Number(c.round);
       row.status = CASE_STATUS[Number(c.status)] ?? String(c.status);
       row.verdict = VERDICT[Number(c.verdict)] ?? row.verdict;
+      row.payeeBps = Number(payeeBps);
       row.receiptId = c.receiptId > 0n ? c.receiptId.toString() : row.receiptId;
       row.rulingTime = c.rulingTime > 0n ? Number(c.rulingTime) : null;
     } catch (err) {
@@ -211,7 +223,7 @@ async function main() {
     return 0;
   });
 
-  const outPath = resolve(__dirname, "caselaw.json");
+  const outPath = resolve(__dirname, "..", "ui", "caselaw.json");
   writeFileSync(outPath, JSON.stringify(rulings, null, 2));
   console.log(`  snapshot   : ${outPath} (${rulings.length} rulings)`);
 

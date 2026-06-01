@@ -41,6 +41,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         address appellant;
         uint256 stake;
         Verdict preAppealVerdict;
+        uint16 preAppealPayeeBps;
         bool active;
     }
 
@@ -69,6 +70,8 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     }
 
     constructor(address court_, address treasury_) {
+        require(court_ != address(0), "zero court");
+        require(treasury_ != address(0), "zero treasury");
         court = IVerdiktCourt(court_);
         owner = msg.sender;
         treasury = treasury_;
@@ -150,7 +153,13 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= stake + agentDep, "value too low");
 
-        appeals[dealId] = AppealInfo({appellant: msg.sender, stake: stake, preAppealVerdict: cv.verdict, active: true});
+        appeals[dealId] = AppealInfo({
+            appellant: msg.sender,
+            stake: stake,
+            preAppealVerdict: cv.verdict,
+            preAppealPayeeBps: court.splitBps(d.caseId),
+            active: true
+        });
 
         court.appeal{value: agentDep}(d.caseId, newEvidence);
         _refundExcess(msg.value, stake + agentDep);
@@ -167,7 +176,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         uint256 amount = d.amount;
         d.status = DealStatus.Settled;
 
-        (uint256 toPayer, uint256 toPayee) = _split(verdict, amount);
+        (uint256 toPayer, uint256 toPayee) = _split(verdict, amount, d.caseId);
         _credit(d.payer, toPayer);
         _credit(d.payee, toPayee);
         emit DealSettled(escrowRef, verdict, toPayer, toPayee);
@@ -175,7 +184,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         AppealInfo storage a = appeals[escrowRef];
         if (a.active) {
             a.active = false;
-            if (verdict == a.preAppealVerdict) {
+            if (_sameRuling(verdict, court.splitBps(d.caseId), a.preAppealVerdict, a.preAppealPayeeBps)) {
                 // appeal failed: slash stake to the appellant's counterparty (minus treasury cut)
                 address winner = a.appellant == d.payer ? d.payee : d.payer;
                 uint256 cut = (a.stake * keeperCutBps) / 10000;
@@ -212,12 +221,24 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         return address(0); // SPLIT has no single loser
     }
 
-    function _split(Verdict verdict, uint256 amount) internal pure returns (uint256 toPayer, uint256 toPayee) {
+    function _split(Verdict verdict, uint256 amount, uint256 caseId)
+        internal
+        view
+        returns (uint256 toPayer, uint256 toPayee)
+    {
         if (verdict == Verdict.PAYEE) return (0, amount);
         if (verdict == Verdict.PAYER) return (amount, 0);
-        // SPLIT (or NONE fallback treated as split to avoid stranding funds)
-        uint256 half = amount / 2;
-        return (half, amount - half);
+        toPayer = (amount * (10000 - court.splitBps(caseId))) / 10000;
+        toPayee = amount - toPayer;
+    }
+
+    function _sameRuling(Verdict current, uint16 currentBps, Verdict previous, uint16 previousBps)
+        internal
+        pure
+        returns (bool)
+    {
+        if (current != previous) return false;
+        return current != Verdict.SPLIT || currentBps == previousBps;
     }
 
     // --- internals ------------------------------------------------------------

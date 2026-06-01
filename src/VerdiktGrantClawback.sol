@@ -43,6 +43,8 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
     event Withdrawn(address indexed who, uint256 amount);
 
     constructor(address court_, address treasury_) {
+        require(court_ != address(0), "zero court");
+        require(treasury_ != address(0), "zero treasury");
         court = IVerdiktCourt(court_);
         treasury = treasury_;
     }
@@ -91,7 +93,7 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
         uint256 amount = g.amount;
         g.status = GrantStatus.Settled;
 
-        (uint256 toFunder, uint256 toGrantee) = _split(verdict, amount);
+        (uint256 toFunder, uint256 toGrantee) = _split(verdict, amount, g.caseId);
         if (toFunder > 0) pending[g.funder] += toFunder;
         if (toGrantee > 0) pending[g.grantee] += toGrantee;
         emit GrantSettled(escrowRef, verdict, toFunder, toGrantee);
@@ -111,12 +113,15 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
     // --- internals ------------------------------------------------------------
 
     /// @dev PAYER claws the grant back to the DAO funder; PAYEE releases to the grantee.
-    function _split(Verdict verdict, uint256 amount) internal pure returns (uint256 toFunder, uint256 toGrantee) {
+    function _split(Verdict verdict, uint256 amount, uint256 caseId)
+        internal
+        view
+        returns (uint256 toFunder, uint256 toGrantee)
+    {
         if (verdict == Verdict.PAYER) return (amount, 0);
         if (verdict == Verdict.PAYEE) return (0, amount);
-        // SPLIT (or NONE fallback treated as split to avoid stranding funds)
-        uint256 half = amount / 2;
-        return (half, amount - half);
+        toFunder = (amount * (10000 - court.splitBps(caseId))) / 10000;
+        toGrantee = amount - toFunder;
     }
 
     function _refundExcess(uint256 sent, uint256 used) internal {

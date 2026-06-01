@@ -116,6 +116,19 @@ contract VerdiktAgentEscrowTest is Test {
         assertEq(escrow.pending(payee), 0.5 ether);
     }
 
+    function test_dispute_gradedSplit75() public {
+        court.setGradedSplit(true);
+        uint256 dealId = _newDeal();
+        _dispute(dealId, payer, "mostly delivered");
+        platform.fireSuccess(_lastReq(), "SPLIT75");
+
+        uint256 caseId = _caseId(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+        assertEq(escrow.pending(payer), 0.25 ether);
+        assertEq(escrow.pending(payee), 0.75 ether);
+    }
+
     function test_appeal_upheld_slashesStake() public {
         uint256 dealId = _newDeal();
         _dispute(dealId, payer, "ev0");
