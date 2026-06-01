@@ -169,14 +169,15 @@ the chain routes through one shared Court.
       permissionless, append-only index of FINAL rulings: `record(caseId, topic)` reads `court.getCase`,
       stores the verdict + receiptId, and indexes by topic/consumer. Queryable case law that
       `EvidenceLib.priorCaseId` cites. 7 tests.
-- [~] **Richer verdict types** beyond `PAYEE/PAYER/SPLIT` — **built in code, gated on a live re-run.**
-      `VerdiktCourt` now has an opt-in `gradedSplit` mode offering `PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE`
+- [x] **Richer verdict types** beyond `PAYEE/PAYER/SPLIT` — **built + validated live.**
+      `VerdiktCourt` has an opt-in `gradedSplit` mode offering `PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE`
       (payee share in 25% buckets), exposed via `splitBps(caseId)`; `VerdiktEscrow` settles to that ratio
       (remainder wei to the payee). Off by default, so the live 3-label determinism behavior is unchanged.
-      8 tests in [`test/GradedSplit.t.sol`](test/GradedSplit.t.sol) (149 total). **Still required before
-      shipping:** a live Shannon determinism probe of the 5-label set — graded widens the agreement space,
-      so byte-identical convergence is not yet proven on-chain. Coarse 25% buckets were chosen to keep
-      convergence plausible.
+      8 tests in [`test/GradedSplit.t.sol`](test/GradedSplit.t.sol) (149 total). **✅ GRADED DETERMINISM
+      GATE PASSED LIVE ON SHANNON (2026-06-01):** probe `0x9c3A0FF5…`, 3 panels of 5 all converged
+      byte-identically — clear-cut → `PAYEE 5/5`, partial → `PAYEE 5/5`, and a deliberately balanced case
+      → **`SPLIT50 5/5`** (a middle bucket — the real risk). The coarse 25% buckets are determinism-safe.
+      Remaining to ship in production: redeploy a Court with `setGradedSplit(true)` (a v3 deploy).
 - [x] **Observability.** [`indexer/index.mjs`](indexer/index.mjs) — chunk-scans Court events
       (VerdictReached/Appealed/CaseFinalized) into a `caselaw.json` snapshot (cursor-based, Somnia-safe);
       [`ui/caselaw.html`](ui/caselaw.html) — a case-law dashboard with verdict badges + receipt links.
