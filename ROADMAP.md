@@ -10,10 +10,14 @@ per-juror receipts — no human in the settlement loop. Escrow is the on-ramp; t
 routes through. Start by winning the hackathon on the strength of a **live, premise-proven demo**;
 then build it into invisible infrastructure toward mainnet.
 
-**Status as of 2026-05-31:** code + local tests are done (35/35). Nothing has touched Shannon yet —
-no `broadcast/` artifacts exist, and `LLM_AGENT_ID` is still empty in `.env`. The entire live path is
-gated on registering a real agent. This roadmap is phased: **Phase 0–1 win the hackathon**, **Phase 2+
-build the product**.
+**Status as of 2026-06-01:** Phases 0–5 are substantially done. **141/141 tests pass.** The full v1
+stack + the Phase 3–5 contracts are live on Shannon, the determinism gate passed live, and a
+**hardened-core v2** (pull-payment Court/Escrow/AgentEscrow + precedent Registry) is deployed and
+serving the site at verdikt.gudman.xyz. All work is committed and **pushed** to `origin/master`. What
+remains is owner/external-gated: the demo video (needs a screen), the Agora submission (needs explicit
+approval), external audit + mainnet deploy (funded mainnet key + a real auditor), and one deferred
+feature (graded SPLIT % verdicts — needs a live determinism re-run). This roadmap is phased:
+**Phase 0–1 win the hackathon**, **Phase 2+ build the product**.
 
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · 🔴 blocker · 🟡 needs external input
 
@@ -73,8 +77,9 @@ Make the win legible to judges in under 3 minutes.
       screen. _(Needs a screen — yours.)_
 - [x] **Update README + DECK** with the live addresses, determinism PASS, gas note, and the panel-9
       appeal/testnet-validator limitation.
-- [ ] **Housekeeping:** decide `DECK.html` fate (commit the rendered deck or add to `.gitignore`);
-      confirm `verdikt.gudman.xyz` is actually live against `deploy/nginx-verdikt.gudman.xyz.conf`.
+- [x] **Housekeeping:** `verdikt.gudman.xyz` confirmed **live** (HTTPS 200, landing + `/app/` serving
+      the v2 contracts, case-law dashboard populated). `DECK.html` left untracked (the source `slides.html`
+      is committed and rendered on deploy; no need to commit the generated file).
 - [ ] **Submit** — only after explicit user approval (per standing rule).
 
 **Exit criteria:** submission package = repo + live demo URL + video + on-chain proof. Hackathon-ready.
@@ -97,12 +102,16 @@ Turn hackathon code into something defensible.
       fix/reference is `VerdiktAgentEscrow`'s pull-payment ledger. 10 findings logged with v2 remediation.
 - [x] **Invariant & fuzz tests** — [`test/Invariant.t.sol`](test/Invariant.t.sol): fund conservation,
       solvency, stake-slash exactness (`toWinner + treasuryCut == stake`), `_split` sums, no-double-settle.
-- [ ] **Per-request fee accounting** + **push→pull port to Escrow/Insurance** + appeal-deadline
-      snapshot — the contract changes from the audit. Deferred to a v2 redeploy (breaking; the live
-      testnet contracts are the push-payment v1). Tracked in `SECURITY.md`.
+- [x] **Push→pull port to Escrow/Insurance + appeal-deadline snapshot + ERC-20 safe-transfer** —
+      DONE in the Codex audit pass (commit `33d4d3c`). `VerdiktEscrow`/`VerdiktInsurance` now settle via
+      a `pending`/`withdraw()` ledger (no brick-on-revert); `VerdiktCourt` snapshots `appealDeadline`
+      per-case at ruling time; `VerdiktTokenEscrow` uses checked `_safeTransfer`/`_safeTransferFrom`.
+      141/141 tests. **Deployment status:** the hardened Court + Escrow + AgentEscrow + Registry are
+      redeployed as **v2** on Shannon (see `deployments/shannon.json` → `v2`); Insurance/TokenEscrow are
+      hardened in code but their live instances are still v1 push-payment (redeploy when needed).
 
-**Exit criteria:** clean internal review ✅, invariant suite green ✅, "Known simplifications" resolved ✅.
-Contract remediations are scoped for v2 (redeploy) per `SECURITY.md`.
+**Exit criteria:** clean internal review ✅, invariant suite green ✅, "Known simplifications" resolved ✅,
+**contract remediations shipped + hardened core redeployed as v2** ✅. **Phase 2 complete.**
 
 ---
 
@@ -139,7 +148,8 @@ for the autonomous agent economy.** Escrow/Insurance were the on-ramp; A2A is th
 
 **Exit criteria:** ✅ a fully autonomous agent-vs-agent dispute settles (in tests/mock; on Shannon for
 the native path) with no human action, and an external agent can integrate via the SDK. **Phase 3
-complete** (full suite 74/74). The token + agent escrows are built/tested but not yet deployed to Shannon.
+complete** (full suite 74/74, now 141/141). Both escrows are deployed live on Shannon — `VerdiktAgentEscrow`
+as part of the v2 hardened core, `VerdiktTokenEscrow` (with MockERC20) in the Phase 3–5 deploy.
 
 ---
 
@@ -167,8 +177,9 @@ the chain routes through one shared Court.
       [`ui/caselaw.html`](ui/caselaw.html) — a case-law dashboard with verdict badges + receipt links.
 
 **Exit criteria:** ✅ 6 consumers on one shared Court, ✅ a queryable precedent index + dashboard.
-**Phase 4 complete** (full suite 95/95). Richer verdict types deferred (needs live validation).
-The new Phase 3/4 contracts are built/tested but not yet deployed to Shannon.
+**Phase 4 complete** (full suite 95/95, now 141/141). Richer verdict types deferred (needs live validation).
+All Phase 3/4 contracts are deployed live on Shannon (see `deployments/shannon.json`); the precedent
+Registry holds 4 final rulings.
 
 ---
 
@@ -210,9 +221,12 @@ autonomous agents depend on as shared infrastructure.
 ## Critical path (do these in order)
 
 ```
-LLM_AGENT_ID (🟡 user)  →  determinism gate  →  Shannon deploy  →  live demo  →  submit
+LLM_AGENT_ID ✅  →  determinism gate ✅  →  Shannon deploy ✅  →  live demo ✅  →  submit 🟡
         Phase 0 ───────────────────────────────────────────────────  Phase 1
 ```
 
-Everything else is parallelizable once Phase 0–1 land. **The single highest-leverage action right now
-is registering the agent id** — it unblocks the proof the entire project depends on.
+The build/deploy/test/web critical path is **fully landed**. The only blockers left are human/external:
+**record the demo video** (🟡 needs your screen) and **submit to Somnia Agora** (🟡 needs explicit
+approval). Beyond the hackathon: external audit + mainnet deploy (funded mainnet key + auditor), and
+the one deferred feature — **graded SPLIT % verdicts**, which changes the Court's `allowedValues` and
+so needs a fresh **live** determinism re-run before it can ship.
