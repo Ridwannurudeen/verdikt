@@ -9,10 +9,20 @@ the settlement path.
 All signatures below are the real ones from
 [`src/interfaces/IVerdiktCourt.sol`](../src/interfaces/IVerdiktCourt.sol). Nothing is invented.
 
+## Install (Foundry)
+
+```bash
+forge install Ridwannurudeen/verdikt
+```
+
+Then inherit [`VerdiktConsumerBase`](../src/VerdiktConsumerBase.sol) — it handles the court wiring,
+the callback guard, opening a dispute (quote + fee + refund), the caseId↔ref mapping, and resolving a
+verdict (graded SPLIT + UNDECIDABLE aware) into a payee basis-point share. You implement `_settle`.
+
 ## The interfaces you depend on
 
 ```solidity
-enum Verdict { NONE, PAYEE, PAYER, SPLIT }
+enum Verdict { NONE, PAYEE, PAYER, SPLIT, UNDECIDABLE } // UNDECIDABLE = panel abstained
 enum CaseStatus { None, Pending, Ruled, Final, Errored }
 
 struct CaseView {
@@ -42,50 +52,67 @@ interface IVerdiktCourt {
 }
 ```
 
-## A minimal consumer
+## A complete consumer, on the base (the easy path)
+
+This is a full two-party escrow on the AI jury — graded SPLIT and UNDECIDABLE handled for free. It is
+the real [`src/examples/SimpleEscrow.sol`](../src/examples/SimpleEscrow.sol), validated end-to-end in
+[`test/SimpleEscrow.t.sol`](../test/SimpleEscrow.t.sol).
 
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+import {VerdiktConsumerBase} from "verdikt/VerdiktConsumerBase.sol";
+import {Verdict} from "verdikt/interfaces/IVerdiktCourt.sol";
 
-import {IVerdiktCourt, IVerdiktConsumer, Verdict, CaseStatus, CaseView}
-    from "verdikt/interfaces/IVerdiktCourt.sol";
+contract SimpleEscrow is VerdiktConsumerBase {
+    struct Deal { address payer; address payee; uint256 amount; bool settled; }
+    mapping(uint256 => Deal) public deals;
+    mapping(address => uint256) public pending;
+    uint256 public nextId = 1;
 
-contract MyAgent is IVerdiktConsumer {
-    IVerdiktCourt public immutable court;
-    mapping(uint256 => uint256) public caseToRef; // caseId => your reference
+    constructor(address court_) VerdiktConsumerBase(court_) {}
 
-    constructor(address court_) {
-        court = IVerdiktCourt(court_);
+    function createDeal(address payee) external payable returns (uint256 id) {
+        id = nextId++;
+        deals[id] = Deal(msg.sender, payee, msg.value, false);
     }
 
-    // 1. OPEN — quote the fee, then open a case with your evidence string.
-    function open(uint256 myRef, string calldata evidence) external returns (uint256 caseId) {
-        uint256 fee = court.quoteOpen();
-        caseId = court.openCase{value: fee}(myRef, evidence);
-        caseToRef[caseId] = myRef;
+    function dispute(uint256 id, string calldata evidence) external payable {
+        // base quotes the fee, opens the case, maps caseId<->id, refunds the excess
+        _openDispute(id, evidence, msg.sender);
     }
 
-    // 2. APPEAL — only while status == Ruled and within appealWindow. Quote covers the larger panel.
-    function appeal(uint256 caseId, string calldata newEvidence) external {
-        uint256 fee = court.quoteAppeal(caseId);
-        court.appeal{value: fee}(caseId, newEvidence);
+    // the court calls onVerdict -> _settle (base guards the callback for you)
+    function _settle(uint256 ref, Verdict verdict) internal override {
+        Deal storage d = deals[ref];
+        d.settled = true;
+        uint256 toPayee = (d.amount * _payeeShareBps(ref, verdict)) / 10000; // graded/UNDECIDABLE aware
+        pending[d.payee] += toPayee;
+        pending[d.payer] += d.amount - toPayee; // pull payments -> can't be bricked
     }
 
-    // 3. READ — poll the case any time (e.g. a keeper checks status before finalize).
-    function statusOf(uint256 caseId) external view returns (CaseStatus, Verdict) {
-        CaseView memory cv = court.getCase(caseId);
-        return (cv.status, cv.verdict);
-    }
-
-    // 4. CALLBACK — the court calls this when the case finalizes. Settle here.
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
-        require(msg.sender == address(court), "only court");
-        // credit a pull-payment ledger (recommended) instead of pushing ETH, so a
-        // counterparty that reverts on receipt can never brick settlement:
-        // if (verdict == Verdict.PAYER) pending[payerOf[escrowRef]] += amountOf[escrowRef];
+    function withdraw() external {
+        uint256 amt = pending[msg.sender];
+        pending[msg.sender] = 0;
+        (bool ok,) = msg.sender.call{value: amt}("");
+        require(ok, "withdraw failed");
     }
 }
+```
+
+Prefer the raw interface? `import {IVerdiktCourt, IVerdiktConsumer, Verdict} from "verdikt/interfaces/IVerdiktCourt.sol"`
+and implement `onVerdict` + the dispute flow yourself.
+
+## JS / TS SDK (frontends + agents)
+
+[`sdk/index.mjs`](./index.mjs) is a thin viem client:
+
+```js
+import { createVerdiktClient, payeeShareBps, VERDICT } from "verdikt/sdk/index.mjs";
+
+const verdikt = createVerdiktClient({ publicClient, court: "0x..." });
+const fee = await verdikt.quoteOpen();
+const c = await verdikt.getCase(1);            // -> { verdictLabel, statusLabel, ... }
+const bps = await payeeShareBps(verdikt, 1);   // graded-SPLIT aware payee share
+const unwatch = verdikt.watchVerdicts((v) => console.log(v.caseId, v.verdict, v.receiptId));
 ```
 
 ## Lifecycle
