@@ -1,0 +1,39 @@
+"""
+A dispute lifecycle in VerdiktCourt.
+"""
+type Case @entity {
+  id: ID! # caseId
+  consumer: Bytes!
+  escrowRef: BigInt!
+  status: String! # OPENED | RULED | APPEALED | FINAL
+  verdict: Int # enum: 0 NONE,1 PAYEE,2 PAYER,3 SPLIT,4 UNDECIDABLE
+  round: Int!
+  receiptId: BigInt
+  openedAt: BigInt!
+  ruledAt: BigInt
+  finalizedAt: BigInt
+}
+
+"""
+A FINAL ruling recorded into the precedent registry — citable AI-authored case law.
+"""
+type Ruling @entity {
+  id: ID! # caseId
+  consumer: Bytes!
+  verdict: Int!
+  topic: Bytes!
+  receiptId: BigInt!
+  recordedAt: BigInt!
+}
+
+"""
+A party's cross-domain litigation record from VerdiktReputation.
+"""
+type Party @entity {
+  id: ID! # address
+  disputes: Int!
+  wins: Int!
+  losses: Int!
+  splits: Int!
+  lastCaseId: BigInt
+}

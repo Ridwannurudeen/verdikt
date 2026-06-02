@@ -1,0 +1,71 @@
+# Verdikt subgraph — indexes the Court lifecycle, the precedent registry, and reputation into a
+# queryable GraphQL API. Fill in the deployed addresses + startBlock and the graph-node network name
+# (Somnia Shannon = chainId 50312). Then: `graph codegen && graph build && graph deploy`.
+# See README.md — this is the portable indexing spec; it needs a Somnia-capable Graph node.
+specVersion: 1.0.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: VerdiktCourt
+    network: somnia-shannon
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: VerdiktCourt
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Case]
+      abis:
+        - name: VerdiktCourt
+          file: ./abis/VerdiktCourt.json
+      eventHandlers:
+        - event: CaseOpened(indexed uint256,indexed address,indexed uint256)
+          handler: handleCaseOpened
+        - event: VerdictReached(indexed uint256,uint8,uint8,uint256)
+          handler: handleVerdictReached
+        - event: Appealed(indexed uint256,uint8)
+          handler: handleAppealed
+        - event: CaseFinalized(indexed uint256,uint8)
+          handler: handleCaseFinalized
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: VerdiktRegistry
+    network: somnia-shannon
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: VerdiktRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Ruling]
+      abis:
+        - name: VerdiktRegistry
+          file: ./abis/VerdiktRegistry.json
+      eventHandlers:
+        - event: RulingRecorded(indexed uint256,indexed address,uint8,indexed bytes32,uint256)
+          handler: handleRulingRecorded
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: VerdiktReputation
+    network: somnia-shannon
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: VerdiktReputation
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Party]
+      abis:
+        - name: VerdiktReputation
+          file: ./abis/VerdiktReputation.json
+      eventHandlers:
+        - event: ReputationRecorded(indexed address,indexed uint256,uint8,uint8)
+          handler: handleReputationRecorded
+      file: ./src/mapping.ts
