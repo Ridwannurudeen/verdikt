@@ -73,7 +73,13 @@
       "VerdiktRegistry": "0xe368032D85004DefeB1a3d8C26e382761BE159a6",
       "VerdiktReputation": "0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4",
       "VerdiktAttestationRegistry": "0x53e7632709648669249f18fd2Ce7Cdb5744A285A",
-      "VerdiktMarketplace": "0xa51c712fE58aB04d0e2dE540b5d982773548A6EB"
+      "VerdiktMarketplace": "0xa51c712fE58aB04d0e2dE540b5d982773548A6EB",
+      "VerdiktAgentEscrow": "0xfCe85A2C4415136316f97D645E04C4DC22BdAb32"
+    },
+    "agentArena": {
+      "buyerAgent": "0x251A918bF1B43eC67921D6D643BFA83a1db56dAC",
+      "sellerAgent": "0x47393E73549820594942A7256A06FdEdB4B0EB58",
+      "note": "Two autonomous CONTRACT agents (no EOA in the settlement path) transacting via VerdiktAgentEscrow on the v4 Court. BuyerAgent funds the deal + files disputes with machine-generated evidence + pulls its refund; SellerAgent is the contract counterparty. Driven by the cinematic /app/arena.html, which replays the treaty -> escrow -> dispute -> AI jury -> settlement -> precedent -> reputation flow live."
     },
     "config": {"gradedSplit": true, "allowAbstention": true, "attestationRegistry": "wired", "activePromptVersion": 1, "appealWindow": "60s (demo)"},
     "liveState": {
