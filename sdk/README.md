@@ -115,6 +115,24 @@ const bps = await payeeShareBps(verdikt, 1);   // graded-SPLIT aware payee share
 const unwatch = verdikt.watchVerdicts((v) => console.log(v.caseId, v.verdict, v.receiptId));
 ```
 
+## Autonomous agents & decentralized keepers
+
+[`sdk/agent.mjs`](./agent.mjs) lets an agent (with a wallet) act in the court — file appeals, run as a
+keeper, and earn bounties:
+
+```js
+import { createVerdiktAgent } from "verdikt/sdk/agent.mjs";
+const agent = createVerdiktAgent({ publicClient, walletClient, account, court: "0x..." });
+
+await agent.runKeeper();                         // finalize every case whose appeal window has passed
+await agent.appeal(caseId, "new evidence");      // contest a ruling (auto-quotes the larger panel)
+await agent.finalizeForBounty(bounty, caseId);   // settle a case AND claim the keeper bounty
+```
+
+`finalize` is permissionless, so anyone can run a keeper. [`VerdiktKeeperBounty`](../src/VerdiktKeeperBounty.sol)
+adds the incentive: anyone funds a bounty to get a case settled, and the keeper that settles it takes
+the pot — a trustless market for liveness, no Court change required.
+
 ## Lifecycle
 
 1. **Open.** `quoteOpen()` returns the exact fee; pass it as `msg.value` to `openCase`. The
