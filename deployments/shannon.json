@@ -62,6 +62,27 @@
       "wiringVerified": "Escrow.court and Registry.court -> v3 Court; Court.quoteOpen = 0.4 STT; Court.gradedSplit = true (verified on-chain 2026-06-01)"
     }
   },
+  "v4": {
+    "label": "full hardened stack (injection-resistant + prompt-governance + verifiable-evidence + graded)",
+    "deployedAt": "2026-06-02",
+    "deployMethod": "forge create --gas-limit 60000000 (no broadcast artifact)",
+    "note": "First deploy of ALL the hardening: VerdiktCourt has the injection-resistant sanitized/fenced prompt (governed prompt version 1), graded SPLIT (ON), abstention (code present, OFF until its own live gate), and the attestation-registry hook (ON). Registry is the post-graded 8-field struct (payeeBps). The explorer + UI + website point HERE.",
+    "contracts": {
+      "VerdiktCourt": "0x8f2a01D63D3fC0216321970510D0dDFFe9693199",
+      "VerdiktEscrow": "0x000c7dc06aD2664295F181EA2CE119F4c7F902e0",
+      "VerdiktRegistry": "0xe368032D85004DefeB1a3d8C26e382761BE159a6",
+      "VerdiktReputation": "0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4",
+      "VerdiktAttestationRegistry": "0x53e7632709648669249f18fd2Ce7Cdb5744A285A",
+      "VerdiktMarketplace": "0xa51c712fE58aB04d0e2dE540b5d982773548A6EB"
+    },
+    "config": {"gradedSplit": true, "allowAbstention": false, "attestationRegistry": "wired", "activePromptVersion": 1, "appealWindow": "60s (demo)"},
+    "liveState": {
+      "verifiableEvidenceDemo": "Courier Oracle (attestor) posted a VERIFIED fact (3 of 4 units delivered) for deal #1. The payer disputed claiming 'nothing arrived, full refund'. The panel weighed the authoritative attested fact OVER the untrusted party claim and ruled SPLIT75 (payeeBps 7500) byte-identical -> payee 0.0075 STT (75%), payer 0.0025 STT (25%). Verifiable evidence + graded settlement, live.",
+      "precedentRegistry": "1 final ruling recorded (case 1, topic escrow/partial-delivery), 8-field struct with payeeBps",
+      "reputation": "deployer recorded Payer-side on a SPLIT (scoreOf 0); payee 0x3333 recorded Payee-side",
+      "wiringVerified": "Escrow.court -> v4 Court; gradedSplit true; attestationRegistry set; activePromptVersion 1"
+    }
+  },
   "injectionGate": {
     "probe": "0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8",
     "result": "PASS",

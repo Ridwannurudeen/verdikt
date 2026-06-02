@@ -90,8 +90,8 @@
 
       const RPC = "https://api.infra.testnet.somnia.network/";
       // Defaults: the populated precedent registry + the live reputation contract. Override above.
-      const DEFAULT_REG = "0x161eD3da61b5D787FA1e40F77911b6404ceD4Ac7";
-      const DEFAULT_REP = "0x6fbD122af11236fB2ddbc99dcaF4f2F51cC4545B";
+      const DEFAULT_REG = "0xe368032D85004DefeB1a3d8C26e382761BE159a6";
+      const DEFAULT_REP = "0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4";
       const EXPLORER = "https://shannon-explorer.somnia.network/address/";
       const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
 
@@ -99,7 +99,7 @@
         "function rulingsCount() view returns (uint256)",
         "function allRulings(uint256 offset, uint256 limit) view returns (uint256[])",
         "function rulingsByTopic(bytes32 topic) view returns (uint256[])",
-        "function getRuling(uint256 caseId) view returns ((uint256 caseId,address consumer,uint256 escrowRef,uint8 verdict,uint256 receiptId,uint64 rulingTime,bytes32 topic))",
+        "function getRuling(uint256 caseId) view returns ((uint256 caseId,address consumer,uint256 escrowRef,uint8 verdict,uint16 payeeBps,uint256 receiptId,uint64 rulingTime,bytes32 topic))",
       ]);
       const REP_ABI = parseAbi([
         "function reputationOf(address party) view returns ((uint256 disputes,uint256 wins,uint256 losses,uint256 splits,uint256 lastCaseId))",
@@ -114,9 +114,7 @@
       const rep = () => $("rep").value.trim();
 
       function rulingRow(r) {
-        // graded payee % becomes available once a v4 (post-graded) registry is deployed; live
-        // registries predate the payeeBps field, so SPLIT shows without a percentage here.
-        const split = "";
+        const split = VERDICT[r.verdict] === "SPLIT" ? ` <span class="muted">${Number(r.payeeBps) / 100}% payee</span>` : "";
         const receipt = r.receiptId > 0n
           ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank">receipt</a>`
           : "<span class='muted'>—</span>";
