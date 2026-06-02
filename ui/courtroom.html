@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verdikt — the courtroom</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root { color-scheme: dark; }
+      html, body {
+        margin: 0; background: #0e1116; color: #e6edf3;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 13px; line-height: 1.55;
+      }
+      .wrap { max-width: 760px; margin: 24px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+      .panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+      h1 { font-size: 18px; margin: 0; }
+      .muted { color: #768390; }
+      a { color: #58a6ff; text-decoration: none; } a:hover { text-decoration: underline; }
+      input, button { font: inherit; }
+      input { background: #0d1117; border: 1px solid #30363d; color: #e6edf3; border-radius: 5px; padding: 6px 8px; }
+      button { background: #238636; border: 0; color: white; border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+      button:hover { background: #2ea043; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .cfg { font-size: 11px; color: #768390; }
+      .cfg input { width: 340px; max-width: 100%; }
+      /* timeline */
+      .step { display: flex; gap: 14px; }
+      .rail { display: flex; flex-direction: column; align-items: center; }
+      .dot { width: 26px; height: 26px; border-radius: 50%; background: #21262d; border: 1px solid #30363d;
+             display: flex; align-items: center; justify-content: center; font-size: 14px; flex: 0 0 auto; }
+      .dot.on { background: #1f6f3f; border-color: #2ea043; }
+      .line { width: 2px; flex: 1; background: #30363d; margin: 2px 0; min-height: 14px; }
+      .body { padding-bottom: 16px; flex: 1; }
+      .body h3 { margin: 2px 0 6px; font-size: 13px; }
+      .quote { background: #0d1117; border-left: 3px solid #2ea043; border-radius: 0 6px 6px 0; padding: 8px 12px; color: #adbac7; white-space: pre-wrap; }
+      .law { background: #0d1117; border: 1px dashed #30363d; border-radius: 6px; padding: 8px 12px; color: #768390; font-size: 12px; }
+      .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+      .PAYEE { background: #1f6f3f; } .PAYER { background: #8957e5; } .SPLIT { background: #9e6a03; }
+      .UNDECIDABLE { background: #57606a; } .NONE { background: #30363d; }
+      .big { font-size: 16px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="panel">
+        <h1>⚖️ The Verdikt courtroom</h1>
+        <p class="muted" style="margin: 6px 0 0">Watch a dispute decided by the on-chain AI jury — replayed from Somnia Shannon.</p>
+      </div>
+      <div class="panel cfg">
+        <div class="row">court <input id="court" /> case # <input id="case" style="width:70px" /> <button id="go">replay</button></div>
+        <div id="status" style="margin-top:6px"></div>
+      </div>
+      <div id="stage"></div>
+    </div>
+
+    <script type="module">
+      import { createPublicClient, http, parseAbi } from "https://esm.sh/viem@2.21.0";
+
+      const RPC = "https://api.infra.testnet.somnia.network/";
+      const DEFAULT_COURT = "0x8f2a01D63D3fC0216321970510D0dDFFe9693199"; // v4
+      const EXP = "https://shannon-explorer.somnia.network/address/";
+      const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
+      const STATUS = ["None", "Pending", "Ruled", "Final", "Errored"];
+      const WIN = { PAYEE: "the payee / seller", PAYER: "the payer / buyer", SPLIT: "a split", UNDECIDABLE: "no one (abstained)" };
+
+      const COURT_ABI = parseAbi([
+        "function getCase(uint256) view returns ((address consumer,uint256 escrowRef,uint8 round,uint8 status,uint8 verdict,uint256 receiptId,uint64 rulingTime))",
+        "function splitBps(uint256) view returns (uint16)",
+        "function promptVersionOf(uint256) view returns (uint256)",
+        "function promptVersion(uint256) view returns ((string system,string preamble,string instructionNonGraded,string instructionGraded,bool exists))",
+        "function appealDeadlineOf(uint256) view returns (uint64)",
+        "function attestationRegistry() view returns (address)",
+      ]);
+      const ATT_ABI = parseAbi([
+        "function subjectFor(address,uint256) view returns (bytes32)",
+        "function factsFor(bytes32) view returns (string)",
+      ]);
+
+      const $ = (id) => document.getElementById(id);
+      const client = createPublicClient({ transport: http(RPC) });
+      const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+      const court = () => $("court").value.trim();
+      const read = (fn, args = []) => client.readContract({ address: court(), abi: COURT_ABI, functionName: fn, args });
+
+      function step(icon, on, title, html, last) {
+        return `<div class="step">
+          <div class="rail"><div class="dot ${on ? "on" : ""}">${icon}</div>${last ? "" : '<div class="line"></div>'}</div>
+          <div class="body"><h3>${title}</h3>${html}</div></div>`;
+      }
+
+      async function replay() {
+        const id = BigInt($("case").value || "1");
+        $("status").textContent = "reading the record…";
+        $("stage").innerHTML = "";
+        let c;
+        try { c = await read("getCase", [id]); } catch (e) { $("status").textContent = "error: " + (e.shortMessage ?? e.message); return; }
+        if (c.consumer === "0x0000000000000000000000000000000000000000") { $("status").textContent = "no such case"; return; }
+
+        const verdict = VERDICT[c.verdict] ?? "NONE";
+        const status = STATUS[c.status] ?? "?";
+        const ruled = c.status >= 2;
+        const final = c.status === 3;
+
+        // verified facts (best-effort)
+        let facts = "";
+        try {
+          const reg = await read("attestationRegistry");
+          if (reg !== "0x0000000000000000000000000000000000000000") {
+            const subject = await client.readContract({ address: reg, abi: ATT_ABI, functionName: "subjectFor", args: [c.consumer, c.escrowRef] });
+            facts = await client.readContract({ address: reg, abi: ATT_ABI, functionName: "factsFor", args: [subject] });
+          }
+        } catch {}
+
+        // the law it was tried under
+        let sys = "";
+        try {
+          const pv = await read("promptVersionOf", [id]);
+          const v = await read("promptVersion", [pv]);
+          sys = `prompt v${pv}: ${v.system}`;
+        } catch {}
+
+        // verdict detail
+        let verdictHtml = `<span class="muted">awaiting the panel…</span>`;
+        if (ruled) {
+          let pct = "";
+          if (verdict === "SPLIT") { try { const bps = await read("splitBps", [id]); pct = ` — <b>${Number(bps) / 100}% to the payee</b>`; } catch {} }
+          verdictHtml = `<span class="badge ${verdict} big">${verdict}</span>${pct}
+            <div class="muted" style="margin-top:6px">In favor of ${WIN[verdict] ?? "?"} · ${c.round == 0 ? "trial panel (5)" : "appeal panel (9)"}</div>`;
+        }
+
+        const receipt = c.receiptId > 0n
+          ? `<a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank">receipt #${c.receiptId} — the jurors' reasoning ↗</a>`
+          : `<span class="muted">on-chain receipt attaches when the panel returns</span>`;
+
+        $("stage").innerHTML = [
+          step("⚖️", true, "A dispute is opened",
+            `Case <b>#${id}</b> · consumer <a href="${EXP}${c.consumer}" target="_blank">${short(c.consumer)}</a> · reference ${c.escrowRef}`),
+          step("📋", facts.length > 0, "Evidence entered into the record",
+            facts.length > 0 ? `<div class="quote">${facts.replace(/</g, "&lt;")}</div>`
+              : `<span class="muted">No attested facts on file — decided on the parties' submitted evidence (see the receipt).</span>`),
+          step("📜", true, "Tried under the court's law",
+            `<div class="law">${(sys || "(prompt unavailable)").replace(/</g, "&lt;")}</div>`),
+          step("🧑‍⚖️", ruled, "The panel rules", verdictHtml),
+          step("🧾", c.receiptId > 0n, "The reasoning is recorded", receipt),
+          step(final ? "✅" : "⏳", true, final ? "Final & settled" : `Status: ${status}`,
+            final ? `<span class="muted">The verdict was delivered to the consumer and the funds settled — no human in the loop.</span>`
+                  : `<span class="muted">${status}${ruled && !final ? " · appeal window open" : ""}</span>`, true),
+        ].join("");
+        $("status").textContent = "replayed live ✓";
+      }
+
+      $("court").value = DEFAULT_COURT;
+      $("case").value = "1";
+      $("go").onclick = replay;
+      replay();
+    </script>
+  </body>
+</html>
