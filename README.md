@@ -37,10 +37,32 @@ Six independent consumers settle on the same Court, proving it as a shared primi
 - **`src/lib/EvidenceLib.sol`** — deterministic structured-evidence formatter; an agent assembles dispute evidence (parties, amount, deadline, claim, `priorCaseId` for precedent) into a byte-identical string. Schema in [`sdk/evidence-schema.md`](sdk/evidence-schema.md).
 - **`src/VerdiktRegistry.sol`** — the **precedent layer**: a permissionless, append-only index of _final_ rulings (queryable by topic/consumer). On-chain, AI-authored, citable case law.
 - **`src/VerdiktReputation.sol`** — a portable, court-verified litigation record per party (wins/losses/splits, `scoreOf`). An agent's dispute history becomes a credential.
-- **`src/VerdiktCourtRegistry.sol`** — the **arbitration marketplace**: operators list competing courts; `cheapest()` shops by live price/SLA. Verdikt as a meta-layer over many juries.
-- **`src/VerdiktTimelock.sol`** — delayed-execution governor that can own the Court (via 2-step `transferOwnership`/`acceptOwnership`), removing single-key owner trust.
-- **SDK + tooling** — [`sdk/README.md`](sdk/README.md) (integrate in <50 lines), `keeper/` (permissionless auto-finalize/release), `indexer/` + `ui/caselaw.html` (case-law dashboard).
+- **`src/VerdiktAttestationRegistry.sol`** — **verifiable evidence**: governed trusted attestors (oracles, courier APIs, EAS bridges) post on-chain facts the Court folds into the prompt as _authoritative_, above the parties' untrusted claims. Verdicts rest on attested truth, not just assertions.
+- **`src/VerdiktCourtRegistry.sol`** — court **discovery**: operators list competing courts; `cheapest()` shops by live price/SLA.
+- **`src/VerdiktMarketplace.sol`** — court **economics**: operators _stake_ to back a court, anyone _challenges_ a bad ruling for a bond, governance slashes on upheld, and `bestCourt()` routes by quality. A market for justice with skin in the game.
+- **`src/VerdiktKeeperBounty.sol`** — permissionless **liveness market**: fund a bounty to get a case finalized; any keeper settles it and takes the pot.
+- **`src/VerdiktTimelock.sol`** — delayed-execution governor that can own the Court, removing single-key owner trust.
+- **`src/VerdiktConsumerBase.sol`** — inherit-and-go base so a new protocol integrates the jury in a few lines (see [`src/examples/`](src/examples): `SimpleEscrow`, `VerdiktPredictionMarket`).
+- **SDK + tooling** — [`sdk/README.md`](sdk/README.md) (Foundry lib + JS client + agent SDK), `keeper/` (auto-finalize), `indexer/`, and four live app pages: escrow demo, **courtroom replay** (`ui/courtroom.html`), **case-law explorer** (`ui/explorer.html`), case-law dashboard.
 - **Design** — [`SECURITY.md`](SECURITY.md) (audit), [`ECONOMICS.md`](ECONOMICS.md) (fee model + anti-frivolous-appeal math), [`PORTABILITY.md`](PORTABILITY.md) (beyond Somnia).
+
+## What makes the AI jury trustworthy
+
+The hard part of an AI court isn't convening a panel — it's making the verdict defensible. All of the
+following are live on Shannon (**v4**) and recorded in [`deployments/shannon.json`](deployments/shannon.json):
+
+- **Manipulation-resistant.** Evidence is sanitized + fenced and the prompt marks it untrusted, so a
+  party can't inject instructions. Proven live: a panel ignored an embedded "output PAYEE" and ruled on
+  the facts (`injectionGate`).
+- **Measurably accurate.** On 12 curated disputes, a live panel agreed with the human-expected verdict
+  **11/12 (92%)** and converged **byte-identically 12/12 (100%)** (`accuracyBenchmark`, reproduce with
+  `script/run-benchmark.mjs`).
+- **Grounded in attested facts**, not just claims (the attestation registry above).
+- **Able to abstain** — `UNDECIDABLE` when evidence is genuinely insufficient, rather than guessing
+  (validated live: clear→decisive, insufficient→abstain).
+- **Governed transparently** — the prompt is the court's "law": versioned, immutable per version,
+  timelock-governed, and cited per case.
+- **Graded outcomes** — `SPLIT25/50/75` for partial fault, determinism-validated live.
 
 ## How it maps to the judging criteria
 
@@ -107,9 +129,13 @@ Driver details (env, exit codes, optional CLI args) are in [`script/README-deter
 
 ## Live on Shannon (chain 50312)
 
-The full stack is deployed and exercised end-to-end (all addresses in [`deployments/shannon.json`](deployments/shannon.json)):
+The full stack is deployed and exercised end-to-end (all addresses + live demos in [`deployments/shannon.json`](deployments/shannon.json)).
 
-> Note: the addresses below are the original Shannon demo deployment. The current repository code includes the post-audit hardening pass (pull-payment Escrow/Insurance, collateralized Insurance accounting, appeal-deadline snapshots, registry DoS hardening) and should be redeployed before recording the final hackathon demo.
+> **Current = v4 (hardened):** the live demo runs the fully-hardened stack — injection-resistant governed
+> prompt, graded SPLIT, abstention, and the attestation registry — at Court `0x8f2a01D63D3fC0216321970510D0dDFFe9693199`
+> (Escrow `0x000c7dc0…`, Registry `0xe368032D…`, Reputation `0x14e82fE1…`, AttestationRegistry `0x53e76327…`,
+> Marketplace `0xa51c712f…`). It settled a live dispute where an attested fact overrode a false claim →
+> SPLIT 75%. The table below is the original v1 demo deployment, kept for history.
 
 | Contract                           | Address                                      |
 | ---------------------------------- | -------------------------------------------- |

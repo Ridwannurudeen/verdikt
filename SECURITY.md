@@ -41,10 +41,39 @@ owner is trusted for parameter setting (`setAgentId`, `setPerAgentPrice`, `setAp
 - `node --check` passes for keeper, indexer, and determinism driver.
 - `npm audit --audit-level=high` reports 0 vulnerabilities for keeper, script, and indexer.
 
+## Hardening & New Surface (current iteration)
+
+The hardened stack is deployed live as **v4** (see `deployments/shannon.json`).
+
+- **Prompt injection (VerdiktCourt).** Evidence was free text concatenated into the panel prompt.
+  Now `_sanitizeEvidence` strips `<`/`>` so a party cannot forge the `<evidence>` fence, the evidence
+  is fenced, and the system prompt marks it untrusted. Validated live (the panel ignored an embedded
+  "output PAYEE" injection and ruled on facts) — see `injectionGate`. Residual: this raises the bar,
+  it is not a proof; the live gate + red-team suite (`test/PromptInjection.t.sol`) are the evidence.
+- **Prompt as governed law (VerdiktCourt).** Prompts are versioned, immutable per version, and
+  governed (owner→timelock); each case snapshots its version, so a verdict is auditable against the
+  exact prompt that decided it. A malicious governor could publish a biased prompt — mitigated by the
+  timelock (transparent + delayed) and per-case citation.
+- **Verifiable evidence (VerdiktAttestationRegistry).** Trusted attestors post facts the Court folds
+  in as authoritative. Trust = governance over the attestor set; a registered-but-compromised attestor
+  could post a misleading "fact". Facts are NOT sanitized (trusted source) — production should vet
+  attestors and may want to sanitize facts too. Append-only per subject.
+- **Abstention (VerdiktCourt).** Opt-in `UNDECIDABLE`; all six consumers settle it to the safe default
+  (refund the payer/depositor). Validated live (clear→decisive, insufficient→UNDECIDABLE) before
+  enabling — see `abstentionGate`.
+- **Marketplace (VerdiktMarketplace).** Stake/slash via pull-payments (no brick). Challenge resolution
+  is centralized to the owner/timelock arbiter — a future version could route court-quality disputes to
+  a court itself. `slashBps` bounded ≤ 100%.
+- **Keeper bounty (VerdiktKeeperBounty).** Permissionless; checks-effects-interactions (sets
+  `claimed`/zeros `pot` before paying) → no reentrancy on claim/reclaim. Funders can `reclaim` until
+  claimed.
+- **Reference examples** (`SimpleEscrow`, `VerdiktPredictionMarket`, `VerdiktConsumerBase`) are teaching
+  integrations — tested, not production-audited.
+
 ## Remaining Production Work
 
-- Redeploy the hardened contracts on Shannon before recording the final demo. The current
-  addresses in `deployments/shannon.json` are the original live demo deployment.
-- Run an external audit before mainnet.
+- Run an external audit + a bug bounty before mainnet.
 - Replace caller-asserted `VerdiktReputation.record(... side ...)` with consumer-sourced party
   data in a production reputation module.
+- Port the v4 hardening to the four extra consumers (AgentEscrow / TokenEscrow / GrantClawback /
+  Milestone are built but not yet redeployed) when needed live.
