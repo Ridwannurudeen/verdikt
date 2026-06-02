@@ -75,13 +75,26 @@
       "VerdiktAttestationRegistry": "0x53e7632709648669249f18fd2Ce7Cdb5744A285A",
       "VerdiktMarketplace": "0xa51c712fE58aB04d0e2dE540b5d982773548A6EB"
     },
-    "config": {"gradedSplit": true, "allowAbstention": false, "attestationRegistry": "wired", "activePromptVersion": 1, "appealWindow": "60s (demo)"},
+    "config": {"gradedSplit": true, "allowAbstention": true, "attestationRegistry": "wired", "activePromptVersion": 1, "appealWindow": "60s (demo)"},
     "liveState": {
       "verifiableEvidenceDemo": "Courier Oracle (attestor) posted a VERIFIED fact (3 of 4 units delivered) for deal #1. The payer disputed claiming 'nothing arrived, full refund'. The panel weighed the authoritative attested fact OVER the untrusted party claim and ruled SPLIT75 (payeeBps 7500) byte-identical -> payee 0.0075 STT (75%), payer 0.0025 STT (25%). Verifiable evidence + graded settlement, live.",
       "precedentRegistry": "1 final ruling recorded (case 1, topic escrow/partial-delivery), 8-field struct with payeeBps",
       "reputation": "deployer recorded Payer-side on a SPLIT (scoreOf 0); payee 0x3333 recorded Payee-side",
       "wiringVerified": "Escrow.court -> v4 Court; gradedSplit true; attestationRegistry set; activePromptVersion 1"
     }
+  },
+  "abstentionGate": {
+    "probe": "0x7959C74608941cB02A0af3A63af79fBB68B09011",
+    "result": "PASS",
+    "panel": 4,
+    "ranAt": "2026-06-02",
+    "labels": ["PAYER", "SPLIT25", "SPLIT50", "SPLIT75", "PAYEE", "UNDECIDABLE"],
+    "note": "Validates the 6-label graded+abstention set live (matches v4 Court with gradedSplit+allowAbstention). Panel 4 used because available validators fluctuated to 4 at the time (error 0x8f4079ff = available<requested; transient, not label-related).",
+    "runs": [
+      {"case": "clear: seller never shipped, admitted, no courier label", "histogram": "PAYER 4/4 (decisive, did NOT over-abstain)"},
+      {"case": "genuinely insufficient: contradictory accounts, zero corroborating evidence", "histogram": "UNDECIDABLE 4/4 (correctly abstained)"}
+    ],
+    "conclusion": "The panel rules decisively when it can and abstains only when evidence is genuinely insufficient, both byte-identical. allowAbstention ENABLED on the live v4 Court."
   },
   "injectionGate": {
     "probe": "0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8",
