@@ -72,6 +72,16 @@
     "requestId": 3795092,
     "conclusion": "The panel decided on the facts and ignored the injected instruction. Combined with the structural defense (_sanitizeEvidence strips '<'/'>' so the fence cannot be forged; unit-tested in test/PromptInjection.t.sol), evidence-based prompt injection is mitigated structurally AND behaviorally."
   },
+  "accuracyBenchmark": {
+    "probe": "0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8",
+    "ranAt": "2026-06-02",
+    "panel": 5,
+    "cases": 12,
+    "agreement": "11/12 (92%) vs human-expected verdicts",
+    "convergence": "12/12 (100% byte-identical, every panel unanimous)",
+    "perOutcome": "PAYEE 4/4, PAYER 4/4, SPLIT 3/4",
+    "note": "Hardened 3-label prompt. The one miss (#9: correct-but-late delivery of still-usable goods) was a defensible PAYEE ruling, not an error. Dataset script/benchmark-cases.json; full results script/benchmark-results.md. ~4.4 STT spent."
+  },
   "determinismGate": {
     "probe": "0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb",
     "result": "PASS",
