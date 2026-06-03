@@ -38,11 +38,18 @@ interface IVerdiktConsumer {
 /// @notice The reusable AI-jury arbitration primitive.
 interface IVerdiktCourt {
     function openCase(uint256 escrowRef, string calldata evidence) external payable returns (uint256 caseId);
+    /// @notice Open a case choosing the trial panel size (in [MIN_TRIAL_PANEL, 5]); lets a caller
+    /// degrade gracefully to the validator set currently available instead of reverting.
+    function openCase(uint256 escrowRef, string calldata evidence, uint8 trialPanel)
+        external
+        payable
+        returns (uint256 caseId);
     function appeal(uint256 caseId, string calldata newEvidence) external payable;
     function retry(uint256 caseId) external payable;
     function finalize(uint256 caseId) external;
 
     function quoteOpen() external view returns (uint256);
+    function quoteOpen(uint8 trialPanel) external view returns (uint256);
     function quoteAppeal(uint256 caseId) external view returns (uint256);
     function getCase(uint256 caseId) external view returns (CaseView memory);
     /// @notice Payee share of the disputed amount in basis points for a ruled case:

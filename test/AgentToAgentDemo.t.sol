@@ -24,6 +24,12 @@ contract BuyerAgent {
 
     /// @notice Assemble evidence programmatically and open a court case for the deal.
     function openDispute(uint256 dealId, uint64 deliverBy) external returns (uint256) {
+        return openDispute(dealId, deliverBy, 0);
+    }
+
+    /// @notice Dispute selecting a trial panel size (0 = default 5), so the agent degrades to the
+    /// validators currently available instead of having its dispute revert.
+    function openDispute(uint256 dealId, uint64 deliverBy, uint8 trialPanel) public returns (uint256) {
         string memory evidence = string.concat(
             "AGENT-GENERATED COMPLAINT\n",
             "deal=",
@@ -34,9 +40,14 @@ contract BuyerAgent {
             _toString(block.timestamp),
             "\nclaim=seller did not mark delivery before the deadline; payment should be refunded to the payer"
         );
-        uint256 fee = court.quoteOpen();
-        escrow.dispute{value: fee}(dealId, evidence);
-        return fee;
+        if (trialPanel == 0) {
+            uint256 fee = court.quoteOpen();
+            escrow.dispute{value: fee}(dealId, evidence);
+            return fee;
+        }
+        uint256 panelFee = court.quoteOpen(trialPanel);
+        escrow.dispute{value: panelFee}(dealId, evidence, trialPanel);
+        return panelFee;
     }
 
     function claim() external returns (uint256) {
@@ -185,5 +196,43 @@ contract AgentToAgentDemoTest is Test {
         // The reverting seller's own withdraw reverts (its choice), but it never blocked anyone.
         vm.expectRevert(bytes("withdraw failed"));
         seller.claim();
+    }
+
+    /// @dev Resilience: when the network is below full strength, an agent disputes at a smaller
+    /// trial panel instead of reverting. The court convenes exactly that panel and settles normally.
+    function test_agentToAgent_degradedTrialPanel() public {
+        BuyerAgent buyer = new BuyerAgent(escrow, court);
+        SellerAgent seller = new SellerAgent(escrow);
+        vm.deal(address(buyer), 5 ether);
+
+        uint64 deliverBy = uint64(block.timestamp + 1 days);
+        uint256 dealId = buyer.fund{value: 1 ether}(address(seller), deliverBy);
+
+        // Dispute at a 3-validator panel (e.g. only 3 validators available) rather than the default 5.
+        buyer.openDispute(dealId, deliverBy, 3);
+
+        // The court convened exactly a 3-juror panel (majority threshold 2), not the default 5.
+        (,,,, uint256 subSize, uint256 threshold,,) = platform.requests(_lastReq());
+        assertEq(subSize, 3, "trial panel degraded to 3");
+        assertEq(threshold, 2, "majority threshold for 3 jurors");
+
+        platform.fireSuccess(_lastReq(), "PAYER");
+        (,,,,, uint256 caseId) = escrow.deals(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+
+        assertEq(escrow.pending(address(buyer)), 1 ether, "buyer refunded at panel 3");
+        assertEq(buyer.claim(), 1 ether, "buyer pulls refund");
+    }
+
+    /// @dev The trial panel is bounded [MIN_TRIAL_PANEL, 5]; the quote is monotonic and the
+    /// 5-panel quote equals the default no-arg quote.
+    function test_quoteOpen_panelBounds() public {
+        vm.expectRevert(bytes("panel out of range"));
+        court.quoteOpen(2);
+        vm.expectRevert(bytes("panel out of range"));
+        court.quoteOpen(6);
+        assertLt(court.quoteOpen(3), court.quoteOpen(5));
+        assertEq(court.quoteOpen(5), court.quoteOpen());
     }
 }

@@ -119,14 +119,25 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     // --- dispute + appeal -----------------------------------------------------
 
     function dispute(uint256 dealId, string calldata evidence) external payable {
+        _dispute(dealId, evidence, court.quoteOpen(), 0);
+    }
+
+    /// @notice Dispute selecting the trial panel size, so an autonomous agent can degrade to the
+    /// validators currently available (in [court.MIN_TRIAL_PANEL, 5]) rather than have its dispute revert.
+    function dispute(uint256 dealId, string calldata evidence, uint8 trialPanel) external payable {
+        _dispute(dealId, evidence, court.quoteOpen(trialPanel), trialPanel);
+    }
+
+    function _dispute(uint256 dealId, string calldata evidence, uint256 fee, uint8 trialPanel) internal {
         Deal storage d = deals[dealId];
         require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
         require(d.status == DealStatus.Funded || d.status == DealStatus.Delivered, "bad status");
-        uint256 fee = court.quoteOpen();
         require(msg.value >= fee, "fee too low");
 
         d.status = DealStatus.Disputed;
-        uint256 caseId = court.openCase{value: fee}(dealId, evidence);
+        uint256 caseId = trialPanel == 0
+            ? court.openCase{value: fee}(dealId, evidence)
+            : court.openCase{value: fee}(dealId, evidence, trialPanel);
         d.caseId = caseId;
         caseToDeal[caseId] = dealId;
         _refundExcess(msg.value, fee);

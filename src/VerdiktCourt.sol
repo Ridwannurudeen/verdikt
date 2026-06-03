@@ -33,12 +33,18 @@ contract VerdiktCourt is IVerdiktCourt {
     /// @dev when true, the panel may abstain with UNDECIDABLE if evidence is insufficient, instead of
     /// being forced to pick a winner. Opt-in: it widens the label set, so validate convergence live.
     bool public allowAbstention;
-    uint8 public constant override MAX_ROUND = 1; // round 0 = trial (panel 5), round 1 = appeal (panel 9)
+    uint8 public constant override MAX_ROUND = 1; // round 0 = trial (panel 3-5), round 1 = appeal (panel 9)
+    /// @dev Smallest trial panel a caller may request. Below this the byte-identical majority is too
+    /// weak to be a credible verdict; 5 is the ideal/default. Lets a dispute degrade to the validators
+    /// actually available instead of reverting when the network is below full strength.
+    uint8 public constant MIN_TRIAL_PANEL = 3;
+    uint8 public constant MAX_TRIAL_PANEL = 5;
 
     struct Case {
         address consumer;
         uint256 escrowRef;
         uint8 round;
+        uint8 trialPanel;
         CaseStatus status;
         Verdict verdict;
         uint16 payeeBps;
@@ -116,12 +122,30 @@ contract VerdiktCourt is IVerdiktCourt {
     // --- consumer entrypoints -------------------------------------------------
 
     function openCase(uint256 escrowRef, string calldata evidence) external payable override returns (uint256 caseId) {
-        uint256 deposit = quoteOpen();
+        return _openCase(escrowRef, evidence, MAX_TRIAL_PANEL);
+    }
+
+    function openCase(uint256 escrowRef, string calldata evidence, uint8 trialPanel)
+        external
+        payable
+        override
+        returns (uint256 caseId)
+    {
+        return _openCase(escrowRef, evidence, trialPanel);
+    }
+
+    function _openCase(uint256 escrowRef, string calldata evidence, uint8 trialPanel)
+        internal
+        returns (uint256 caseId)
+    {
+        require(trialPanel >= MIN_TRIAL_PANEL && trialPanel <= MAX_TRIAL_PANEL, "panel out of range");
+        uint256 deposit = _depositFor(trialPanel);
         require(msg.value >= deposit, "deposit too low");
         caseId = nextCaseId++;
         Case storage c = cases[caseId];
         c.consumer = msg.sender;
         c.escrowRef = escrowRef;
+        c.trialPanel = trialPanel;
         c.evidence = evidence;
         c.promptVersion = activePromptVersion;
         emit CaseOpened(caseId, msg.sender, escrowRef);
@@ -150,7 +174,7 @@ contract VerdiktCourt is IVerdiktCourt {
         Case storage c = cases[caseId];
         require(msg.sender == c.consumer, "only consumer");
         require(c.status == CaseStatus.Errored, "not errored");
-        uint256 deposit = _depositFor(_panelSize(c.round));
+        uint256 deposit = _depositFor(_panelFor(c));
         require(msg.value >= deposit, "deposit too low");
         _dispatch(caseId);
         _refundExcess(msg.value, deposit);
@@ -209,7 +233,7 @@ contract VerdiktCourt is IVerdiktCourt {
 
     function _dispatch(uint256 caseId) internal {
         Case storage c = cases[caseId];
-        uint256 panel = _panelSize(c.round);
+        uint256 panel = _panelFor(c);
         uint256 threshold = panel / 2 + 1;
         uint256 deposit = _depositFor(panel);
         require(_availableBalance() >= deposit, "insufficient balance");
@@ -301,6 +325,11 @@ contract VerdiktCourt is IVerdiktCourt {
         return round == 0 ? 5 : 9;
     }
 
+    /// @dev Trial round uses the per-case selected panel; appeal rounds use the fixed larger panel.
+    function _panelFor(Case storage c) internal view returns (uint256) {
+        return c.round == 0 ? c.trialPanel : _panelSize(c.round);
+    }
+
     function _depositFor(uint256 panel) internal view returns (uint256) {
         return platform.getAdvancedRequestDeposit(panel) + perAgentPrice * panel;
     }
@@ -336,6 +365,11 @@ contract VerdiktCourt is IVerdiktCourt {
 
     function quoteOpen() public view override returns (uint256) {
         return _depositFor(_panelSize(0));
+    }
+
+    function quoteOpen(uint8 trialPanel) public view override returns (uint256) {
+        require(trialPanel >= MIN_TRIAL_PANEL && trialPanel <= MAX_TRIAL_PANEL, "panel out of range");
+        return _depositFor(trialPanel);
     }
 
     function quoteAppeal(uint256 caseId) public view override returns (uint256) {
