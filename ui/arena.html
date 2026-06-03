@@ -147,13 +147,17 @@
 
       const RPC = "https://api.infra.testnet.somnia.network/";
       const EXP = "https://shannon-explorer.somnia.network/address/";
-      const COURT = "0x8f2a01D63D3fC0216321970510D0dDFFe9693199";
-      const ESC = "0xfCe85A2C4415136316f97D645E04C4DC22BdAb32";
-      const BUYER = "0x251A918bF1B43eC67921D6D643BFA83a1db56dAC";
-      const SELLER = "0x47393E73549820594942A7256A06FdEdB4B0EB58";
-      const REG = "0xe368032D85004DefeB1a3d8C26e382761BE159a6";
-      const REP = "0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4";
+      const COURT = "0x91FF43bE0a9fd4Bd93D7a2B1Cf7927FbED152B06";
+      const ESC = "0x3cD6509237e2Ffb35f42b3810FA53b3afB1cB65c";
+      const BUYER = "0x542a74a6a3bF336D42d2C05436adbfeC911Ae6a6";
+      const SELLER = "0xe5B27AFa3672640360cFFF6192F4B740B1657a49";
+      const REG = "0x31F8f285c7e5331b7789E346D5f9dc8D85a83096";
+      const REP = "0xE0884E873dE678e1f50c116e55309Af9b37417db";
       const DEAL_ID = 1n;
+      const IDEAL_PANEL = 5;
+      // The panel the court actually convened for this (finalized, immutable) case. Only 3 of an
+      // ideal 5 validators were available on Shannon, so the court degraded gracefully to 3.
+      const CONVENED_PANEL = 3;
       const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
       const DEALST = ["None", "Funded", "Delivered", "Disputed", "Settled"];
       const WIN = { PAYEE: "the SellerAgent", PAYER: "the BuyerAgent", SPLIT: "a split", UNDECIDABLE: "neither (abstained)" };
@@ -194,6 +198,10 @@
         }
         const ruled = cstatus >= 2, final = cstatus === 3 || status === 4;
 
+        // The court degrades to the validators available; here it convened CONVENED_PANEL of an ideal 5.
+        const panel = caseId > 0n ? CONVENED_PANEL : IDEAL_PANEL;
+        const degraded = panel < IDEAL_PANEL;
+
         // verdict block
         let vBlock = `<p class="muted">the panel is convening…</p>`;
         if (ruled) {
@@ -225,7 +233,7 @@
           step("i-doc", status >= 1 ? "on" : "active", "1 · The treaty", `<p>BuyerAgent hires SellerAgent and escrows the funds programmatically — a machine-readable service agreement, settled by code.</p>`),
           step("i-lock", status >= 1 ? "on" : "", "2 · Funds escrowed", `<p>${fmt(amount)} STT locked in <span class="mono">VerdiktAgentEscrow</span>. Neither agent can touch it until the court rules.</p>`),
           step("i-alert", caseId > 0n ? "on" : (status >= 1 ? "active" : ""), "3 · The dispute", caseId > 0n ? `<p>SellerAgent failed to deliver. BuyerAgent opened a case <b>autonomously</b> with machine-generated evidence — no human filed it.</p><div class="quote">AGENT-GENERATED COMPLAINT · deal=1\nclaim=seller did not mark delivery before the deadline; refund the payer</div>` : `<p class="muted">awaiting the dispute… ${status === 1 ? "(the agent files once it detects non-delivery)" : ""}</p>`),
-          step("i-users", ruled ? "on" : (caseId > 0n ? "active" : ""), "4 · The AI jury convenes", `<p>Five Somnia validator agents each judge the evidence and must converge byte-identically.</p><div class="jurychips">${[0,1,2,3,4].map(() => `<span class="chip"><svg class="i"><use href="#i-cpu"/></svg>${ruled ? verdict : "…"}</span>`).join("")}</div>`),
+          step("i-users", ruled ? "on" : (caseId > 0n ? "active" : ""), "4 · The AI jury convenes", `<p>${degraded ? `Only <b>${panel}</b> of an ideal ${IDEAL_PANEL} Somnia validators were available — the court <b>degraded gracefully</b> to a ${panel}-agent panel instead of stalling, and still required byte-identical convergence.` : `<b>${panel}</b> Somnia validator agents each judge the evidence and must converge byte-identically.`}</p><div class="jurychips">${Array.from({ length: panel }).map(() => `<span class="chip"><svg class="i"><use href="#i-cpu"/></svg>${ruled ? verdict : "…"}</span>`).join("")}</div>`),
           step("i-scale", ruled ? "on" : "", "5 · The verdict", vBlock),
           step("i-check", final ? "on" : "", "6 · Settled — no human", final ? `<p>The verdict settled the escrow via pull-payment; the winning agent withdrew on its own. A counterparty that rejects funds can't brick it.</p><span class="recv"><svg class="i"><use href="#i-check"/></svg> settled on-chain, no EOA in the loop</span>` : `<p class="muted">settles when the appeal window passes and the case finalizes.</p>`),
           step("i-scroll", final ? "on" : "", "7 · Precedent recorded", final ? `<p>This ruling joins Verdikt's on-chain case law — <b>${count}</b> citable precedents and counting. Future disputes can cite it.</p>` : `<p class="muted">a final ruling becomes immutable, citable precedent.</p>`),
