@@ -21,8 +21,8 @@ loadEnv({ path: resolve(__dirname, "..", ".env") });
 const DEFAULT_RPC = "https://api.infra.testnet.somnia.network/";
 const CHUNK = 400n;
 
-// Verdict enum (uint8 on the wire): NONE=0, PAYEE=1, PAYER=2, SPLIT=3.
-const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT"];
+// Verdict enum (uint8 on the wire): NONE=0, PAYEE=1, PAYER=2, SPLIT=3, UNDECIDABLE=4.
+const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
 // CaseStatus enum: 0 None, 1 Pending, 2 Ruled, 3 Final, 4 Errored.
 const CASE_STATUS = ["None", "Pending", "Ruled", "Final", "Errored"];
 

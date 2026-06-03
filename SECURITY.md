@@ -1,7 +1,7 @@
 # Verdikt - Security Notes
 
 Internal audit of `VerdiktCourt`, `VerdiktEscrow`, `VerdiktInsurance`, `VerdiktAgentEscrow`,
-`VerdiktTokenEscrow`, and the support tooling (updated 2026-06-01). Unaudited hackathon code on
+`VerdiktTokenEscrow`, `VerdiktConsumerBase`, and the support tooling (updated 2026-06-02). Unaudited hackathon code on
 Somnia Shannon testnet.
 
 ## Trust Model
@@ -30,15 +30,18 @@ owner is trusted for parameter setting (`setAgentId`, `setPerAgentPrice`, `setAp
 | 13  | MEDIUM   | ERC-20 fee-on-transfer underfunding. Token escrow accepted the requested amount even if the contract received fewer tokens.                                                  | Fixed. `createDeal` and token-stake appeal paths verify the balance delta equals the requested amount.                                                                                  |
 | 14  | LOW      | Missing zero-address constructor guards in several consumers/support modules.                                                                                                 | Fixed. Constructors now reject zero Court, treasury, token, and platform addresses where applicable.                                                                                    |
 | 15  | LOW      | Prompt-injection surface in dispute evidence. A party could attempt to close an evidence block and inject verdict instructions into the panel prompt.                         | Fixed. Evidence is fenced, angle brackets are stripped, and tests assert the allowed-values set remains deterministic.                                                                  |
+| 16  | MEDIUM   | Shared consumer-base excess-fee refunds used a push transfer, so a non-receiving contract integrating the base could brick its own dispute when it overpaid.                 | Fixed. `VerdiktConsumerBase` now credits `pendingRefunds` and exposes `withdrawRefund`, matching the Court pull-refund pattern.                                                         |
+| 17  | LOW      | `UNDECIDABLE` propagation gap in frontend/indexer tooling after abstention was enabled live.                                                                                  | Fixed. Demo UI, live case indexer, and agent SDK now recognize `UNDECIDABLE`; the UI lets the payee appeal an abstention refund path.                                                   |
+| 18  | LOW      | Deployed CSP blocked the Google Fonts used by the landing/app pages, and deploy docs omitted linked app pages.                                                                | Fixed. CSP now allows the exact font origins and known RPC fallback; deploy docs include courtroom, explorer, and snapshot uploads.                                                     |
 
 ## Verification
 
-- `forge test` passes 168/168, including fuzz and invariant tests.
+- `forge test` passes 211/211, including fuzz and invariant tests.
 - Regression coverage includes non-receiving settlement recipients, appeal-deadline snapshots,
   insurance capacity locks, pro-rata share minting, micro-funder appeal rejection, registry
   quote-revert skipping, no-return ERC-20 transfers, fee-on-transfer rejection, graded split
-  settlement, split-bps appeal changes, Court pull-refunds, and prompt-injection fencing.
-- `node --check` passes for keeper, indexer, and determinism driver.
+  settlement, split-bps appeal changes, Court/consumer-base pull-refunds, and prompt-injection fencing.
+- `node --check` passes for keeper, indexer, SDK, and determinism/benchmark drivers.
 - `npm audit --audit-level=high` reports 0 vulnerabilities for keeper, script, and indexer.
 
 ## Hardening & New Surface (current iteration)
