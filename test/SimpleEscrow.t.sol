@@ -73,7 +73,45 @@ contract SimpleEscrowTest is Test {
         uint256 before = payer.balance;
         vm.prank(payer);
         escrow.dispute{value: fee + 0.5 ether}(id, "evidence");
-        // only the fee was consumed; the 0.5 ether excess is refunded
+        assertEq(payer.balance, before - fee - 0.5 ether);
+        assertEq(escrow.pendingRefunds(payer), 0.5 ether);
+
+        vm.prank(payer);
+        escrow.withdrawRefund();
         assertEq(payer.balance, before - fee);
+        assertEq(escrow.pendingRefunds(payer), 0);
+    }
+
+    function test_dispute_excessRefundCannotBrickNonReceiver() public {
+        RefundRejecter rejecter = new RefundRejecter(escrow, payee);
+        vm.deal(address(rejecter), 100 ether);
+        uint256 fee = court.quoteOpen();
+        uint256 id = rejecter.create();
+
+        rejecter.dispute(id, fee + 0.5 ether);
+
+        assertEq(escrow.pendingRefunds(address(rejecter)), 0.5 ether);
+    }
+}
+
+contract RefundRejecter {
+    SimpleEscrow immutable escrow;
+    address immutable payee;
+
+    constructor(SimpleEscrow escrow_, address payee_) {
+        escrow = escrow_;
+        payee = payee_;
+    }
+
+    function create() external returns (uint256) {
+        return escrow.createDeal{value: 1 ether}(payee);
+    }
+
+    function dispute(uint256 id, uint256 value) external {
+        escrow.dispute{value: value}(id, "evidence");
+    }
+
+    receive() external payable {
+        revert("reject");
     }
 }

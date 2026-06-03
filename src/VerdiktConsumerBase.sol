@@ -15,8 +15,11 @@ abstract contract VerdiktConsumerBase is IVerdiktConsumer {
     /// @notice court caseId => your dispute reference, and the reverse.
     mapping(uint256 => uint256) public caseToRef;
     mapping(uint256 => uint256) public refToCase;
+    mapping(address => uint256) public pendingRefunds;
 
     event DisputeOpened(uint256 indexed ref, uint256 indexed caseId);
+    event RefundCredited(address indexed to, uint256 amount);
+    event RefundWithdrawn(address indexed to, uint256 amount);
 
     constructor(address court_) {
         require(court_ != address(0), "zero court");
@@ -44,9 +47,19 @@ abstract contract VerdiktConsumerBase is IVerdiktConsumer {
         refToCase[ref] = caseId;
         emit DisputeOpened(ref, caseId);
         if (msg.value > fee && refundTo != address(0)) {
-            (bool ok,) = refundTo.call{value: msg.value - fee}("");
-            require(ok, "refund failed");
+            uint256 refund = msg.value - fee;
+            pendingRefunds[refundTo] += refund;
+            emit RefundCredited(refundTo, refund);
         }
+    }
+
+    function withdrawRefund() external returns (uint256 amount) {
+        amount = pendingRefunds[msg.sender];
+        require(amount > 0, "nothing to withdraw");
+        pendingRefunds[msg.sender] = 0;
+        (bool ok,) = msg.sender.call{value: amount}("");
+        require(ok, "withdraw failed");
+        emit RefundWithdrawn(msg.sender, amount);
     }
 
     /// @dev Resolve any verdict to the payee's share of the disputed amount in basis points:

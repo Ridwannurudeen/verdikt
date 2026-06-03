@@ -16,7 +16,7 @@ forge install Ridwannurudeen/verdikt
 ```
 
 Then inherit [`VerdiktConsumerBase`](../src/VerdiktConsumerBase.sol) — it handles the court wiring,
-the callback guard, opening a dispute (quote + fee + refund), the caseId↔ref mapping, and resolving a
+the callback guard, opening a dispute (quote + fee + pull-refund), the caseId↔ref mapping, and resolving a
 verdict (graded SPLIT + UNDECIDABLE aware) into a payee basis-point share. You implement `_settle`.
 
 ## The interfaces you depend on
@@ -76,7 +76,7 @@ contract SimpleEscrow is VerdiktConsumerBase {
     }
 
     function dispute(uint256 id, string calldata evidence) external payable {
-        // base quotes the fee, opens the case, maps caseId<->id, refunds the excess
+        // base quotes the fee, opens the case, maps caseId<->id, credits any excess refund
         _openDispute(id, evidence, msg.sender);
     }
 
@@ -124,7 +124,7 @@ keeper, and earn bounties:
 import { createVerdiktAgent } from "verdikt/sdk/agent.mjs";
 const agent = createVerdiktAgent({ publicClient, walletClient, account, court: "0x..." });
 
-await agent.runKeeper();                         // finalize every case whose appeal window has passed
+await agent.runKeeper();                         // finalize every case whose snapshotted appeal deadline has passed
 await agent.appeal(caseId, "new evidence");      // contest a ruling (auto-quotes the larger panel)
 await agent.finalizeForBounty(bounty, caseId);   // settle a case AND claim the keeper bounty
 ```

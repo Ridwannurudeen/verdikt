@@ -132,6 +132,14 @@
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const court = () => $("court").value.trim();
       const read = (fn, args = []) => client.readContract({ address: court(), abi: COURT_ABI, functionName: fn, args });
+      const esc = (s) =>
+        String(s ?? "").replace(/[&<>"']/g, (c) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c]);
 
       function step(iconId, on, title, html, last) {
         return `<div class="step">
@@ -177,17 +185,17 @@
         }
 
         const receipt = c.receiptId > 0n
-          ? `<a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank">receipt #${c.receiptId} — the jurors' reasoning ↗</a>`
+          ? `<a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank" rel="noopener">receipt #${c.receiptId} — the jurors' reasoning ↗</a>`
           : `<span class="muted">on-chain receipt attaches when the panel returns</span>`;
 
         $("stage").innerHTML = [
           step("i-scale", true, "A dispute is opened",
-            `Case <b>#${id}</b> · consumer <a href="${EXP}${c.consumer}" target="_blank">${short(c.consumer)}</a> · reference ${c.escrowRef}`),
+            `Case <b>#${id}</b> · consumer <a href="${EXP}${c.consumer}" target="_blank" rel="noopener">${short(c.consumer)}</a> · reference ${c.escrowRef}`),
           step("i-link", facts.length > 0, "Evidence entered into the record",
-            facts.length > 0 ? `<div class="quote">${facts.replace(/</g, "&lt;")}</div>`
+            facts.length > 0 ? `<div class="quote">${esc(facts)}</div>`
               : `<span class="muted">No attested facts on file — decided on the parties' submitted evidence (see the receipt).</span>`),
           step("i-scroll", true, "Tried under the court's law",
-            `<div class="law">${(sys || "(prompt unavailable)").replace(/</g, "&lt;")}</div>`),
+            `<div class="law">${esc(sys || "(prompt unavailable)")}</div>`),
           step("i-users", ruled, "The panel rules", verdictHtml),
           step("i-file", c.receiptId > 0n, "The reasoning is recorded", receipt),
           step(final ? "i-circlecheck" : "i-clock", true, final ? "Final & settled" : `Status: ${status}`,
