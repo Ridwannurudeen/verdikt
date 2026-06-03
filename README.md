@@ -63,6 +63,11 @@ following are live on Shannon (**v4**) and recorded in [`deployments/shannon.jso
 - **Governed transparently** — the prompt is the court's "law": versioned, immutable per version,
   timelock-governed, and cited per case.
 - **Graded outcomes** — `SPLIT25/50/75` for partial fault, determinism-validated live.
+- **Resilient to validator availability.** The trial panel is caller-selectable in `[3, 5]` (default 5),
+  so when Somnia's validator set dips below full strength a dispute **degrades gracefully** to the
+  validators present instead of reverting. Proven live: a dispute that couldn't convene 5 settled at a
+  byte-identical **3-agent** majority — verdict, pull-payment settlement, precedent + reputation, no
+  human in the loop (`resilientArena`).
 
 ## How it maps to the judging criteria
 
