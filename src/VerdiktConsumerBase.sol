@@ -43,6 +43,22 @@ abstract contract VerdiktConsumerBase is IVerdiktConsumer {
         uint256 fee = court.quoteOpen();
         require(msg.value >= fee, "fee too low");
         caseId = court.openCase{value: fee}(ref, evidence);
+        _recordDispute(ref, caseId, fee, refundTo);
+    }
+
+    /// @dev As `_openDispute`, but selects the trial panel size so the dispute degrades to the
+    /// validator set currently available (in [court.MIN_TRIAL_PANEL, 5]) instead of reverting.
+    function _openDispute(uint256 ref, string memory evidence, address refundTo, uint8 trialPanel)
+        internal
+        returns (uint256 caseId)
+    {
+        uint256 fee = court.quoteOpen(trialPanel);
+        require(msg.value >= fee, "fee too low");
+        caseId = court.openCase{value: fee}(ref, evidence, trialPanel);
+        _recordDispute(ref, caseId, fee, refundTo);
+    }
+
+    function _recordDispute(uint256 ref, uint256 caseId, uint256 fee, address refundTo) private {
         caseToRef[caseId] = ref;
         refToCase[ref] = caseId;
         emit DisputeOpened(ref, caseId);
