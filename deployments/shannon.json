@@ -73,7 +73,13 @@
       "VerdiktRegistry": "0xe368032D85004DefeB1a3d8C26e382761BE159a6",
       "VerdiktReputation": "0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4",
       "VerdiktAttestationRegistry": "0x53e7632709648669249f18fd2Ce7Cdb5744A285A",
-      "VerdiktMarketplace": "0xa51c712fE58aB04d0e2dE540b5d982773548A6EB"
+      "VerdiktMarketplace": "0xa51c712fE58aB04d0e2dE540b5d982773548A6EB",
+      "VerdiktAgentEscrow": "0xfCe85A2C4415136316f97D645E04C4DC22BdAb32"
+    },
+    "agentArena": {
+      "buyerAgent": "0x251A918bF1B43eC67921D6D643BFA83a1db56dAC",
+      "sellerAgent": "0x47393E73549820594942A7256A06FdEdB4B0EB58",
+      "note": "Two autonomous CONTRACT agents (no EOA in the settlement path) transacting via VerdiktAgentEscrow on the v4 Court. BuyerAgent funds the deal + files disputes with machine-generated evidence + pulls its refund; SellerAgent is the contract counterparty. Driven by the cinematic /app/arena.html, which replays the treaty -> escrow -> dispute -> AI jury -> settlement -> precedent -> reputation flow live."
     },
     "config": {"gradedSplit": true, "allowAbstention": true, "attestationRegistry": "wired", "activePromptVersion": 1, "appealWindow": "60s (demo)"},
     "liveState": {
@@ -81,6 +87,29 @@
       "precedentRegistry": "1 final ruling recorded (case 1, topic escrow/partial-delivery), 8-field struct with payeeBps",
       "reputation": "deployer recorded Payer-side on a SPLIT (scoreOf 0); payee 0x3333 recorded Payee-side",
       "wiringVerified": "Escrow.court -> v4 Court; gradedSplit true; attestationRegistry set; activePromptVersion 1"
+    }
+  },
+  "resilientArena": {
+    "label": "resilient-panel Court + agent-to-agent settlement at a degraded validator panel",
+    "deployedAt": "2026-06-03",
+    "deployMethod": "forge create --broadcast (forge 1.7.1)",
+    "note": "Fresh self-contained stack for the resilient-panel feature: the trial panel is caller-selectable in [MIN_TRIAL_PANEL=3, 5] (default 5). Somnia's createAdvancedRequest reverts (0x8f4079ff) when the requested panel exceeds available validators; the old hardcoded 5-panel stalled the live A2A dispute when the testnet floated to 3-4 validators. Here the off-chain agent pre-flighted availability (5 blocked, 4 blocked, 3 OK) and requested a 3-validator panel, which reached a byte-identical PAYER majority and settled with no human in the loop. Registry + Reputation are court-bound, so they were redeployed against this Court. The cinematic /app/arena.html points HERE.",
+    "contracts": {
+      "VerdiktCourt": "0x91FF43bE0a9fd4Bd93D7a2B1Cf7927FbED152B06",
+      "VerdiktAgentEscrow": "0x3cD6509237e2Ffb35f42b3810FA53b3afB1cB65c",
+      "VerdiktRegistry": "0x31F8f285c7e5331b7789E346D5f9dc8D85a83096",
+      "VerdiktReputation": "0xE0884E873dE678e1f50c116e55309Af9b37417db",
+      "buyerAgent": "0x542a74a6a3bF336D42d2C05436adbfeC911Ae6a6",
+      "sellerAgent": "0xe5B27AFa3672640360cFFF6192F4B740B1657a49"
+    },
+    "config": {"gradedSplit": false, "allowAbstention": false, "appealWindow": "60s (demo)", "trialPanelRange": "[3,5]", "convenedPanel": 3},
+    "liveState": {
+      "case": "deal #1 (0.01 STT), BuyerAgent vs SellerAgent. Seller never delivered; BuyerAgent disputed autonomously with machine-generated evidence.",
+      "panel": "Requested 3 (5 and 4 unavailable at dispatch); byte-identical Majority of 3, threshold 2.",
+      "verdict": "PAYER (refund the buyer) — case 1 FINAL, deal SETTLED via pull-payment.",
+      "precedentRegistry": "1 final ruling recorded (case 1, topic agent/non-delivery).",
+      "reputation": "BuyerAgent 1 dispute / 1 win; SellerAgent 1 dispute / 1 loss.",
+      "wiringVerified": "Escrow.court -> resilient Court; Registry.court + Reputation.court -> resilient Court; MIN_TRIAL_PANEL=3."
     }
   },
   "abstentionGate": {
