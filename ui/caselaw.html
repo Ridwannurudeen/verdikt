@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Verdikt — case law</title>
+    <meta name="description" content="The complete on-chain precedent ledger — every finalized AI-jury ruling, read live from Somnia Shannon." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,50 +21,78 @@
         color-scheme: dark;
       }
       * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Inter", system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; position: relative; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Inter", system-ui, -apple-system, sans-serif; font-size: 14.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; position: relative; }
       h1, h2, .big-stat, .brand { font-family: "Satoshi", "Inter", system-ui, sans-serif; }
-      :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--violet); border-radius: 6px; }
       body::before { content: ""; position: fixed; inset: 0; z-index: -2; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 34px 34px; -webkit-mask-image: radial-gradient(120% 70% at 50% 0%, #000 20%, transparent 70%); mask-image: radial-gradient(120% 70% at 50% 0%, #000 20%, transparent 70%); }
       body::after { content: ""; position: fixed; top: -340px; left: 50%; transform: translateX(-50%); width: 900px; height: 600px; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(124,92,246,0.24), transparent 70%); }
       a { color: #b9c2ff; text-decoration: none; } a:hover { text-decoration: underline; }
+      :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--violet); border-radius: 6px; }
       .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; }
       .muted { color: var(--muted); }
       svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; display: block; }
-      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+      .wrap { max-width: 1040px; margin: 0 auto; padding: 0 22px; }
 
       nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px); background: rgba(6,7,12,0.7); border-bottom: 1px solid var(--border); }
       .nav-in { max-width: 1160px; margin: 0 auto; padding: 0 22px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
       .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; }
       .brand .logo { width: 27px; height: 27px; border-radius: 8px; background: linear-gradient(140deg, rgba(129,140,248,0.25), rgba(192,132,252,0.18)); border: 1px solid rgba(167,139,250,0.4); display: grid; place-items: center; color: #c4b5fd; font-size: 15px; }
-      .nav-links { display: flex; gap: 22px; align-items: center; font-size: 14px; }
+      .nav-links { display: flex; gap: 20px; align-items: center; font-size: 14px; }
       .nav-links a { color: var(--muted); }
       .nav-links a.active { color: var(--text); }
       .nav-links a:hover { color: var(--text); text-decoration: none; }
 
-      .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-top: 14px; }
-      .panel.header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 40px; }
-      h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.035em; margin: 0; }
-      .conn-info { font-size: 12px; color: var(--dim); }
-      .panel h2 { font-size: 12px; margin: 0 0 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
-      .hist { margin-top: 12px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-      .empty { color: var(--muted); padding: 6px 0; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
-      th { color: var(--dim); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; }
-      .badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11px; font-weight: 800; }
-      .yes { background: rgba(46,160,67,0.18); color: #6ee7a0; } .no { background: var(--surface-2); color: var(--dim); }
-      /* ---- elevation · unified with explorer.html + the landing ---- */
-      .head { position: relative; padding: 40px 0 6px; }
-      .head p { color: var(--muted); margin: 8px 0 0; max-width: 640px; }
+      .head { position: relative; padding: 42px 0 6px; }
       .kicker { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #a78bfa; margin: 0 0 8px; }
-      .big-stat { font-size: clamp(40px, 6vw, 56px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; filter: drop-shadow(0 6px 20px rgba(167,139,250,0.28)); }
-      .big-stat.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.035em; margin: 0; }
+      .head p { color: var(--muted); margin: 9px 0 0; max-width: 660px; }
+      .conn-info { font-size: 12px; color: var(--dim); }
+
+      .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin-top: 16px; }
+      .panel h2 { font-size: 12px; margin: 0 0 4px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+      .panel .h2sub { font-size: 12.5px; color: var(--muted); margin: 0 0 16px; }
+      .ledger-top { display: grid; grid-template-columns: 200px 1fr; gap: 26px; align-items: center; }
+      @media (max-width: 680px) { .ledger-top { grid-template-columns: 1fr; gap: 18px; } }
+      .big-stat { font-size: clamp(48px, 8vw, 68px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+      .big-stat.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 20px rgba(167,139,250,0.28)); }
+      .big-stat-k { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
+      .summary { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+      /* distribution bars */
+      .bars { display: flex; flex-direction: column; gap: 12px; }
+      .bar-row { display: grid; grid-template-columns: 104px 1fr auto; align-items: center; gap: 12px; }
+      .bar-track { height: 12px; border-radius: 100px; background: var(--surface-2); overflow: hidden; }
+      .bar-fill { height: 100%; border-radius: 100px; transition: width 0.9s cubic-bezier(0.22,1,0.36,1); }
+      .bar-fill.PAYEE { background: linear-gradient(90deg, rgba(46,160,67,0.6), #2ea043); }
+      .bar-fill.PAYER { background: linear-gradient(90deg, rgba(139,92,246,0.55), #8b5cf6); }
+      .bar-fill.SPLIT { background: linear-gradient(90deg, rgba(245,165,36,0.5), #f5a524); }
+      .bar-fill.UNDECIDABLE { background: linear-gradient(90deg, rgba(120,128,150,0.4), #9fa6c0); }
+      .bar-row .bv { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); min-width: 64px; text-align: right; }
+      .bar-row .bv b { color: var(--text); }
+
+      table { width: 100%; border-collapse: collapse; margin-top: 2px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13.5px; }
+      th { color: var(--dim); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+      tbody tr:hover { background: rgba(255,255,255,0.02); }
+      .empty { color: var(--muted); padding: 6px 0; }
+
       .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
       .vpill-PAYEE { background: rgba(46,160,67,0.16); color: #6ee7a0; border-color: rgba(46,160,67,0.4); }
       .vpill-PAYER { background: rgba(139,92,246,0.16); color: #c4b5fd; border-color: rgba(139,92,246,0.4); }
       .vpill-SPLIT { background: rgba(245,165,36,0.14); color: #ffd687; border-color: rgba(245,165,36,0.4); }
       .vpill-UNDECIDABLE { background: rgba(120,128,150,0.18); color: #c6cbe0; border-color: var(--border-2); }
       .vpill-NONE { background: var(--surface-2); color: var(--dim); }
+
+      details.cfg { margin: 18px 0 50px; font-size: 12.5px; color: var(--dim); }
+      details.cfg summary { cursor: pointer; list-style: none; font-weight: 600; color: var(--dim); padding: 4px 0; }
+      details.cfg summary::-webkit-details-marker { display: none; }
+      details.cfg summary::before { content: "▸ "; }
+      details.cfg[open] summary::before { content: "▾ "; }
+      details.cfg .row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; padding: 10px 0 2px; }
+      details.cfg input { width: 360px; max-width: 100%; background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 12.5px; }
+      details.cfg .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13px; border-radius: 8px; padding: 8px 14px; border: 0; cursor: pointer; background: var(--grad); color: #15102b; }
+      .live-line { display: inline-flex; align-items: center; gap: 7px; }
+      .live-line .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,160,67,0.55); } 70% { box-shadow: 0 0 0 6px rgba(46,160,67,0); } 100% { box-shadow: 0 0 0 0 rgba(46,160,67,0); } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
     </style>
   </head>
@@ -91,140 +120,121 @@
       <div class="head">
         <span class="kicker">On-chain case law · AI-authored</span>
         <h1>Case law</h1>
-        <p>Every finalized ruling from the precedent registry, indexed from Somnia Shannon. <span id="meta" class="conn-info">loading caselaw.json…</span></p>
+        <p>The complete precedent ledger — every finalized AI-jury ruling, read live from the on-chain registry on Somnia Shannon. <span id="meta" class="conn-info">reading the registry…</span></p>
       </div>
 
       <div class="panel">
-        <h2>Total cases on record</h2>
-        <div class="big-stat grad" id="count">—</div>
-        <div id="summary" class="muted" style="margin-top: 10px;">—</div>
-        <div id="hist" class="hist"></div>
-      </div>
-
-      <div class="panel" style="margin-bottom: 50px;">
-        <h2>Rulings</h2>
-        <div id="tableWrap">
-          <div class="empty">loading…</div>
+        <div class="ledger-top">
+          <div>
+            <div class="big-stat-k">Rulings on record</div>
+            <div class="big-stat grad" id="count">—</div>
+            <div class="summary" id="summary">—</div>
+          </div>
+          <div>
+            <div class="big-stat-k">Distribution by verdict</div>
+            <div class="bars" id="dist"><span class="muted">—</span></div>
+          </div>
         </div>
       </div>
+
+      <div class="panel">
+        <h2>The ledger</h2>
+        <p class="h2sub">Every finalized ruling indexed in the registry, newest first. Each is immutable, citable precedent — addresses and receipts link to Shannon.</p>
+        <div id="tableWrap"><div class="empty">loading…</div></div>
+      </div>
+
+      <details class="cfg">
+        <summary>Advanced — point at a different registry</summary>
+        <div class="row">registry <input id="reg" /> <button class="btn" id="reload">reload</button> <span class="live-line"><span class="dot-live"></span><span id="status"></span></span></div>
+      </details>
     </div>
 
     <script type="module">
-      const VERDICTS = ["PAYEE", "PAYER", "SPLIT", "NONE"];
+      import { createPublicClient, http, parseAbi } from "https://esm.sh/viem@2.21.0";
+
+      const RPC = "https://api.infra.testnet.somnia.network/";
+      const DEFAULT_REG = "0xe368032D85004DefeB1a3d8C26e382761BE159a6"; // v4 VerdiktRegistry (8-field, payeeBps)
+      const EXP = "https://shannon-explorer.somnia.network/address/";
+      const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
+      const ORDER = ["PAYER", "PAYEE", "SPLIT", "UNDECIDABLE"];
+      const MAX = 100; // safety cap on the live fan-out; logged honestly if exceeded
+
+      const REG_ABI = parseAbi([
+        "function rulingsCount() view returns (uint256)",
+        "function allRulings(uint256 offset, uint256 limit) view returns (uint256[])",
+        "function getRuling(uint256 caseId) view returns ((uint256 caseId,address consumer,uint256 escrowRef,uint8 verdict,uint16 payeeBps,uint256 receiptId,uint64 rulingTime,bytes32 topic))",
+      ]);
 
       const $ = (id) => document.getElementById(id);
-      const esc = (s) =>
-        String(s ?? "").replace(
-          /[&<>"']/g,
-          (c) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              '"': "&quot;",
-              "'": "&#39;",
-            })[c],
-        );
+      const client = createPublicClient({ transport: http(RPC) });
+      const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+      const reg = () => $("reg").value.trim();
+      const vpill = (v) => `<span class="vpill vpill-${v}">${v}</span>`;
+      const fmtTime = (unix) => (unix ? new Date(Number(unix) * 1000).toLocaleString() : "—");
 
-      function vpill(v) {
-        const label = VERDICTS.includes(v) || v === "UNDECIDABLE" ? v : "NONE";
-        return `<span class="vpill vpill-${label}">${esc(v)}</span>`;
+      function renderDist(rulings, total) {
+        const dist = {}; for (const v of ORDER) dist[v] = 0;
+        for (const r of rulings) { const v = VERDICT[r.verdict] ?? "NONE"; if (v in dist) dist[v] += 1; }
+        const present = ORDER.filter((v) => dist[v]);
+        if (!present.length) { $("dist").innerHTML = `<span class="muted">no rulings to chart yet</span>`; return; }
+        const max = Math.max(...present.map((v) => dist[v]));
+        $("dist").innerHTML = present.map((v) => `
+          <div class="bar-row">
+            <span>${vpill(v)}</span>
+            <span class="bar-track"><span class="bar-fill ${v}" style="width:${(dist[v] / max) * 100}%"></span></span>
+            <span class="bv"><b>${dist[v]}</b> <span class="muted">· ${Math.round((dist[v] / total) * 100)}%</span></span>
+          </div>`).join("");
       }
 
-      function flag(on) {
-        return `<span class="badge ${on ? "yes" : "no"}">${on ? "yes" : "no"}</span>`;
-      }
-
-      function fmtTime(unix) {
-        if (!unix) return "—";
-        return new Date(Number(unix) * 1000).toLocaleString();
-      }
-
-      function receiptCell(receiptId) {
-        if (!receiptId || receiptId === "0") return "—";
-        const url = `https://agents.somnia.network/receipts/${encodeURIComponent(receiptId)}`;
-        return `${esc(receiptId)} · <a href="${url}" target="_blank" rel="noopener">View receipt</a>`;
-      }
-
-      function render(rulings) {
-        $("meta").textContent =
-          `${rulings.length} ruling${rulings.length === 1 ? "" : "s"}`;
-
-        const finalized = rulings.filter((r) => r.finalized).length;
-        const appealed = rulings.filter((r) => r.appealed).length;
-        $("count").textContent = rulings.length;
-        $("summary").textContent =
-          `finalized: ${finalized} · appealed: ${appealed}`;
-
-        const hist = {};
-        for (const r of rulings) {
-          const v = r.verdict ?? "NONE";
-          hist[v] = (hist[v] ?? 0) + 1;
-        }
-        const order = [
-          ...VERDICTS,
-          ...Object.keys(hist).filter((k) => !VERDICTS.includes(k)),
-        ];
-        $("hist").innerHTML = order
-          .filter((v) => hist[v])
-          .map((v) => `${vpill(v)} <span class="muted">${hist[v]}</span>`)
-          .join("&nbsp;&nbsp;");
-
-        if (rulings.length === 0) {
-          $("tableWrap").innerHTML =
-            `<div class="empty">no rulings in snapshot.</div>`;
-          return;
-        }
-
-        const rows = rulings
-          .map(
-            (r) => `
-    <tr>
-      <td>${esc(r.caseId)}</td>
-      <td>${vpill(r.verdict ?? "NONE")}${r.verdict === "SPLIT" && r.payeeBps != null ? ` <span class="muted">${r.payeeBps / 100}% payee</span>` : ""}</td>
-      <td>${esc(r.round ?? "—")}</td>
-      <td>${esc(r.status ?? "—")}</td>
-      <td>${flag(r.appealed)}</td>
-      <td>${flag(r.finalized)}</td>
-      <td class="mono">${esc(r.consumer ?? "—")}</td>
-      <td>${esc(r.escrowRef ?? "—")}</td>
-      <td>${fmtTime(r.rulingTime)}</td>
-      <td class="mono">${receiptCell(r.receiptId)}</td>
-    </tr>`,
-          )
-          .join("");
-
-        $("tableWrap").innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Case</th><th>Verdict</th><th>Round</th><th>Status</th>
-          <th>Appealed</th><th>Finalized</th><th>Consumer</th>
-          <th>Escrow ref</th><th>Ruling time</th><th>Receipt</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+      function renderTable(rulings) {
+        if (!rulings.length) { $("tableWrap").innerHTML = `<div class="empty">No finalized rulings recorded yet — the empty ledger is the honest state. It fills as agents settle disputes.</div>`; return; }
+        const rows = rulings.map((r) => {
+          const v = VERDICT[r.verdict] ?? "NONE";
+          const split = v === "SPLIT" ? ` <span class="muted">${Number(r.payeeBps) / 100}% payee</span>` : "";
+          const receipt = r.receiptId > 0n
+            ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank" rel="noopener">#${r.receiptId} ↗</a>`
+            : `<span class="muted">—</span>`;
+          return `<tr>
+            <td>${r.caseId}</td>
+            <td>${vpill(v)}${split}</td>
+            <td class="mono"><a href="${EXP}${r.consumer}" target="_blank" rel="noopener">${short(r.consumer)}</a></td>
+            <td>${r.escrowRef}</td>
+            <td class="mono muted">${r.topic.slice(0, 10)}…</td>
+            <td>${fmtTime(r.rulingTime)}</td>
+            <td>${receipt}</td>
+          </tr>`;
+        }).join("");
+        $("tableWrap").innerHTML = `<table><thead><tr>
+          <th>Case</th><th>Verdict</th><th>Consumer</th><th>Ref</th><th>Topic</th><th>Ruled</th><th>Receipt</th>
+        </tr></thead><tbody>${rows}</tbody></table>`;
       }
 
       async function load() {
+        $("status").textContent = "reading on-chain…";
         try {
-          const res = await fetch("caselaw.json", { cache: "no-store" });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          if (!Array.isArray(data))
-            throw new Error("caselaw.json is not an array");
-          render(data);
+          const count = await client.readContract({ address: reg(), abi: REG_ABI, functionName: "rulingsCount" });
+          const total = Number(count);
+          $("count").textContent = total;
+          const n = total > MAX ? MAX : total;
+          const ids = n > 0 ? await client.readContract({ address: reg(), abi: REG_ABI, functionName: "allRulings", args: [0n, BigInt(n)] }) : [];
+          const rulings = await Promise.all(ids.map((id) => client.readContract({ address: reg(), abi: REG_ABI, functionName: "getRuling", args: [id] })));
+          rulings.sort((a, b) => Number(b.caseId) - Number(a.caseId)); // newest first
+          $("meta").textContent = `${total} ruling${total === 1 ? "" : "s"} · live`;
+          $("summary").innerHTML = total > n ? `showing the latest <b>${n}</b> of ${total}` : `all finalized &amp; citable`;
+          renderDist(rulings, total);
+          renderTable(rulings);
+          $("status").textContent = "live on Shannon";
         } catch (e) {
-          $("meta").textContent = "failed to load caselaw.json";
+          const msg = e.shortMessage ?? e.message;
+          $("meta").textContent = "registry unreachable";
+          $("status").textContent = "error: " + msg;
           $("summary").textContent = "";
-          $("tableWrap").innerHTML =
-            `<div class="empty">Could not load <code>caselaw.json</code> from this directory ` +
-            `(${esc(e.message)}). Run the indexer (<code>npm run index</code>) to generate it, ` +
-            `then serve this folder over HTTP.</div>`;
+          $("tableWrap").innerHTML = `<div class="empty">Could not read the registry: ${msg}</div>`;
         }
       }
 
+      $("reg").value = DEFAULT_REG;
+      $("reload").onclick = load;
       load();
     </script>
   </body>
