@@ -237,6 +237,20 @@
       .vpill-PAYER { background: rgba(139, 92, 246, 0.16); color: #c4b5fd; border-color: rgba(139, 92, 246, 0.4); }
       .vpill-SPLIT { background: rgba(245, 165, 36, 0.14); color: #ffd687; border-color: rgba(245, 165, 36, 0.4); }
       .vpill-UNDECIDABLE { background: rgba(120, 128, 150, 0.18); color: #c6cbe0; border-color: rgba(255, 255, 255, 0.15); }
+      details.cfg-panel > summary {
+        cursor: pointer;
+        list-style: none;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: "Satoshi", "Inter", system-ui, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: -0.03em;
+        color: #9fa2ba;
+      }
+      details.cfg-panel > summary::-webkit-details-marker { display: none; }
+      details.cfg-panel > summary::before { content: "▸ "; }
+      details.cfg-panel[open] > summary::before { content: "▾ "; }
+      details.cfg-panel > summary .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
       :focus-visible {
         outline: none;
         box-shadow: 0 0 0 2px #06070c, 0 0 0 3.5px #8b5cf6;
@@ -271,8 +285,8 @@
         </div>
       </div>
 
-      <div class="panel">
-        <h2>Config</h2>
+      <details class="panel cfg-panel">
+        <summary>Config <span class="muted">— pre-filled with the live Shannon deployment; expand to override</span></summary>
         <label>RPC URL</label>
         <input
           id="cfgRpc"
@@ -286,7 +300,7 @@
           <button id="cfgSave" class="primary">Save</button>
           <span id="cfgStatus" class="muted"></span>
         </div>
-      </div>
+      </details>
 
       <div class="panel">
         <h2>Create deal</h2>
