@@ -209,6 +209,34 @@
         color: #e6edf3;
         border: 1px solid #30363d;
       }
+      .kicker {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #a78bfa;
+        margin: 0 0 6px;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      .vpill {
+        display: inline-flex;
+        align-items: center;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        padding: 4px 11px;
+        border-radius: 100px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #161927;
+        color: #9fa2ba;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      .vpill-NONE { background: #161927; color: #9fa2ba; border-color: rgba(255, 255, 255, 0.08); }
+      .vpill-PAYEE { background: rgba(46, 160, 67, 0.16); color: #6ee7a0; border-color: rgba(46, 160, 67, 0.4); }
+      .vpill-PAYER { background: rgba(139, 92, 246, 0.16); color: #c4b5fd; border-color: rgba(139, 92, 246, 0.4); }
+      .vpill-SPLIT { background: rgba(245, 165, 36, 0.14); color: #ffd687; border-color: rgba(245, 165, 36, 0.4); }
+      .vpill-UNDECIDABLE { background: rgba(120, 128, 150, 0.18); color: #c6cbe0; border-color: rgba(255, 255, 255, 0.15); }
     </style>
   </head>
   <body>
@@ -227,7 +255,10 @@
         <a href="/" style="color:#6a6e87;text-decoration:none;margin-left:auto">Home ↗</a>
       </nav>
       <div class="panel header">
-        <h1>Verdikt — escrow demo</h1>
+        <div>
+          <span class="kicker">Interactive · wired to live Shannon contracts</span>
+          <h1>Verdikt — escrow demo</h1>
+        </div>
         <div class="conn">
           <span id="connInfo" class="conn-info">not connected</span>
           <button id="connectBtn" class="primary">Connect wallet</button>
@@ -1250,7 +1281,7 @@
             `<span class="badge">${CASE_STATUS[Number(cv.status)] ?? "?"}</span>`;
           const verdict = Number(cv.verdict);
           $("cvVerdict").innerHTML =
-            `<span class="badge">${VERDICT[verdict] ?? "?"}</span>`;
+            `<span class="vpill vpill-${VERDICT[verdict] ?? "NONE"}">${VERDICT[verdict] ?? "?"}</span>`;
           $("cvPayeeShare").textContent =
             verdict === 1
               ? "100%"
