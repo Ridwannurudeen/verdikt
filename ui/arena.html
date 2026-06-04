@@ -136,6 +136,24 @@
       .repcard b { font-size: 20px; }
       .recv { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-size: 12.5px; font-weight: 600; margin-top: 6px; }
       .recv svg.i { width: 14px; height: 14px; }
+      /* deep-match: agent cards */
+      .agent-card .ac-top { display: flex; align-items: center; gap: 12px; }
+      .agent-card .acsub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .agent-card .rep-line { margin-top: 14px; min-height: 38px; }
+      .stars { display: flex; gap: 3px; }
+      .stars svg.i { width: 14px; height: 14px; color: var(--dim); fill: none; }
+      .stars .on svg.i { color: var(--amber); fill: var(--amber); stroke: var(--amber); }
+      .repnum { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+      .repnum b { color: var(--text); font-variant-numeric: tabular-nums; }
+      .caps { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+      .caps li { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 9px; }
+      .caps li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--violet); flex: 0 0 auto; }
+      .agent-card .addr { margin-top: 14px; }
+      .agent-card.win .stars .on svg.i { color: var(--amber); }
+      /* deep-match: richer juror rows */
+      .juror-row .jmeta { display: flex; flex-direction: column; min-width: 0; }
+      .juror-row .jrole { font-size: 10px; color: var(--dim); margin-top: 1px; }
+      .rail-head .cap #juryCount { color: var(--cyan); }
       :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--violet); border-radius: 6px; }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
     </style>
@@ -177,19 +195,23 @@
 
       <div class="vs-hero">
         <div class="agent-card" id="buyerCard">
-          <div class="av"><svg class="i"><use href="#i-cpu"/></svg></div>
-          <div class="role">BuyerAgent</div>
-          <div class="sub">funds the deal · files disputes · pulls its refund</div>
+          <div class="ac-top">
+            <div class="av"><svg class="i"><use href="#i-cpu"/></svg></div>
+            <div><div class="role">BuyerAgent</div><div class="acsub">Representing the buyer</div></div>
+          </div>
+          <div class="rep-line" id="buyerRep"><span class="muted">reputation recorded once final</span></div>
+          <ul class="caps"><li>Funds the deal</li><li>Files disputes autonomously</li><li>Demands refund on non-delivery</li></ul>
           <div class="addr mono"><a id="buyerLink" target="_blank">—</a></div>
-          <div class="rep" id="buyerRep">reputation recorded once final</div>
         </div>
         <div class="vs-badge">VS</div>
         <div class="agent-card" id="sellerCard">
-          <div class="av"><svg class="i"><use href="#i-cpu"/></svg></div>
-          <div class="role">SellerAgent</div>
-          <div class="sub">delivers the service · defends quality · pulls payment</div>
+          <div class="ac-top">
+            <div class="av"><svg class="i"><use href="#i-cpu"/></svg></div>
+            <div><div class="role">SellerAgent</div><div class="acsub">Representing the seller</div></div>
+          </div>
+          <div class="rep-line" id="sellerRep"><span class="muted">reputation recorded once final</span></div>
+          <ul class="caps"><li>Delivers the service</li><li>Defends quality</li><li>Pulls payment on completion</li></ul>
           <div class="addr mono"><a id="sellerLink" target="_blank">—</a></div>
-          <div class="rep" id="sellerRep">reputation recorded once final</div>
         </div>
       </div>
 
@@ -220,7 +242,7 @@
       <div class="arena-grid">
         <div id="stage"></div>
         <aside class="jury-rail">
-          <div class="rail-head"><span class="cap">AI Jury</span><span id="railStatus" class="vpill vpill-deliberating">Live deliberation</span></div>
+          <div class="rail-head"><span class="cap">AI Jury <span id="juryCount"></span></span><span id="railStatus" class="vpill vpill-deliberating">Live deliberation</span></div>
           <div class="gauge">
             <svg viewBox="0 0 150 150">
               <defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818cf8"/><stop offset="0.55" stop-color="#a78bfa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
@@ -268,6 +290,15 @@
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const fmt = (wei) => (Number(wei) / 1e18).toLocaleString(undefined, { maximumFractionDigits: 6 });
       const rel = (ts) => { const s = Math.max(0, Math.floor(Date.now() / 1000) - ts); if (s < 60) return s + "s ago"; if (s < 3600) return Math.floor(s / 60) + "m ago"; if (s < 86400) return Math.floor(s / 3600) + "h ago"; return Math.floor(s / 86400) + "d ago"; };
+      // Real-data reputation: a star rating derived from the on-chain win rate (no fabricated score).
+      const stars = (r) => {
+        const d = Number(r.disputes) || 0, w = Number(r.wins), l = Number(r.losses), sp = Number(r.splits);
+        const rate = d ? Math.round((w / d) * 100) : 0;
+        const filled = d ? Math.round((w / d) * 5) : 0;
+        const row = Array.from({ length: 5 }).map((_, i) => `<span class="${i < filled ? "on" : ""}"><svg class="i"><use href="#i-star"/></svg></span>`).join("");
+        return `<div class="stars">${row}</div><div class="repnum"><b>${rate}%</b> win rate · ${w}W·${l}L·${sp}S <span class="muted">(${d} dispute${d === 1 ? "" : "s"})</span></div>`;
+      };
+      const forWhom = (v) => v === "PAYER" ? "For BuyerAgent" : v === "PAYEE" ? "For SellerAgent" : v === "SPLIT" ? "Split decision" : v === "UNDECIDABLE" ? "Undecided" : v;
 
       for (const [id, addr] of [["buyerLink", BUYER], ["sellerLink", SELLER], ["ebBuyer", BUYER], ["ebSeller", SELLER]]) {
         $(id).textContent = short(addr); $(id).href = EXP + addr;
@@ -341,8 +372,9 @@
         $("gaugeSub").textContent = ruled ? `${panel}/${panel} byte-identical` : "AI jury deliberating";
         $("railStatus").className = "vpill " + (ruled ? "vpill-final" : "vpill-deliberating");
         $("railStatus").textContent = ruled ? "Unanimous" : "Live deliberation";
+        $("juryCount").textContent = caseId > 0n ? "· " + panel : "";
         $("jurors").innerHTML = Array.from({ length: panel }).map((_, i) =>
-          `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jl">Validator ${i + 1}</div>${ruled ? `<span class="vpill vpill-${verdict}">${verdict}</span>` : `<span class="vpill vpill-deliberating">judging…</span>`}</div>`
+          `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jmeta"><div class="jl">Validator ${i + 1}</div><div class="jrole">LLM inference agent</div></div>${ruled ? `<span class="vpill vpill-${verdict}">${forWhom(verdict)}</span>` : `<span class="vpill vpill-deliberating">judging…</span>`}</div>`
         ).join("");
         $("degradeNote").innerHTML = degraded
           ? `Only <b>${panel}</b> of an ideal ${IDEAL_PANEL} Somnia validators were available — the court degraded gracefully to a ${panel}-agent panel and still required <b>byte-identical</b> convergence.`
@@ -350,8 +382,8 @@
 
         // ---- agent cards: reputation + winner highlight ----
         if (bs && ss) {
-          $("buyerRep").innerHTML = `<b>${bs.wins}W</b> · ${bs.losses}L · ${bs.splits}S <span class="muted">· ${bs.disputes} disputes</span>`;
-          $("sellerRep").innerHTML = `<b>${ss.wins}W</b> · ${ss.losses}L · ${ss.splits}S <span class="muted">· ${ss.disputes} disputes</span>`;
+          $("buyerRep").innerHTML = stars(bs);
+          $("sellerRep").innerHTML = stars(ss);
         }
         $("buyerCard").classList.toggle("win", ruled && WIN[verdict] === "the BuyerAgent");
         $("sellerCard").classList.toggle("win", ruled && WIN[verdict] === "the SellerAgent");
