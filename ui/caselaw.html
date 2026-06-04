@@ -47,9 +47,20 @@
       th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
       th { color: var(--dim); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; }
       .badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11px; font-weight: 800; }
-      .PAYEE { background: rgba(46,160,67,0.18); color: #6ee7a0; } .PAYER { background: rgba(139,92,246,0.18); color: #c4b5fd; }
-      .SPLIT { background: rgba(245,165,36,0.16); color: #ffd687; } .UNDECIDABLE { background: rgba(120,128,150,0.2); color: #c6cbe0; } .NONE { background: var(--surface-2); color: var(--dim); }
       .yes { background: rgba(46,160,67,0.18); color: #6ee7a0; } .no { background: var(--surface-2); color: var(--dim); }
+      /* ---- elevation · unified with explorer.html + the landing ---- */
+      .head { position: relative; padding: 40px 0 6px; }
+      .head p { color: var(--muted); margin: 8px 0 0; max-width: 640px; }
+      .kicker { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #a78bfa; margin: 0 0 8px; }
+      .head::before { content: ""; position: absolute; z-index: -1; pointer-events: none; top: -18px; left: -6%; width: 560px; height: 360px; background: radial-gradient(closest-side, rgba(139,92,246,0.2), transparent 72%); filter: blur(26px); }
+      .big-stat { font-size: clamp(40px, 6vw, 56px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; filter: drop-shadow(0 6px 20px rgba(167,139,250,0.28)); }
+      .big-stat.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
+      .vpill-PAYEE { background: rgba(46,160,67,0.16); color: #6ee7a0; border-color: rgba(46,160,67,0.4); }
+      .vpill-PAYER { background: rgba(139,92,246,0.16); color: #c4b5fd; border-color: rgba(139,92,246,0.4); }
+      .vpill-SPLIT { background: rgba(245,165,36,0.14); color: #ffd687; border-color: rgba(245,165,36,0.4); }
+      .vpill-UNDECIDABLE { background: rgba(120,128,150,0.18); color: #c6cbe0; border-color: var(--border-2); }
+      .vpill-NONE { background: var(--surface-2); color: var(--dim); }
     </style>
   </head>
   <body>
@@ -72,14 +83,16 @@
     </nav>
 
     <div class="wrap">
-      <div class="panel header">
+      <div class="head">
+        <span class="kicker">On-chain case law · AI-authored</span>
         <h1>Case law</h1>
-        <span id="meta" class="conn-info">loading caselaw.json…</span>
+        <p>Every finalized ruling from the precedent registry, indexed from Somnia Shannon. <span id="meta" class="conn-info">loading caselaw.json…</span></p>
       </div>
 
       <div class="panel">
-        <h2>Overview</h2>
-        <div id="summary" class="muted">—</div>
+        <h2>Total cases on record</h2>
+        <div class="big-stat grad" id="count">—</div>
+        <div id="summary" class="muted" style="margin-top: 10px;">—</div>
         <div id="hist" class="hist"></div>
       </div>
 
@@ -108,8 +121,13 @@
             })[c],
         );
 
-      function badge(label, cls) {
-        return `<span class="badge ${esc(cls ?? label)}">${esc(label)}</span>`;
+      function vpill(v) {
+        const label = VERDICTS.includes(v) || v === "UNDECIDABLE" ? v : "NONE";
+        return `<span class="vpill vpill-${label}">${esc(v)}</span>`;
+      }
+
+      function flag(on) {
+        return `<span class="badge ${on ? "yes" : "no"}">${on ? "yes" : "no"}</span>`;
       }
 
       function fmtTime(unix) {
@@ -129,8 +147,9 @@
 
         const finalized = rulings.filter((r) => r.finalized).length;
         const appealed = rulings.filter((r) => r.appealed).length;
+        $("count").textContent = rulings.length;
         $("summary").textContent =
-          `total cases: ${rulings.length} · finalized: ${finalized} · appealed: ${appealed}`;
+          `finalized: ${finalized} · appealed: ${appealed}`;
 
         const hist = {};
         for (const r of rulings) {
@@ -143,7 +162,7 @@
         ];
         $("hist").innerHTML = order
           .filter((v) => hist[v])
-          .map((v) => `${badge(v)} <span class="muted">${hist[v]}</span>`)
+          .map((v) => `${vpill(v)} <span class="muted">${hist[v]}</span>`)
           .join("&nbsp;&nbsp;");
 
         if (rulings.length === 0) {
@@ -157,11 +176,11 @@
             (r) => `
     <tr>
       <td>${esc(r.caseId)}</td>
-      <td>${badge(r.verdict ?? "NONE")}${r.verdict === "SPLIT" && r.payeeBps != null ? ` <span class="muted">${r.payeeBps / 100}% payee</span>` : ""}</td>
+      <td>${vpill(r.verdict ?? "NONE")}${r.verdict === "SPLIT" && r.payeeBps != null ? ` <span class="muted">${r.payeeBps / 100}% payee</span>` : ""}</td>
       <td>${esc(r.round ?? "—")}</td>
       <td>${esc(r.status ?? "—")}</td>
-      <td>${badge(r.appealed ? "yes" : "no", r.appealed ? "yes" : "no")}</td>
-      <td>${badge(r.finalized ? "yes" : "no", r.finalized ? "yes" : "no")}</td>
+      <td>${flag(r.appealed)}</td>
+      <td>${flag(r.finalized)}</td>
       <td class="mono">${esc(r.consumer ?? "—")}</td>
       <td>${esc(r.escrowRef ?? "—")}</td>
       <td>${fmtTime(r.rulingTime)}</td>
