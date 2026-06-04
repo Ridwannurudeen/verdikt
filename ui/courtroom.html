@@ -27,26 +27,68 @@
       a { color: #b9c2ff; text-decoration: none; } a:hover { text-decoration: underline; }
       .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
       svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; display: block; }
-      .wrap { max-width: 760px; margin: 0 auto; padding: 0 22px; }
+      .wrap { max-width: 780px; margin: 0 auto; padding: 0 22px; }
       .muted { color: var(--muted); }
 
       nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px); background: rgba(6,7,12,0.7); border-bottom: 1px solid var(--border); }
       .nav-in { max-width: 1160px; margin: 0 auto; padding: 0 22px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
       .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; }
       .brand .logo { width: 27px; height: 27px; border-radius: 8px; background: linear-gradient(140deg, rgba(129,140,248,0.25), rgba(192,132,252,0.18)); border: 1px solid rgba(167,139,250,0.4); display: grid; place-items: center; color: #c4b5fd; font-size: 15px; }
-      .nav-links { display: flex; gap: 22px; align-items: center; font-size: 14px; }
+      .nav-links { display: flex; gap: 20px; align-items: center; font-size: 14px; }
       .nav-links a { color: var(--muted); }
       .nav-links a.active { color: var(--text); }
       .nav-links a:hover { color: var(--text); text-decoration: none; }
 
-      .head { padding: 40px 0 8px; }
-      h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.035em; margin: 0; }
-      .head p { color: var(--muted); margin: 8px 0 0; }
-      .cfg { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 22px 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; color: var(--dim); }
+      .head { position: relative; padding: 42px 0 8px; }
+      h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.035em; margin: 0; }
+      .head p { color: var(--muted); margin: 9px 0 0; }
+      .kicker { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #a78bfa; margin: 0 0 10px; }
+
+      /* case selector + status line */
+      .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 20px 0 4px; }
+      .caseselect { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
       input { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 9px; font: inherit; font-size: 13px; }
-      .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; border-radius: 9px; padding: 8px 15px; border: 0; cursor: pointer; background: var(--grad); color: #15102b; }
+      input:focus { border-color: rgba(167,139,250,0.5); }
+      .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13.5px; border-radius: 9px; padding: 8px 14px; border: 0; cursor: pointer; background: var(--grad); color: #15102b; }
       .btn:hover { transform: translateY(-1px); }
-      #status { font-size: 12px; color: var(--dim); }
+      .live-line { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--dim); margin-left: auto; }
+      .live-line .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,160,67,0.55); } 70% { box-shadow: 0 0 0 6px rgba(46,160,67,0); } 100% { box-shadow: 0 0 0 0 rgba(46,160,67,0); } }
+
+      /* verdict result hero — the signature moment */
+      .result { background: linear-gradient(180deg, rgba(22,25,39,0.92), rgba(10,11,18,0.92)); border: 1px solid var(--border-2); border-radius: 14px; padding: 22px; margin: 16px 0 26px; box-shadow: 0 10px 30px -18px rgba(0,0,0,0.7); }
+      .result .top { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+      .result .vsum { min-width: 0; flex: 1; }
+      .result .vsum .lead { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
+      .result .vsum .vline { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+      .result .vsum .vbig { font-family: "Satoshi", sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+      .result .vsum .favor { color: var(--muted); margin-top: 8px; font-size: 14px; }
+      .result .vsum .favor b { color: var(--text); }
+      .meta-grid { display: flex; flex-wrap: wrap; gap: 18px 30px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+      .meta-cell .k { font-size: 10.5px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+      .meta-cell .v { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 3px; }
+      .meta-cell .v.mono { font-weight: 600; }
+
+      /* consensus gauge (ported from arena) */
+      .gauge { position: relative; width: 132px; height: 132px; flex: 0 0 auto; }
+      .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+      .gauge-track { fill: none; stroke: var(--surface-2); stroke-width: 11; }
+      .gauge-arc { fill: none; stroke: url(#gaugeGrad); stroke-width: 11; stroke-linecap: round; filter: drop-shadow(0 0 7px rgba(167,139,250,0.55)); }
+      .gauge-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 0 14px; }
+      .gauge-num { font-size: 15px; font-weight: 800; line-height: 1.1; }
+      .gauge-sub { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+      /* jury panel rows (ported from arena) */
+      .jurors { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+      .juror-row { display: flex; align-items: center; gap: 11px; padding: 9px 11px; background: rgba(0,0,0,0.26); border: 1px solid var(--border); border-radius: 10px; }
+      .juror-row .av { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 8px; background: linear-gradient(140deg, rgba(129,140,248,0.3), rgba(192,132,252,0.2)); border: 1px solid rgba(167,139,250,0.45); display: grid; place-items: center; color: #c4b5fd; }
+      .juror-row .av svg.i { width: 15px; height: 15px; }
+      .juror-row .jmeta { display: flex; flex-direction: column; min-width: 0; }
+      .juror-row .jl { font-size: 13px; font-weight: 600; }
+      .juror-row .jrole { font-size: 10px; color: var(--dim); margin-top: 1px; }
+      .juror-row .vpill { margin-left: auto; }
+      .converge { font-size: 12px; color: var(--muted); margin-top: 11px; display: flex; align-items: center; gap: 6px; }
+      .converge svg.i { width: 14px; height: 14px; color: #6ee7a0; }
 
       /* timeline */
       #stage { margin-bottom: 60px; }
@@ -59,26 +101,28 @@
       .body { padding-bottom: 26px; flex: 1; padding-top: 7px; }
       .body h3 { margin: 0 0 8px; font-size: 15.5px; font-weight: 700; }
       .quote { background: var(--surface); border-left: 3px solid var(--green); border-radius: 0 10px 10px 0; padding: 11px 14px; color: #cdd3e6; white-space: pre-wrap; font-size: 13.5px; }
+      .verified { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: #6ee7a0; margin-bottom: 8px; }
+      .verified svg.i { width: 14px; height: 14px; }
       .law { background: var(--surface); border: 1px dashed var(--border-2); border-radius: 10px; padding: 11px 14px; color: var(--muted); font-size: 12.5px; font-family: "JetBrains Mono", monospace; line-height: 1.65; }
-      /* ---- hero elevation · unified with arena.html + the landing ---- */
-      .head { position: relative; }
-      .kicker { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #a78bfa; margin: 0 0 10px; }
-      /* ---- verdict pills · ported from arena.html ---- */
+
+      /* verdict pills */
       .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.02em; padding: 4px 11px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
+      .vpill.lg { font-size: 13px; padding: 5px 13px; }
       .vpill-PAYEE { background: rgba(46,160,67,0.16); color: #6ee7a0; border-color: rgba(46,160,67,0.4); }
       .vpill-PAYER { background: rgba(139,92,246,0.16); color: #c4b5fd; border-color: rgba(139,92,246,0.4); }
       .vpill-SPLIT { background: rgba(245,165,36,0.14); color: #ffd687; border-color: rgba(245,165,36,0.4); }
       .vpill-UNDECIDABLE { background: rgba(120,128,150,0.18); color: #c6cbe0; border-color: var(--border-2); }
-      /* ---- consensus ruling · gauge ported from arena.html ---- */
-      .ruling { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; background: linear-gradient(180deg, rgba(22,25,39,0.92), rgba(10,11,18,0.92)); border: 1px solid var(--border-2); border-radius: 11px; padding: 18px 20px; box-shadow: 0 8px 24px -16px rgba(0,0,0,0.6); }
-      .ruling-meta { min-width: 0; }
-      .gauge { position: relative; width: 132px; height: 132px; flex: 0 0 auto; }
-      .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
-      .gauge-track { fill: none; stroke: var(--surface-2); stroke-width: 11; }
-      .gauge-arc { fill: none; stroke: url(#gaugeGrad); stroke-width: 11; stroke-linecap: round; filter: drop-shadow(0 0 7px rgba(167,139,250,0.55)); }
-      .gauge-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 0 14px; }
-      .gauge-num { font-size: 15px; font-weight: 800; line-height: 1.1; }
-      .gauge-sub { font-size: 10px; color: var(--muted); margin-top: 6px; }
+      .vpill-final { background: rgba(46,160,67,0.12); color: #6ee7a0; border-color: rgba(46,160,67,0.32); }
+      .vpill-pending { background: rgba(139,92,246,0.12); color: #cbbcff; border-color: rgba(139,92,246,0.32); }
+
+      /* advanced config (demoted) */
+      details.cfg { margin: 8px 0 0; font-size: 12.5px; color: var(--dim); }
+      details.cfg summary { cursor: pointer; list-style: none; font-weight: 600; color: var(--dim); padding: 4px 0; }
+      details.cfg summary::-webkit-details-marker { display: none; }
+      details.cfg summary::before { content: "▸ "; }
+      details.cfg[open] summary::before { content: "▾ "; }
+      details.cfg .row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; padding: 10px 0 2px; }
+      details.cfg input { width: 360px; max-width: 100%; }
       :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--violet); border-radius: 6px; }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
     </style>
@@ -89,6 +133,7 @@
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
       <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/></symbol>
       <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></symbol>
       <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
       <symbol id="i-circlecheck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
       <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
@@ -114,13 +159,20 @@
       <div class="head">
         <span class="kicker">Cinematic replay · every step, every reason</span>
         <h1>The Verdikt courtroom</h1>
-        <p>Watch a dispute decided by the on-chain AI jury — replayed live from Somnia Shannon.</p>
+        <p>Watch a dispute decided by the on-chain AI jury — replayed live from Somnia Shannon, verdict first, then the full record of how it got there.</p>
       </div>
-      <div class="cfg">
-        court <input id="court" /> case # <input id="case" style="width:62px" />
+
+      <div class="controls">
+        <span class="caseselect">Replay case <input id="case" style="width:62px" value="1" /></span>
         <button class="btn" id="go"><svg class="i" style="width:14px;height:14px"><use href="#i-play"/></svg> replay</button>
-        <span id="status" style="margin-left:auto"></span>
+        <span class="live-line"><span class="dot-live"></span><span id="status">reading the record…</span></span>
       </div>
+      <details class="cfg">
+        <summary>Advanced — point at a different court</summary>
+        <div class="row">court <input id="court" /></div>
+      </details>
+
+      <div id="result"></div>
       <div id="stage"></div>
     </div>
 
@@ -152,6 +204,7 @@
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const court = () => $("court").value.trim();
       const read = (fn, args = []) => client.readContract({ address: court(), abi: COURT_ABI, functionName: fn, args });
+      const rel = (ts) => { const s = Math.max(0, Math.floor(Date.now() / 1000) - ts); if (s < 60) return s + "s ago"; if (s < 3600) return Math.floor(s / 60) + "m ago"; if (s < 86400) return Math.floor(s / 3600) + "h ago"; return Math.floor(s / 86400) + "d ago"; };
       const esc = (s) =>
         String(s ?? "").replace(/[&<>"']/g, (c) => ({
           "&": "&amp;",
@@ -170,6 +223,7 @@
       async function replay() {
         const id = BigInt($("case").value || "1");
         $("status").textContent = "reading the record…";
+        $("result").innerHTML = "";
         $("stage").innerHTML = "";
         let c;
         try { c = await read("getCase", [id]); } catch (e) { $("status").textContent = "error: " + (e.shortMessage ?? e.message); return; }
@@ -179,6 +233,7 @@
         const status = STATUS[c.status] ?? "?";
         const ruled = c.status >= 2;
         const final = c.status === 3;
+        const panel = c.round == 0 ? 5 : 9;
 
         let facts = "";
         try {
@@ -196,26 +251,55 @@
           sys = `prompt v${pv}: ${v.system}`;
         } catch {}
 
-        const panel = c.round == 0 ? 5 : 9;
-        let verdictHtml = `<span class="muted">awaiting the panel…</span>`;
+        let pct = "";
+        if (ruled && verdict === "SPLIT") { try { const bps = await read("splitBps", [id]); pct = `${Number(bps) / 100}% to the payee`; } catch {} }
+
+        // ---- verdict result hero (the signature moment) ----
+        const ruledTime = Number(c.rulingTime) > 0 ? rel(Number(c.rulingTime)) : "—";
+        const statusPill = final ? `<span class="vpill vpill-final">Final &amp; settled</span>`
+          : ruled ? `<span class="vpill vpill-pending">Ruled · appeal window</span>`
+          : `<span class="vpill vpill-pending">${status}</span>`;
         if (ruled) {
-          let pct = "";
-          if (verdict === "SPLIT") { try { const bps = await read("splitBps", [id]); pct = ` — <b>${Number(bps) / 100}% to the payee</b>`; } catch {} }
-          verdictHtml = `<div class="ruling">
+          $("result").innerHTML = `<div class="result">
+            <div class="top">
               <div class="gauge">
                 <svg viewBox="0 0 150 150">
                   <defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818cf8"/><stop offset="0.55" stop-color="#a78bfa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
                   <circle class="gauge-track" cx="75" cy="75" r="64"/>
                   <circle class="gauge-arc" cx="75" cy="75" r="64" stroke-dasharray="402" stroke-dashoffset="0"/>
                 </svg>
-                <div class="gauge-center"><div class="gauge-num"><span class="vpill vpill-${verdict}">${verdict}</span></div><div class="gauge-sub">${panel}-agent panel · consensus</div></div>
+                <div class="gauge-center"><div class="gauge-num"><span class="vpill vpill-${verdict}">${verdict}</span></div><div class="gauge-sub">${panel}-agent panel · unanimous</div></div>
               </div>
-              <div class="ruling-meta">
-                <span class="vpill vpill-${verdict}">${verdict}</span>${pct}
-                <div class="muted" style="margin-top:8px">In favor of ${WIN[verdict] ?? "?"} · ${c.round == 0 ? "trial panel (5)" : "appeal panel (9)"}</div>
+              <div class="vsum">
+                <span class="lead">The verdict</span>
+                <div class="vline"><span class="vpill lg vpill-${verdict}">${verdict}</span>${pct ? `<span class="muted">${pct}</span>` : ""}</div>
+                <div class="favor">In favor of <b>${WIN[verdict] ?? "?"}</b> — decided by a ${c.round == 0 ? "trial" : "appeal"} panel of <b>${panel}</b> Somnia validator agents, byte-identical.</div>
               </div>
-            </div>`;
+            </div>
+            <div class="meta-grid">
+              <div class="meta-cell"><div class="k">Case</div><div class="v mono">#${id}</div></div>
+              <div class="meta-cell"><div class="k">Status</div><div class="v">${statusPill}</div></div>
+              <div class="meta-cell"><div class="k">Round</div><div class="v">${c.round == 0 ? "Trial" : "Appeal"} · ${panel} jurors</div></div>
+              <div class="meta-cell"><div class="k">Ruled</div><div class="v">${ruledTime}</div></div>
+              <div class="meta-cell"><div class="k">Consumer</div><div class="v mono"><a href="${EXP}${c.consumer}" target="_blank" rel="noopener">${short(c.consumer)}</a></div></div>
+              <div class="meta-cell"><div class="k">Reference</div><div class="v mono">${c.escrowRef}</div></div>
+            </div>
+          </div>`;
+        } else {
+          $("result").innerHTML = `<div class="result"><div class="top"><div class="vsum">
+            <span class="lead">The verdict</span>
+            <div class="vline"><span class="vpill lg vpill-pending">${status}</span></div>
+            <div class="favor">Case <b>#${id}</b> is before the panel — the ruling will appear here once the Somnia validators converge.</div>
+          </div></div></div>`;
         }
+
+        // ---- jury panel rows (unanimous convergence) ----
+        const juryHtml = ruled
+          ? `<div class="jurors">${Array.from({ length: panel }).map((_, i) =>
+              `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jmeta"><div class="jl">Validator ${i + 1}</div><div class="jrole">Somnia LLM inference agent</div></div><span class="vpill vpill-${verdict}">${verdict}</span></div>`
+            ).join("")}</div>
+            <div class="converge"><svg class="i"><use href="#i-circlecheck"/></svg> All <b>&nbsp;${panel}&nbsp;</b> jurors returned <b>&nbsp;${verdict}&nbsp;</b> byte-identically — the consensus the verdict requires.</div>`
+          : `<span class="muted">The panel is convening — ${panel} validator agents will each judge the evidence and must converge byte-identically.</span>`;
 
         const receipt = c.receiptId > 0n
           ? `<a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank" rel="noopener">receipt #${c.receiptId} — the jurors' reasoning ↗</a>`
@@ -225,11 +309,11 @@
           step("i-scale", true, "A dispute is opened",
             `Case <b>#${id}</b> · consumer <a href="${EXP}${c.consumer}" target="_blank" rel="noopener">${short(c.consumer)}</a> · reference ${c.escrowRef}`),
           step("i-link", facts.length > 0, "Evidence entered into the record",
-            facts.length > 0 ? `<div class="quote">${esc(facts)}</div>`
+            facts.length > 0 ? `<div class="verified"><svg class="i"><use href="#i-circlecheck"/></svg> Verified by an attestor</div><div class="quote">${esc(facts)}</div>`
               : `<span class="muted">No attested facts on file — decided on the parties' submitted evidence (see the receipt).</span>`),
           step("i-scroll", true, "Tried under the court's law",
             `<div class="law">${esc(sys || "(prompt unavailable)")}</div>`),
-          step("i-users", ruled, "The panel rules", verdictHtml),
+          step("i-users", ruled, "The panel rules", juryHtml),
           step("i-file", c.receiptId > 0n, "The reasoning is recorded", receipt),
           step(final ? "i-circlecheck" : "i-clock", true, final ? "Final & settled" : `Status: ${status}`,
             final ? `<span class="muted">The verdict was delivered to the consumer and the funds settled — no human in the loop.</span>`
