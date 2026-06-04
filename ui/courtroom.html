@@ -57,13 +57,26 @@
       .body h3 { margin: 0 0 8px; font-size: 15.5px; font-weight: 700; }
       .quote { background: var(--surface); border-left: 3px solid var(--green); border-radius: 0 10px 10px 0; padding: 11px 14px; color: #cdd3e6; white-space: pre-wrap; font-size: 13.5px; }
       .law { background: var(--surface); border: 1px dashed var(--border-2); border-radius: 10px; padding: 11px 14px; color: var(--muted); font-size: 12.5px; font-family: "JetBrains Mono", monospace; line-height: 1.65; }
-      .badge { display: inline-block; padding: 3px 12px; border-radius: 100px; font-size: 12px; font-weight: 800; letter-spacing: 0.02em; }
-      .badge.big { font-size: 15px; padding: 5px 15px; }
-      .PAYEE { background: rgba(46,160,67,0.18); color: #6ee7a0; border: 1px solid rgba(46,160,67,0.4); }
-      .PAYER { background: rgba(139,92,246,0.18); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.4); }
-      .SPLIT { background: rgba(245,165,36,0.16); color: #ffd687; border: 1px solid rgba(245,165,36,0.4); }
-      .UNDECIDABLE { background: rgba(120,128,150,0.2); color: #c6cbe0; border: 1px solid var(--border-2); }
-      .NONE { background: var(--surface-2); color: var(--dim); border: 1px solid var(--border); }
+      /* ---- hero elevation · unified with arena.html + the landing ---- */
+      .head { position: relative; }
+      .kicker { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #a78bfa; margin: 0 0 10px; }
+      .head::before { content: ""; position: absolute; z-index: -1; pointer-events: none; top: -18px; left: -6%; width: 520px; height: 360px; background: radial-gradient(closest-side, rgba(139,92,246,0.2), transparent 72%); filter: blur(26px); }
+      /* ---- verdict pills · ported from arena.html ---- */
+      .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.02em; padding: 4px 11px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
+      .vpill-PAYEE { background: rgba(46,160,67,0.16); color: #6ee7a0; border-color: rgba(46,160,67,0.4); }
+      .vpill-PAYER { background: rgba(139,92,246,0.16); color: #c4b5fd; border-color: rgba(139,92,246,0.4); }
+      .vpill-SPLIT { background: rgba(245,165,36,0.14); color: #ffd687; border-color: rgba(245,165,36,0.4); }
+      .vpill-UNDECIDABLE { background: rgba(120,128,150,0.18); color: #c6cbe0; border-color: var(--border-2); }
+      /* ---- consensus ruling · gauge ported from arena.html ---- */
+      .ruling { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; background: linear-gradient(180deg, rgba(22,25,39,0.92), rgba(10,11,18,0.92)); border: 1px solid var(--border-2); border-radius: 16px; padding: 18px 20px; box-shadow: 0 44px 90px -44px rgba(0,0,0,0.9); }
+      .ruling-meta { min-width: 0; }
+      .gauge { position: relative; width: 132px; height: 132px; flex: 0 0 auto; }
+      .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+      .gauge-track { fill: none; stroke: var(--surface-2); stroke-width: 11; }
+      .gauge-arc { fill: none; stroke: url(#gaugeGrad); stroke-width: 11; stroke-linecap: round; filter: drop-shadow(0 0 7px rgba(167,139,250,0.55)); }
+      .gauge-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 0 14px; }
+      .gauge-num { font-size: 15px; font-weight: 800; line-height: 1.1; }
+      .gauge-sub { font-size: 10px; color: var(--muted); margin-top: 6px; }
     </style>
   </head>
   <body>
@@ -94,6 +107,7 @@
 
     <div class="wrap">
       <div class="head">
+        <span class="kicker">Cinematic replay · every step, every reason</span>
         <h1>The Verdikt courtroom</h1>
         <p>Watch a dispute decided by the on-chain AI jury — replayed live from Somnia Shannon.</p>
       </div>
@@ -177,12 +191,25 @@
           sys = `prompt v${pv}: ${v.system}`;
         } catch {}
 
+        const panel = c.round == 0 ? 5 : 9;
         let verdictHtml = `<span class="muted">awaiting the panel…</span>`;
         if (ruled) {
           let pct = "";
           if (verdict === "SPLIT") { try { const bps = await read("splitBps", [id]); pct = ` — <b>${Number(bps) / 100}% to the payee</b>`; } catch {} }
-          verdictHtml = `<span class="badge ${verdict} big">${verdict}</span>${pct}
-            <div class="muted" style="margin-top:8px">In favor of ${WIN[verdict] ?? "?"} · ${c.round == 0 ? "trial panel (5)" : "appeal panel (9)"}</div>`;
+          verdictHtml = `<div class="ruling">
+              <div class="gauge">
+                <svg viewBox="0 0 150 150">
+                  <defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818cf8"/><stop offset="0.55" stop-color="#a78bfa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
+                  <circle class="gauge-track" cx="75" cy="75" r="64"/>
+                  <circle class="gauge-arc" cx="75" cy="75" r="64" stroke-dasharray="402" stroke-dashoffset="0"/>
+                </svg>
+                <div class="gauge-center"><div class="gauge-num"><span class="vpill vpill-${verdict}">${verdict}</span></div><div class="gauge-sub">${panel}-agent panel · consensus</div></div>
+              </div>
+              <div class="ruling-meta">
+                <span class="vpill vpill-${verdict}">${verdict}</span>${pct}
+                <div class="muted" style="margin-top:8px">In favor of ${WIN[verdict] ?? "?"} · ${c.round == 0 ? "trial panel (5)" : "appeal panel (9)"}</div>
+              </div>
+            </div>`;
         }
 
         const receipt = c.receiptId > 0n
