@@ -47,14 +47,29 @@
       .btn:hover { transform: translateY(-1px); }
       .cfg { font-size: 12px; color: var(--dim); }
       .cfg input { width: 330px; max-width: 100%; }
-      .big-stat { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
-      .big-stat .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .big-stat { font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
       table { width: 100%; border-collapse: collapse; margin-top: 4px; }
       th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13.5px; }
       th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-      .badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11px; font-weight: 800; }
-      .PAYEE { background: rgba(46,160,67,0.18); color: #6ee7a0; } .PAYER { background: rgba(139,92,246,0.18); color: #c4b5fd; }
-      .SPLIT { background: rgba(245,165,36,0.16); color: #ffd687; } .UNDECIDABLE { background: rgba(120,128,150,0.2); color: #c6cbe0; } .NONE { background: var(--surface-2); color: var(--dim); }
+      /* ---- elevation · unified with arena.html + the landing ---- */
+      .head { position: relative; }
+      .kicker { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #a78bfa; margin: 0 0 8px; }
+      .head::before { content: ""; position: absolute; z-index: -1; pointer-events: none; top: -18px; left: -6%; width: 560px; height: 360px; background: radial-gradient(closest-side, rgba(139,92,246,0.2), transparent 72%); filter: blur(26px); }
+      /* signature stat — fix the broken .big-stat .grad descendant selector + gradient/tabular/glow */
+      .big-stat.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .big-stat { font-size: clamp(40px, 6vw, 56px); font-variant-numeric: tabular-nums; filter: drop-shadow(0 6px 20px rgba(167,139,250,0.28)); }
+      /* verdict pills — ported from arena.html (single shared system) */
+      .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); background: var(--surface-2); color: var(--muted); }
+      .vpill-PAYEE { background: rgba(46,160,67,0.16); color: #6ee7a0; border-color: rgba(46,160,67,0.4); }
+      .vpill-PAYER { background: rgba(139,92,246,0.16); color: #c4b5fd; border-color: rgba(139,92,246,0.4); }
+      .vpill-SPLIT { background: rgba(245,165,36,0.14); color: #ffd687; border-color: rgba(245,165,36,0.4); }
+      .vpill-UNDECIDABLE { background: rgba(120,128,150,0.18); color: #c6cbe0; border-color: var(--border-2); }
+      .vpill-NONE { background: var(--surface-2); color: var(--dim); }
+      /* reputation cards — ported from arena.html W/L/S treatment */
+      .repcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+      .repcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 13px; }
+      .repcard .rk { font-size: 10.5px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+      .repcard b { font-size: 20px; font-variant-numeric: tabular-nums; }
     </style>
   </head>
   <body>
@@ -79,6 +94,7 @@
 
     <div class="wrap">
       <div class="head">
+        <span class="kicker">Search across precedent · instantly</span>
         <h1>Case-law explorer</h1>
         <p>The precedent registry + cross-domain reputation, read live from Somnia Shannon. AI-authored, on-chain case law you can search and cite.</p>
       </div>
@@ -141,7 +157,7 @@
       const $ = (id) => document.getElementById(id);
       const client = createPublicClient({ transport: http(RPC) });
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
-      const badge = (v) => `<span class="badge ${VERDICT[v] ?? "NONE"}">${VERDICT[v] ?? "?"}</span>`;
+      const badge = (v) => `<span class="vpill vpill-${VERDICT[v] ?? "NONE"}">${VERDICT[v] ?? "?"}</span>`;
       const reg = () => $("reg").value.trim();
       const rep = () => $("rep").value.trim();
 
@@ -206,13 +222,13 @@
             client.readContract({ address: rep(), abi: REP_ABI, functionName: "reputationOf", args: [a] }),
             client.readContract({ address: rep(), abi: REP_ABI, functionName: "scoreOf", args: [a] }),
           ]);
-          $("partyResult").innerHTML = `<table><tbody>
-            <tr><th>disputes</th><td>${r.disputes}</td></tr>
-            <tr><th>wins</th><td>${r.wins}</td></tr>
-            <tr><th>losses</th><td>${r.losses}</td></tr>
-            <tr><th>splits</th><td>${r.splits}</td></tr>
-            <tr><th>score</th><td><b>${score}</b></td></tr>
-          </tbody></table>`;
+          $("partyResult").innerHTML = `<div class="repcards">
+            <div class="repcard"><span class="rk">wins</span><br/><b>${r.wins}</b></div>
+            <div class="repcard"><span class="rk">losses</span><br/><b>${r.losses}</b></div>
+            <div class="repcard"><span class="rk">splits</span><br/><b>${r.splits}</b></div>
+            <div class="repcard"><span class="rk">disputes</span><br/><b>${r.disputes}</b></div>
+            <div class="repcard"><span class="rk">score</span><br/><b>${score}</b></div>
+          </div>`;
         } catch (e) {
           $("partyResult").innerHTML = "<p class='muted'>error: " + (e.shortMessage ?? e.message) + "</p>";
         }
