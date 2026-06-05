@@ -1,7 +1,7 @@
 # Verdikt - Security Notes
 
 Internal audit of `VerdiktCourt`, `VerdiktEscrow`, `VerdiktInsurance`, `VerdiktAgentEscrow`,
-`VerdiktTokenEscrow`, `VerdiktConsumerBase`, and the support tooling (updated 2026-06-02). Unaudited hackathon code on
+`VerdiktTokenEscrow`, `VerdiktConsumerBase`, and the support tooling (updated 2026-06-05). Unaudited hackathon code on
 Somnia Shannon testnet.
 
 ## Trust Model
@@ -33,10 +33,11 @@ owner is trusted for parameter setting (`setAgentId`, `setPerAgentPrice`, `setAp
 | 16  | MEDIUM   | Shared consumer-base excess-fee refunds used a push transfer, so a non-receiving contract integrating the base could brick its own dispute when it overpaid.                 | Fixed. `VerdiktConsumerBase` now credits `pendingRefunds` and exposes `withdrawRefund`, matching the Court pull-refund pattern.                                                         |
 | 17  | LOW      | `UNDECIDABLE` propagation gap in frontend/indexer tooling after abstention was enabled live.                                                                                  | Fixed. Demo UI, live case indexer, and agent SDK now recognize `UNDECIDABLE`; the UI lets the payee appeal an abstention refund path.                                                   |
 | 18  | LOW      | Deployed CSP blocked the Google Fonts used by the landing/app pages, and deploy docs omitted linked app pages.                                                                | Fixed. CSP now allows the exact font origins and known RPC fallback; deploy docs include courtroom, explorer, and snapshot uploads.                                                     |
+| 19  | LOW      | Static frontend pages interpolated RPC/client error strings into `innerHTML`, and a few external links opened new tabs without `rel="noopener"`.                              | Fixed. Error strings are HTML-escaped before rendering, and all audited new-tab links now include `rel="noopener"`.                                                                      |
 
 ## Verification
 
-- `forge test` passes 211/211, including fuzz and invariant tests.
+- `forge test` passes 213/213, including fuzz and invariant tests.
 - Regression coverage includes non-receiving settlement recipients, appeal-deadline snapshots,
   insurance capacity locks, pro-rata share minting, micro-funder appeal rejection, registry
   quote-revert skipping, no-return ERC-20 transfers, fee-on-transfer rejection, graded split

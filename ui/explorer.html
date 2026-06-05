@@ -207,6 +207,7 @@
 
       const $ = (id) => document.getElementById(id);
       const client = createPublicClient({ transport: http(RPC) });
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const badge = (v) => `<span class="vpill vpill-${VERDICT[v] ?? "NONE"}">${VERDICT[v] ?? "?"}</span>`;
       const rel = (ts) => { const s = Math.max(0, Math.floor(Date.now() / 1000) - ts); if (s < 60) return s + "s ago"; if (s < 3600) return Math.floor(s / 60) + "m ago"; if (s < 86400) return Math.floor(s / 3600) + "h ago"; return Math.floor(s / 86400) + "d ago"; };
@@ -216,13 +217,13 @@
       function rulingRow(r) {
         const split = VERDICT[r.verdict] === "SPLIT" ? ` <span class="muted">${Number(r.payeeBps) / 100}% payee</span>` : "";
         const receipt = r.receiptId > 0n
-          ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank">receipt ↗</a>`
+          ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank" rel="noopener">receipt ↗</a>`
           : "<span class='muted'>—</span>";
         const when = Number(r.rulingTime) > 0 ? rel(Number(r.rulingTime)) : "—";
         return `<tr>
           <td>${r.caseId}</td>
           <td>${badge(r.verdict)}${split}</td>
-          <td class="mono"><a href="${EXPLORER}${r.consumer}" target="_blank">${short(r.consumer)}</a></td>
+          <td class="mono"><a href="${EXPLORER}${r.consumer}" target="_blank" rel="noopener">${short(r.consumer)}</a></td>
           <td>${r.escrowRef}</td>
           <td class="mono muted">${r.topic.slice(0, 10)}…</td>
           <td class="muted">${when}</td>
@@ -284,7 +285,7 @@
           const ids = await client.readContract({ address: reg(), abi: REG_ABI, functionName: "rulingsByTopic", args: [hash] });
           $("topicResults").innerHTML = ids.length ? rulingsTable(await getRulings(ids)) : "<p class='muted'>no rulings under this topic</p>";
         } catch (e) {
-          $("topicResults").innerHTML = "<p class='muted'>error: " + (e.shortMessage ?? e.message) + "</p>";
+          $("topicResults").innerHTML = "<p class='muted'>error: " + esc(e.shortMessage ?? e.message) + "</p>";
         }
       }
 
@@ -304,7 +305,7 @@
             <div class="repcard"><span class="rk">score</span><br/><b>${score}</b></div>
           </div>`;
         } catch (e) {
-          $("partyResult").innerHTML = "<p class='muted'>error: " + (e.shortMessage ?? e.message) + "</p>";
+          $("partyResult").innerHTML = "<p class='muted'>error: " + esc(e.shortMessage ?? e.message) + "</p>";
         }
       }
 

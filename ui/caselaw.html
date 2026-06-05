@@ -167,6 +167,7 @@
 
       const $ = (id) => document.getElementById(id);
       const client = createPublicClient({ transport: http(RPC) });
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const reg = () => $("reg").value.trim();
       const vpill = (v) => `<span class="vpill vpill-${v}">${v}</span>`;
@@ -229,7 +230,7 @@
           $("meta").textContent = "registry unreachable";
           $("status").textContent = "error: " + msg;
           $("summary").textContent = "";
-          $("tableWrap").innerHTML = `<div class="empty">Could not read the registry: ${msg}</div>`;
+          $("tableWrap").innerHTML = `<div class="empty">Could not read the registry: ${esc(msg)}</div>`;
         }
       }
 

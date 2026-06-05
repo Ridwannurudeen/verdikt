@@ -211,7 +211,7 @@
       </div>
 
       <div class="foot">
-        Sources — benchmark: <span class="mono">script/benchmark-results.md</span> (live run, panel of 5, probe <a href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8" target="_blank" class="mono">0xEfac…0eD8</a>). Precedent registry: <a href="https://shannon-explorer.somnia.network/address/0xe368032D85004DefeB1a3d8C26e382761BE159a6" target="_blank" class="mono">0xe368…59a6</a> on Somnia Shannon. Every number on this page is verifiable on-chain or reproducible from the repo.
+        Sources — benchmark: <span class="mono">script/benchmark-results.md</span> (live run, panel of 5, probe <a href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8" target="_blank" rel="noopener" class="mono">0xEfac…0eD8</a>). Precedent registry: <a href="https://shannon-explorer.somnia.network/address/0xe368032D85004DefeB1a3d8C26e382761BE159a6" target="_blank" rel="noopener" class="mono">0xe368…59a6</a> on Somnia Shannon. Every number on this page is verifiable on-chain or reproducible from the repo.
       </div>
     </div>
 
@@ -243,6 +243,7 @@
 
       const $ = (id) => document.getElementById(id);
       const client = createPublicClient({ transport: http(RPC) });
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const pill = (v) => `<span class="vpill vpill-${v}">${v}</span>`;
       const ORDER = ["PAYER", "PAYEE", "SPLIT"];
@@ -310,11 +311,11 @@
           const rows = rulings.map((r) => {
             const v = VERDICT[r.verdict] ?? "NONE";
             const split = v === "SPLIT" ? ` <span class="muted">${Number(r.payeeBps) / 100}% payee</span>` : "";
-            const receipt = r.receiptId > 0n ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank">receipt ↗</a>` : `<span class="muted">—</span>`;
+            const receipt = r.receiptId > 0n ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank" rel="noopener">receipt ↗</a>` : `<span class="muted">—</span>`;
             return `<tr>
               <td>${r.caseId}</td>
               <td>${pill(v)}${split}</td>
-              <td class="mono"><a href="${EXP}${r.consumer}" target="_blank">${short(r.consumer)}</a></td>
+              <td class="mono"><a href="${EXP}${r.consumer}" target="_blank" rel="noopener">${short(r.consumer)}</a></td>
               <td>${r.escrowRef}</td>
               <td class="mono muted">${r.topic.slice(0, 10)}…</td>
               <td>${receipt}</td>
@@ -325,7 +326,7 @@
           $("statCount").textContent = "—";
           $("statCountSrc").textContent = "registry unreachable";
           $("regStatus").textContent = "could not reach the registry";
-          $("recent").innerHTML = `<p class="muted">Could not read the registry: ${e.shortMessage ?? e.message}</p>`;
+          $("recent").innerHTML = `<p class="muted">Could not read the registry: ${esc(e.shortMessage ?? e.message)}</p>`;
         }
       }
 

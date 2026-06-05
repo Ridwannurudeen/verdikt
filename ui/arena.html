@@ -202,7 +202,7 @@
           </div>
           <div class="rep-line" id="buyerRep"><span class="muted">reputation recorded once final</span></div>
           <ul class="caps"><li>Funds the deal</li><li>Files disputes autonomously</li><li>Demands refund on non-delivery</li></ul>
-          <div class="addr mono"><a id="buyerLink" target="_blank">—</a></div>
+          <div class="addr mono"><a id="buyerLink" target="_blank" rel="noopener">—</a></div>
         </div>
         <div class="vs-badge">VS</div>
         <div class="agent-card" id="sellerCard">
@@ -212,21 +212,21 @@
           </div>
           <div class="rep-line" id="sellerRep"><span class="muted">reputation recorded once final</span></div>
           <ul class="caps"><li>Delivers the service</li><li>Defends quality</li><li>Pulls payment on completion</li></ul>
-          <div class="addr mono"><a id="sellerLink" target="_blank">—</a></div>
+          <div class="addr mono"><a id="sellerLink" target="_blank" rel="noopener">—</a></div>
         </div>
       </div>
 
       <div class="escrow-bar">
-        <div class="party"><span class="k">Payer · BuyerAgent</span><a id="ebBuyer" class="mono" target="_blank">—</a></div>
+        <div class="party"><span class="k">Payer · BuyerAgent</span><a id="ebBuyer" class="mono" target="_blank" rel="noopener">—</a></div>
         <div class="flow">
           <span class="conn"></span>
           <span style="display:flex;flex-direction:column;align-items:center;gap:3px">
             <span class="amount" id="escAmount">—<span class="unit"> STT</span></span>
-            <a id="escLink" class="mono" target="_blank" style="font-size:11px">in VerdiktAgentEscrow ↗</a>
+            <a id="escLink" class="mono" target="_blank" rel="noopener" style="font-size:11px">in VerdiktAgentEscrow ↗</a>
           </span>
           <span class="conn"></span>
         </div>
-        <div class="party" style="text-align:right;align-items:flex-end"><span class="k">Payee · SellerAgent</span><a id="ebSeller" class="mono" target="_blank">—</a></div>
+        <div class="party" style="text-align:right;align-items:flex-end"><span class="k">Payee · SellerAgent</span><a id="ebSeller" class="mono" target="_blank" rel="noopener">—</a></div>
       </div>
 
       <div class="case-row">
@@ -334,7 +334,7 @@
         if (ruled) {
           let pct = "";
           if (verdict === "SPLIT") { try { const bps = await client.readContract({ address: COURT, abi: COURT_ABI, functionName: "splitBps", args: [caseId] }); pct = ` · ${Number(bps) / 100}% to seller`; } catch {} }
-          const rcpt = c.receiptId > 0n ? ` · <a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank">receipt ↗</a>` : "";
+          const rcpt = c.receiptId > 0n ? ` · <a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank" rel="noopener">receipt ↗</a>` : "";
           vBlock = `<span class="badge ${verdict}">${verdict}${pct}</span><p class="muted" style="margin-top:8px">In favor of ${WIN[verdict] ?? "?"}${rcpt}</p>`;
         }
 

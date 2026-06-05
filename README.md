@@ -74,7 +74,7 @@ following are live on Shannon (**v4**) and recorded in [`deployments/shannon.jso
 - **Agent-First Design** — disputes are resolved by a panel of agents convened _by the contract itself_ via `createAdvancedRequest`; the court is an open primitive any agent/contract can invoke autonomously.
 - **Autonomous Performance** — no human in the settlement loop: dispute → panel verdict → (optional staked appeal → larger panel) → permissionless `finalize` settles and slashes. A keeper can drive `finalize` / auto-release.
 - **Innovation** — a stake-secured _appeal_ layer on top of consensus-AI verdicts; the appeal re-tries with **new evidence** (the honest design given deterministic inference) and slashes frivolous appeals.
-- **Functionality** — full lifecycle implemented and unit-tested (**211/211 passing**, incl. invariant/fuzz) against a platform mock; the full stack has been **deployed and exercised live on Shannon** (determinism gate PASS, disputes settled, precedent + reputation recorded on-chain).
+- **Functionality** — full lifecycle implemented and unit-tested (**213/213 passing**, incl. invariant/fuzz) against a platform mock; the full stack has been **deployed and exercised live on Shannon** (determinism gate PASS, disputes settled, precedent + reputation recorded on-chain).
 
 ## Somnia integration (verified against docs.somnia.network)
 
@@ -87,7 +87,7 @@ following are live on Shannon (**v4**) and recorded in [`deployments/shannon.jso
 
 ```bash
 forge build
-forge test            # 211/211 (solc 0.8.24, evm_version cancun)
+forge test            # 213/213 (solc 0.8.24, evm_version cancun)
 ```
 
 ## Deploy (Shannon testnet)
@@ -164,7 +164,7 @@ The full stack is deployed and exercised end-to-end (all addresses + live demos 
 
 ## Status / roadmap
 
-The full [`ROADMAP.md`](ROADMAP.md) (Phases 0–5) is built, tested (211/211), and deployed live on Shannon:
+The full [`ROADMAP.md`](ROADMAP.md) (Phases 0–5) is built, tested (213/213), and deployed live on Shannon:
 
 - [x] **Phase 0** — Court/Escrow/Insurance + determinism gate **PASS** on Shannon; full dispute settled live.
 - [x] **Phase 1** — keeper (`keeper/keeper.mjs`, cursor-scan for Somnia) + demo UI (`ui/index.html`); README/deck with live results.
