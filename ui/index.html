@@ -857,7 +857,24 @@
             value,
             account: state.account,
           });
-          const hash = await state.walletClient.writeContract(request);
+          // Somnia meters gas heavily and injected wallets often fail to estimate it
+          // (MetaMask sends gas: 0x0 → "less than 21000"). Estimate via RPC and pass an
+          // explicit limit with headroom so the wallet doesn't have to.
+          let gas;
+          try {
+            gas = await state.publicClient.estimateContractGas({
+              address,
+              abi,
+              functionName,
+              args,
+              value,
+              account: state.account,
+            });
+            gas = (gas * 13n) / 10n;
+          } catch (_) {}
+          const hash = await state.walletClient.writeContract(
+            gas ? { ...request, gas } : request,
+          );
           pending.remove();
           toast(`${functionName} sent: ${hash}`, "info", 12000);
           const receipt = await state.publicClient.waitForTransactionReceipt({
