@@ -917,6 +917,8 @@
         const amountStr = $("newAmount").value.trim();
         const deliverByLocal = $("newDeliverBy").value;
         if (!isAddress(payee)) return toast("payee: invalid address", "err");
+        if (state.account && payee.toLowerCase() === state.account.toLowerCase())
+          return toast("payee can't be your own address — use a different wallet", "err");
         if (!amountStr) return toast("amount required", "err");
         if (!deliverByLocal) return toast("deliverBy required", "err");
         let amount;
@@ -925,6 +927,7 @@
         } catch {
           return toast("amount: invalid decimal", "err");
         }
+        if (amount === 0n) return toast("amount must be greater than 0", "err");
         const deliverByMs = new Date(deliverByLocal).getTime();
         if (!Number.isFinite(deliverByMs))
           return toast("deliverBy: invalid date", "err");
