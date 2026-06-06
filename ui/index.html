@@ -453,6 +453,7 @@
         createPublicClient,
         createWalletClient,
         custom,
+        defineChain,
         http,
         parseEther,
         formatEther,
@@ -470,6 +471,13 @@
         symbol: "STT",
         decimals: 18,
       };
+
+      const SHANNON_CHAIN = defineChain({
+        id: SHANNON.chainIdNum,
+        name: SHANNON.name,
+        nativeCurrency: { name: SHANNON.symbol, symbol: SHANNON.symbol, decimals: SHANNON.decimals },
+        rpcUrls: { default: { http: [SHANNON.rpc] } },
+      });
 
       // Live Shannon deployment (see deployments/shannon.json). Pre-fills the config so the demo
       // works out of the box; the user can still override in the Config panel.
@@ -735,11 +743,13 @@
 
       function rebuildClients() {
         state.publicClient = createPublicClient({
+          chain: SHANNON_CHAIN,
           transport: http(state.cfg.rpc),
         });
         if (window.ethereum && state.account) {
           state.walletClient = createWalletClient({
             account: state.account,
+            chain: SHANNON_CHAIN,
             transport: custom(window.ethereum),
           });
         }
