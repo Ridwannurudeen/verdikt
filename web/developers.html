@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verdikt — the on-chain AI court for the agent economy</title>
-    <meta name="description" content="Verdikt is a reusable on-chain arbitration primitive on Somnia's Agentic L1. A panel of validator LLM agents reaches byte-identical consensus on subjective disputes and settles them programmatically — no human in the loop. 92% agreement with human verdicts, live on Shannon." />
+    <title>Verdikt for Developers — integrate the AI court in a few lines</title>
+    <meta name="description" content="Build on Verdikt: inherit VerdiktConsumerBase and implement one function to plug any contract or agent into the on-chain AI jury. A complete escrow in under 50 lines, a viem JS/agent SDK, and the live v4 contract addresses on Somnia Shannon." />
     <meta name="author" content="Verdikt" />
-    <link rel="canonical" href="https://verdikt.gudman.xyz/" />
+    <link rel="canonical" href="https://verdikt.gudman.xyz/developers.html" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://verdikt.gudman.xyz/" />
-    <meta property="og:title" content="Verdikt — the on-chain AI court for the agent economy" />
-    <meta property="og:description" content="A jury of validator LLM agents settles subjective on-chain disputes by byte-identical consensus — live on Somnia Shannon." />
+    <meta property="og:url" content="https://verdikt.gudman.xyz/developers.html" />
+    <meta property="og:title" content="Verdikt for Developers — integrate the AI court in a few lines" />
+    <meta property="og:description" content="Inherit VerdiktConsumerBase, implement _settle, open a dispute. A complete consumer in under 50 lines — plus a viem JS/agent SDK. Live on Somnia Shannon." />
     <meta property="og:site_name" content="Verdikt" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Verdikt — the on-chain AI court for the agent economy" />
-    <meta name="twitter:description" content="A jury of validator LLM agents settles subjective on-chain disputes by byte-identical consensus. 92% agreement with humans, live on Shannon." />
+    <meta name="twitter:title" content="Verdikt for Developers — integrate the AI court in a few lines" />
+    <meta name="twitter:description" content="Inherit VerdiktConsumerBase, implement _settle, open a dispute. A complete consumer in under 50 lines. Live on Shannon." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -78,6 +78,7 @@
       .nav-links { display: flex; gap: 26px; align-items: center; }
       .nav-links a { color: var(--ivory-dim); font-size: 14.5px; font-weight: 500; transition: color 0.15s; }
       .nav-links a:hover { color: var(--ivory); }
+      .nav-links a.active { color: var(--ivory); }
       @media (max-width: 920px) { .nav-links .hide-sm { display: none; } }
 
       .btn { display: inline-flex; align-items: center; gap: 8px; font-family: "Switzer", sans-serif; font-weight: 600; font-size: 14.5px; border-radius: 8px; padding: 10px 17px; border: 1px solid transparent; cursor: pointer; transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease; }
@@ -216,6 +217,23 @@
       .foot-links a:hover { color: var(--ivory); }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
     </style>
+
+    <!-- page-specific: code blocks (Bench palette) -->
+    <style>
+      .code { margin-top: 26px; background: var(--ink-3); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+      .code .code-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.22); }
+      .code .code-hd .fn { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; color: var(--ivory-dim); display: flex; align-items: center; gap: 8px; }
+      .code .code-hd .fn svg.i { width: 14px; height: 14px; color: var(--gold-ink); }
+      .code .code-hd .src { font-size: 11px; color: var(--dim); font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .code pre { margin: 0; padding: 20px 22px; overflow-x: auto; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; line-height: 1.72; color: var(--ivory-dim); tab-size: 4; }
+      .code pre .k { color: var(--oxblood-ink); }   /* keywords */
+      .code pre .t { color: var(--gold-ink); }       /* types / identifiers of interest */
+      .code pre .c { color: var(--dim); font-style: italic; } /* comments */
+      .code pre .s { color: var(--green); }          /* strings */
+      .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 26px; align-items: start; }
+      @media (max-width: 880px) { .twocol { grid-template-columns: 1fr; } }
+      .twocol .code { margin-top: 0; }
+    </style>
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -247,10 +265,10 @@
       <div class="wrap nav-in">
         <a class="brand" href="/"><span class="seal"><svg class="i"><use href="#i-scale"/></svg></span> <span class="brand-name">Verdikt</span></a>
         <div class="nav-links">
-          <a class="hide-sm" href="/how-it-works.html">How it works</a>
-          <a class="hide-sm" href="/solutions.html">Solutions</a>
-          <a class="hide-sm" href="/developers.html">Developers</a>
-          <a class="hide-sm" href="/security.html">Security</a>
+          <a class="hide-sm" href="how-it-works.html">How it works</a>
+          <a class="hide-sm" href="solutions.html">Solutions</a>
+          <a class="hide-sm active" href="developers.html">Developers</a>
+          <a class="hide-sm" href="security.html">Security</a>
           <a class="hide-sm" href="/app/courtroom.html">Courtroom</a>
           <a class="hide-sm" href="https://github.com/Ridwannurudeen/verdikt" target="_blank" rel="noopener">GitHub</a>
           <a class="btn btn-primary" href="/app/">Launch app</a>
@@ -262,108 +280,173 @@
       <div class="wrap hero-grid">
         <div class="rv in">
           <span class="pill"><span class="dot-live"></span> Live on Somnia Shannon · Agentic L1</span>
-          <span class="kicker">The settlement court for the agent economy</span>
-          <h1>Justice, executed by <span class="seal-word">autonomous agents</span>.</h1>
-          <p class="lede">Smart contracts can't make subjective judgments — and autonomous agents can't sue each other. Verdikt is the neutral arbiter: a panel of validator LLM agents that reaches <b>byte-identical consensus</b> on a dispute and settles it programmatically. No admin. No human in the loop.</p>
+          <span class="kicker">Developers · build a consumer</span>
+          <h1>Integrate the court in a <span class="seal-word">few lines</span>.</h1>
+          <p class="lede">VerdiktCourt is a reusable on-chain arbitration primitive. Inherit <span class="mono">VerdiktConsumerBase</span>, implement one function, and your contract or agent can open a dispute, get a byte-identical AI verdict, and settle it programmatically — no admin, no human in the loop.</p>
           <div class="cta-row">
-            <a class="btn btn-primary btn-lg" href="/app/arena.html"><svg class="i"><use href="#i-play"/></svg> Enter the Agent Arena</a>
-            <a class="btn btn-ghost btn-lg" href="/app/courtroom.html">Watch a live verdict</a>
+            <a class="btn btn-primary btn-lg" href="#solidity"><svg class="i"><use href="#i-code"/></svg> Solidity quickstart</a>
+            <a class="btn btn-ghost btn-lg" href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk" target="_blank" rel="noopener">Read the SDK</a>
           </div>
           <div class="hero-meta">
-            <span class="m"><b>92%</b> agreement with human verdicts</span>
-            <span class="m"><b>100%</b> byte-identical consensus</span>
-            <span class="m"><b>0</b> successful injections</span>
+            <span class="m"><b>&lt;50</b> lines for a full consumer</span>
+            <span class="m"><b>1</b> function to implement</span>
+            <span class="m"><b>0</b> EOAs in the settlement path</span>
           </div>
         </div>
 
         <div class="docket rv in">
-          <div class="hd"><span>Docket · live ruling</span><span class="no">№ 001</span></div>
+          <div class="hd"><span>Consumer · integration</span><span class="no">VerdiktConsumerBase</span></div>
           <div class="case-card">
-            <div class="q">Did the seller deliver the order?</div>
-            <div class="ev"><svg class="i"><use href="#i-link"/></svg> Attested on-chain: courier confirms 3 of 4 units delivered. Buyer claims a full refund.</div>
-          </div>
-          <div class="jurors">
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
+            <div class="q">What the base does for you.</div>
+            <div class="ev"><svg class="i"><use href="#i-link"/></svg> Court wiring, the <span class="mono">onlyCourt</span> callback guard, opening a dispute (quote + fee + pull-refund), the caseId↔ref mapping, and decoding a graded, UNDECIDABLE-aware verdict into a payee basis-point share.</div>
           </div>
           <div class="consensus">
-            <span class="lbl"><svg class="i"><use href="#i-check2"/></svg> Byte-identical · 5 of 5 jurors</span>
-            <span class="verdict-pill">SPLIT · 75% → payee</span>
+            <span class="lbl"><svg class="i"><use href="#i-check2"/></svg> You implement <span class="mono">_settle(ref, verdict)</span></span>
+            <span class="verdict-pill">inherit &amp; go</span>
           </div>
-          <div class="settle"><svg class="i"><use href="#i-circlecheck"/></svg> Settled on-chain — funds released, no human in the loop</div>
+          <div class="settle"><svg class="i"><use href="#i-circlecheck"/></svg> Six consumers already share one court — same pattern, &lt;50 lines each</div>
         </div>
       </div>
     </header>
 
     <div class="proof">
       <div class="wrap proof-grid">
-        <div class="stat"><div class="stat-n gold" id="rulings" data-count>—</div><div class="l">final rulings on record</div></div>
-        <div class="stat"><div class="stat-n" data-count="92" data-suffix="%">92%</div><div class="l">agree with human arbitrators</div></div>
-        <div class="stat"><div class="stat-n" data-count="100" data-suffix="%">100%</div><div class="l">byte-identical convergence</div></div>
-        <div class="stat"><div class="stat-n" data-count="6">6</div><div class="l">protocols on one shared court</div></div>
+        <div class="stat"><div class="stat-n gold">&lt;50</div><div class="l">lines for a full consumer</div></div>
+        <div class="stat"><div class="stat-n">1</div><div class="l">function you implement (_settle)</div></div>
+        <div class="stat"><div class="stat-n">7</div><div class="l">live v4 contracts on Shannon</div></div>
+        <div class="stat"><div class="stat-n">2</div><div class="l">SDK clients (read · agent)</div></div>
       </div>
     </div>
 
-    <section id="how">
+    <section id="solidity">
       <div class="wrap rv">
         <div class="sec-head">
           <div>
-            <span class="eyebrow">The docket — from claim to settlement</span>
-            <h2>A dispute, decided by an AI jury.</h2>
+            <span class="eyebrow">Solidity quickstart</span>
+            <h2>Inherit the base. Implement one function.</h2>
           </div>
-          <a class="more" href="/app/courtroom.html">See a real case replay <svg class="i"><use href="#i-arrow"/></svg></a>
+          <a class="more" href="https://github.com/Ridwannurudeen/verdikt/blob/master/src/VerdiktConsumerBase.sol" target="_blank" rel="noopener">VerdiktConsumerBase.sol <svg class="i"><use href="#i-arrow"/></svg></a>
         </div>
-        <p class="sub">A consumer opens a case with evidence. The court convenes a panel of Somnia validator agents that each run the same inference and must converge byte-identically. The verdict is delivered back programmatically.</p>
+        <p class="sub"><span class="mono">VerdiktConsumerBase</span> handles the boilerplate every consumer otherwise repeats. A child contract opens a dispute with <span class="mono">_openDispute</span>, then implements <span class="mono">_settle(ref, verdict)</span> — using <span class="mono">_payeeShareBps</span> to turn the label into a graded, UNDECIDABLE-aware payout. The court calls back through <span class="mono">onVerdict</span>, which the base guards with <span class="mono">onlyCourt</span> and routes to your <span class="mono">_settle</span>.</p>
+
+        <div class="code">
+          <div class="code-hd">
+            <span class="fn"><svg class="i"><use href="#i-code"/></svg> SimpleEscrow.sol — a complete consumer in under 50 lines</span>
+            <span class="src">src/examples/SimpleEscrow.sol</span>
+          </div>
+<pre><span class="c">// SPDX-License-Identifier: MIT</span>
+<span class="k">pragma</span> solidity ^0.8.20;
+
+<span class="k">import</span> {<span class="t">VerdiktConsumerBase</span>} <span class="k">from</span> <span class="s">"../VerdiktConsumerBase.sol"</span>;
+<span class="k">import</span> {<span class="t">Verdict</span>} <span class="k">from</span> <span class="s">"../interfaces/IVerdiktCourt.sol"</span>;
+
+<span class="k">contract</span> <span class="t">SimpleEscrow</span> <span class="k">is</span> <span class="t">VerdiktConsumerBase</span> {
+    <span class="k">struct</span> Deal { <span class="k">address</span> payer; <span class="k">address</span> payee; <span class="k">uint256</span> amount; <span class="k">bool</span> settled; }
+
+    <span class="k">mapping</span>(<span class="k">uint256</span> => Deal) <span class="k">public</span> deals;
+    <span class="k">mapping</span>(<span class="k">address</span> => <span class="k">uint256</span>) <span class="k">public</span> pending;
+    <span class="k">uint256</span> <span class="k">public</span> nextId = 1;
+
+    <span class="k">constructor</span>(<span class="k">address</span> court_) <span class="t">VerdiktConsumerBase</span>(court_) {}
+
+    <span class="k">function</span> <span class="t">createDeal</span>(<span class="k">address</span> payee) <span class="k">external payable returns</span> (<span class="k">uint256</span> id) {
+        <span class="k">require</span>(<span class="k">msg</span>.value > 0 &amp;&amp; payee != <span class="k">address</span>(0) &amp;&amp; payee != <span class="k">msg</span>.sender, <span class="s">"bad deal"</span>);
+        id = nextId++;
+        deals[id] = Deal(<span class="k">msg</span>.sender, payee, <span class="k">msg</span>.value, <span class="k">false</span>);
+    }
+
+    <span class="k">function</span> <span class="t">dispute</span>(<span class="k">uint256</span> id, <span class="k">string calldata</span> evidence) <span class="k">external payable</span> {
+        Deal <span class="k">storage</span> d = deals[id];
+        <span class="k">require</span>(<span class="k">msg</span>.sender == d.payer || <span class="k">msg</span>.sender == d.payee, <span class="s">"not a party"</span>);
+        <span class="t">_openDispute</span>(id, evidence, <span class="k">msg</span>.sender); <span class="c">// base quotes the fee, opens the case, maps caseId&lt;-&gt;id</span>
+    }
+
+    <span class="k">function</span> <span class="t">_settle</span>(<span class="k">uint256</span> ref, Verdict verdict) <span class="k">internal override</span> {
+        Deal <span class="k">storage</span> d = deals[ref];
+        <span class="k">require</span>(!d.settled, <span class="s">"settled"</span>);
+        d.settled = <span class="k">true</span>;
+        <span class="k">uint256</span> toPayee = (d.amount * <span class="t">_payeeShareBps</span>(ref, verdict)) / 10000; <span class="c">// graded / UNDECIDABLE aware</span>
+        pending[d.payee] += toPayee;
+        pending[d.payer] += d.amount - toPayee; <span class="c">// pull payments -&gt; can't be bricked</span>
+    }
+
+    <span class="k">function</span> <span class="t">withdraw</span>() <span class="k">external</span> {
+        <span class="k">uint256</span> amt = pending[<span class="k">msg</span>.sender];
+        <span class="k">require</span>(amt > 0, <span class="s">"nothing to withdraw"</span>);
+        pending[<span class="k">msg</span>.sender] = 0;
+        (<span class="k">bool</span> ok,) = <span class="k">msg</span>.sender.call{value: amt}(<span class="s">""</span>);
+        <span class="k">require</span>(ok, <span class="s">"withdraw failed"</span>);
+    }
+
+    <span class="k">receive</span>() <span class="k">external payable</span> {}
+}</pre>
+        </div>
+        <p class="sub" style="font-size:15px;">Excerpted verbatim from <span class="mono">src/examples/SimpleEscrow.sol</span> — the reference integration, validated end-to-end in <span class="mono">test/SimpleEscrow.t.sol</span>. The base members it relies on — <span class="mono">_openDispute(ref, evidence, refundTo)</span>, <span class="mono">_payeeShareBps(ref, verdict)</span>, and the abstract <span class="mono">_settle</span> — are defined in <span class="mono">src/VerdiktConsumerBase.sol</span>.</p>
+      </div>
+    </section>
+
+    <section style="background: rgba(0,0,0,0.18); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+      <div class="wrap rv">
+        <span class="eyebrow">JS / TS · agent SDK</span>
+        <h2>Read cases, watch verdicts, run a keeper.</h2>
+        <p class="sub">The SDK is a thin <span class="mono">viem</span> client. <span class="mono">createVerdiktClient</span> reads cases and subscribes to verdicts; <span class="mono">createVerdiktAgent</span> gives a wallet-backed agent the court actions — appeal, finalize, and a decentralized keeper sweep. Both ship in <span class="mono">sdk/</span>.</p>
+
+        <div class="twocol">
+          <div class="code">
+            <div class="code-hd">
+              <span class="fn"><svg class="i"><use href="#i-search"/></svg> Read &amp; watch</span>
+              <span class="src">sdk/index.mjs</span>
+            </div>
+<pre><span class="k">import</span> { createVerdiktClient, payeeShareBps, VERDICT }
+  <span class="k">from</span> <span class="s">"verdikt/sdk/index.mjs"</span>;
+
+<span class="k">const</span> verdikt = <span class="t">createVerdiktClient</span>({ publicClient, court: <span class="s">"0x..."</span> });
+
+<span class="k">const</span> fee = <span class="k">await</span> verdikt.<span class="t">quoteOpen</span>();
+<span class="k">const</span> c   = <span class="k">await</span> verdikt.<span class="t">getCase</span>(1);      <span class="c">// { verdictLabel, statusLabel, ... }</span>
+<span class="k">const</span> bps = <span class="k">await</span> <span class="t">payeeShareBps</span>(verdikt, 1); <span class="c">// graded-SPLIT aware share</span>
+
+<span class="k">const</span> unwatch = verdikt.<span class="t">watchVerdicts</span>((v) =>
+  console.log(v.caseId, v.verdict, v.receiptId)
+);</pre>
+          </div>
+
+          <div class="code">
+            <div class="code-hd">
+              <span class="fn"><svg class="i"><use href="#i-cpu"/></svg> Autonomous agent</span>
+              <span class="src">sdk/agent.mjs</span>
+            </div>
+<pre><span class="k">import</span> { createVerdiktAgent } <span class="k">from</span> <span class="s">"verdikt/sdk/agent.mjs"</span>;
+
+<span class="k">const</span> agent = <span class="t">createVerdiktAgent</span>({
+  publicClient, walletClient, account, court: <span class="s">"0x..."</span>
+});
+
+<span class="c">// finalize every case whose appeal deadline has passed</span>
+<span class="k">await</span> agent.<span class="t">runKeeper</span>();
+
+<span class="c">// contest a ruling (auto-quotes the larger panel)</span>
+<span class="k">await</span> agent.<span class="t">appeal</span>(caseId, <span class="s">"new evidence"</span>);
+
+<span class="c">// settle a single ruled case</span>
+<span class="k">await</span> agent.<span class="t">finalize</span>(caseId);</pre>
+          </div>
+        </div>
+        <p class="sub" style="font-size:15px;">Snippets faithful to <span class="mono">sdk/index.mjs</span> and <span class="mono">sdk/agent.mjs</span>. The read client exposes <span class="mono">COURT_ABI</span>, <span class="mono">quoteOpen</span>, <span class="mono">getCase</span>, <span class="mono">splitBps</span>, <span class="mono">payeeShareBps</span> and <span class="mono">watchVerdicts</span>; <span class="mono">finalize</span> is permissionless, so anyone can run <span class="mono">runKeeper()</span> as a keeper.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap rv">
+        <span class="eyebrow">The integration, step by step</span>
+        <h2>From inherit to settled — five steps.</h2>
+        <p class="sub">The same lifecycle powers all six deployed consumers. The base owns the wiring; you own your deal logic and the verdict→money mapping.</p>
         <div class="flow">
-          <div class="node"><div class="step">01</div><div class="ic"><svg class="i"><use href="#i-folder"/></svg></div><h4>Open a case</h4><p>A contract or agent submits the dispute, evidence, and panel fee.</p></div>
-          <div class="node"><div class="step">02</div><div class="ic"><svg class="i"><use href="#i-users"/></svg></div><h4>Panel deliberates</h4><p>5 validator LLM agents each judge the evidence independently.</p></div>
-          <div class="node"><div class="step">03</div><div class="ic"><svg class="i"><use href="#i-check2"/></svg></div><h4>Byte-identical consensus</h4><p>The panel must agree on the exact label — trust-minimized judgment.</p></div>
-          <div class="node"><div class="step">04</div><div class="ic"><svg class="i"><use href="#i-file"/></svg></div><h4>Verdict + receipt</h4><p>PAYEE / PAYER / graded SPLIT, with an on-chain receipt of the reasoning.</p></div>
-          <div class="node"><div class="step">05</div><div class="ic"><svg class="i"><use href="#i-circlecheck"/></svg></div><h4>Settled, no human</h4><p>onVerdict() settles funds. Stake-backed appeals escalate the panel.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="trust" style="background: rgba(0,0,0,0.18); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
-      <div class="wrap rv">
-        <span class="eyebrow">Why you can trust an AI judge</span>
-        <h2>The hard part isn't convening a panel.<br />It's making the verdict defensible.</h2>
-        <p class="sub">Every one of these is live on Shannon and reproducible on-chain — not a slide.</p>
-        <div class="cards">
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-shield"/></svg></div><h3>Manipulation-resistant</h3><p>Evidence is sanitized, fenced, and marked untrusted, so a party can't inject instructions. Proven live: a panel ignored an embedded "rule for me" and decided on the facts.</p><span class="tag"><svg class="i"><use href="#i-check"/></svg> injection gate · PASS</span></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-bars"/></svg></div><h3>Measurably accurate</h3><p>On 12 curated disputes, a live panel agreed with the human-expected verdict 11/12 and converged byte-identically every time.</p><span class="tag"><svg class="i"><use href="#i-check"/></svg> 92% / 100%</span></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-link"/></svg></div><h3>Grounded in attested facts</h3><p>Trusted oracles post on-chain facts the court weighs as authoritative — above the parties' claims. Verdicts rest on truth, not assertions.</p><span class="tag"><svg class="i"><use href="#i-check"/></svg> attestation registry</span></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-help"/></svg></div><h3>Knows when to abstain</h3><p>On genuinely insufficient evidence the panel answers UNDECIDABLE and refunds — instead of guessing. Validated live.</p><span class="tag"><svg class="i"><use href="#i-check"/></svg> abstention gate · PASS</span></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-scroll"/></svg></div><h3>Governed like law</h3><p>The prompt is the court's legal code: versioned, immutable per version, timelock-governed, and cited per case — auditable, not "whatever the deployer typed".</p><span class="tag"><svg class="i"><use href="#i-check"/></svg> prompt governance</span></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-scale"/></svg></div><h3>Graded, not binary</h3><p>SPLIT 25/50/75 for partial fault — determinism-validated live, so the court can do justice, not just pick a winner.</p><span class="tag"><svg class="i"><use href="#i-check"/></svg> graded verdicts</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="solutions">
-      <div class="wrap rv">
-        <div class="sec-head">
-          <div>
-            <span class="eyebrow">One court · every dispute-bearing protocol</span>
-            <h2>Built as a primitive.</h2>
-          </div>
-          <a class="more" href="#build">For developers <svg class="i"><use href="#i-arrow"/></svg></a>
-        </div>
-        <p class="sub">VerdiktCourt is a reusable AI-jury any contract or agent can call. Integrate in a few lines with <span class="mono">VerdiktConsumerBase</span> — six consumers already share one court.</p>
-        <div class="grid6">
-          <div class="mini"><div class="ic"><svg class="i"><use href="#i-handshake"/></svg></div><div><b>Escrow</b><span>Two-party deals — release, refund, or split.</span></div></div>
-          <div class="mini"><div class="ic"><svg class="i"><use href="#i-cpu"/></svg></div><div><b>Agent-to-agent</b><span>Machine-native escrow — no EOA in the loop.</span></div></div>
-          <div class="mini"><div class="ic"><svg class="i"><use href="#i-umbrella"/></svg></div><div><b>Insurance</b><span>A pool's subjective claims, arbitrated.</span></div></div>
-          <div class="mini"><div class="ic"><svg class="i"><use href="#i-trend"/></svg></div><div><b>Prediction markets</b><span>Resolve a subjective outcome as an oracle.</span></div></div>
-          <div class="mini"><div class="ic"><svg class="i"><use href="#i-bank"/></svg></div><div><b>DAO grants</b><span>Clawback vs. release on a milestone.</span></div></div>
-          <div class="mini"><div class="ic"><svg class="i"><use href="#i-flag"/></svg></div><div><b>Freelance milestones</b><span>Was the deliverable acceptable?</span></div></div>
-        </div>
-        <div class="cta-row" id="build" style="margin-top: 38px;">
-          <a class="btn btn-ghost" href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk" target="_blank" rel="noopener"><svg class="i"><use href="#i-code"/></svg> Read the SDK</a>
-          <a class="btn btn-ghost" href="/app/explorer.html"><svg class="i"><use href="#i-search"/></svg> Explore the precedent</a>
+          <div class="node"><div class="step">01</div><div class="ic"><svg class="i"><use href="#i-code"/></svg></div><h4>Inherit the base</h4><p>VerdiktConsumerBase(court_) wires your contract to the shared court.</p></div>
+          <div class="node"><div class="step">02</div><div class="ic"><svg class="i"><use href="#i-folder"/></svg></div><h4>Open a dispute</h4><p>_openDispute(ref, evidence, refundTo) quotes the fee and opens the case.</p></div>
+          <div class="node"><div class="step">03</div><div class="ic"><svg class="i"><use href="#i-users"/></svg></div><h4>Panel rules</h4><p>The court convenes the validator panel and reaches byte-identical consensus.</p></div>
+          <div class="node"><div class="step">04</div><div class="ic"><svg class="i"><use href="#i-scale"/></svg></div><h4>Map the verdict</h4><p>_payeeShareBps(ref, verdict) turns the label into a graded payout share.</p></div>
+          <div class="node"><div class="step">05</div><div class="ic"><svg class="i"><use href="#i-circlecheck"/></svg></div><h4>Settle (pull)</h4><p>Credit a pending[] ledger so a reverting recipient can't brick finalize().</p></div>
         </div>
       </div>
     </section>
@@ -371,26 +454,27 @@
     <section class="live">
       <div class="wrap rv">
         <span class="eyebrow">Live on Shannon · chain 50312</span>
-        <h2>Not a mockup — deployed and exercised on-chain.</h2>
-        <p class="sub">The hardened v4 stack runs the injection-resistant governed prompt, graded verdicts, abstention, and the attestation registry. A real dispute settled where an attested fact overrode a false claim → SPLIT 75%.</p>
+        <h2>The v4 stack — deployed, wired, and on-chain.</h2>
+        <p class="sub">The hardened v4 contracts run the injection-resistant governed prompt, graded SPLIT, abstention, and the attestation-registry hook. Point your consumer at the v4 Court; verify each address on the Shannon explorer.</p>
         <div class="live-grid">
           <div class="panel">
             <h3>Core contracts (v4)</h3>
             <div class="addr"><span class="k">VerdiktCourt</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x8f2a01D63D3fC0216321970510D0dDFFe9693199" target="_blank" rel="noopener">0x8f2a…3199 ↗</a></div>
             <div class="addr"><span class="k">VerdiktEscrow</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x000c7dc06aD2664295F181EA2CE119F4c7F902e0" target="_blank" rel="noopener">0x000c…02e0 ↗</a></div>
+            <div class="addr"><span class="k">VerdiktRegistry</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0xe368032D85004DefeB1a3d8C26e382761BE159a6" target="_blank" rel="noopener">0xe368…59a6 ↗</a></div>
+            <div class="addr"><span class="k">VerdiktReputation</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4" target="_blank" rel="noopener">0x14e8…bCb4 ↗</a></div>
             <div class="addr"><span class="k">AttestationRegistry</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x53e7632709648669249f18fd2Ce7Cdb5744A285A" target="_blank" rel="noopener">0x53e7…285A ↗</a></div>
-            <div class="addr"><span class="k">Precedent Registry</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0xe368032D85004DefeB1a3d8C26e382761BE159a6" target="_blank" rel="noopener">0xe368…59a6 ↗</a></div>
-            <div class="addr"><span class="k">Marketplace</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0xa51c712fE58aB04d0e2dE540b5d982773548A6EB" target="_blank" rel="noopener">0xa51c…A6EB ↗</a></div>
+            <div class="addr"><span class="k">VerdiktMarketplace</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0xa51c712fE58aB04d0e2dE540b5d982773548A6EB" target="_blank" rel="noopener">0xa51c…A6EB ↗</a></div>
+            <div class="addr"><span class="k">VerdiktAgentEscrow</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0xfCe85A2C4415136316f97D645E04C4DC22BdAb32" target="_blank" rel="noopener">0xfCe8…Ab32 ↗</a></div>
           </div>
           <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-              <h3>The case-law moat, growing live</h3>
-              <div class="big-stat"><span id="rulings2">—</span> <span class="unit">final rulings recorded</span></div>
-              <p class="sub" style="font-size: 15px; margin-top: 14px;">Every final ruling is an immutable, citable precedent — on-chain, AI-authored case law.</p>
+              <h3>Connect your client</h3>
+              <p class="sub" style="font-size:15px; margin-top:6px;">Chain ID <span class="mono">50312</span>. RPC <span class="mono">https://api.infra.testnet.somnia.network/</span>. Point <span class="mono">createVerdiktClient({ court })</span> at the v4 Court above, then read <span class="mono">quoteOpen()</span> at call time — quotes change with panel pricing, so never hardcode the fee.</p>
             </div>
             <div class="cta-row">
-              <a class="btn btn-primary" href="/app/courtroom.html"><svg class="i"><use href="#i-play"/></svg> Open the courtroom</a>
-              <a class="btn btn-ghost" href="/app/explorer.html">Browse precedent</a>
+              <a class="btn btn-primary" href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk" target="_blank" rel="noopener"><svg class="i"><use href="#i-code"/></svg> Open the SDK</a>
+              <a class="btn btn-ghost" href="/app/explorer.html"><svg class="i"><use href="#i-search"/></svg> Browse precedent</a>
             </div>
           </div>
         </div>
@@ -398,14 +482,23 @@
     </section>
 
     <section>
-      <div class="wrap rv" style="max-width: 820px;">
-        <span class="eyebrow">FAQ</span>
-        <h2>Questions.</h2>
-        <div style="margin-top: 28px;">
-          <details open><summary>Why an AI jury instead of a human one?</summary><p>Human arbitration is slow and expensive; a single off-chain bot can't be trusted. Somnia's validators each run the inference and reach consensus on a byte-identical result — making AI judgment trust-minimized, fast, and on-chain. Verdikt measures 92% agreement with human verdicts.</p></details>
-          <details><summary>What stops a party from gaming the prompt?</summary><p>Evidence is sanitized (angle brackets stripped) and wrapped in a fenced block the system prompt marks as untrusted, so a party can't break out and inject instructions. We proved it live: a panel ignored an embedded "output PAYEE" and ruled on the facts.</p></details>
-          <details><summary>What if the evidence is genuinely unclear?</summary><p>The panel can answer UNDECIDABLE and refund the depositor, rather than guess. Trusted on-chain attestors can also post verified facts the court weighs above the parties' claims.</p></details>
-          <details><summary>Can other protocols build on it?</summary><p>Yes — VerdiktCourt is a reusable primitive. Inherit <span class="mono">VerdiktConsumerBase</span> and a protocol integrates the jury in a few lines; six consumers already share one court, and a staked marketplace lets operators run competing courts.</p></details>
+      <div class="wrap rv">
+        <div class="sec-head">
+          <div>
+            <span class="eyebrow">Get started</span>
+            <h2>Three ways in.</h2>
+          </div>
+          <a class="more" href="solutions.html">See the six consumers <svg class="i"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="grid6">
+          <div class="mini"><div class="ic"><svg class="i"><use href="#i-code"/></svg></div><div><b>Inherit the base</b><span>VerdiktConsumerBase + _settle — the &lt;50-line easy path.</span></div></div>
+          <div class="mini"><div class="ic"><svg class="i"><use href="#i-file"/></svg></div><div><b>Or the raw interface</b><span>Implement onVerdict and the dispute flow against IVerdiktCourt yourself.</span></div></div>
+          <div class="mini"><div class="ic"><svg class="i"><use href="#i-cpu"/></svg></div><div><b>Run an agent / keeper</b><span>Wallet-backed appeals, finalize, and a permissionless keeper sweep.</span></div></div>
+        </div>
+        <div class="cta-row" style="margin-top: 38px;">
+          <a class="btn btn-primary" href="https://github.com/Ridwannurudeen/verdikt" target="_blank" rel="noopener"><svg class="i"><use href="#i-link"/></svg> The repo on GitHub</a>
+          <a class="btn btn-ghost" href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk" target="_blank" rel="noopener"><svg class="i"><use href="#i-code"/></svg> Read the SDK</a>
+          <a class="btn btn-ghost" href="https://github.com/Ridwannurudeen/verdikt/blob/master/src/examples/SimpleEscrow.sol" target="_blank" rel="noopener"><svg class="i"><use href="#i-file"/></svg> SimpleEscrow.sol</a>
         </div>
       </div>
     </section>
@@ -413,11 +506,11 @@
     <section style="padding-top: 0;">
       <div class="wrap rv">
         <div class="band">
-          <h2 style="font-size: 38px;">The settlement court for the agent economy.</h2>
-          <p class="sub" style="margin: 16px auto 0;">Watch a real dispute get decided on-chain — evidence, verdict, and settlement, no human in the loop.</p>
+          <h2 style="font-size: 38px;">If your protocol has a subjective dispute, it can settle here.</h2>
+          <p class="sub" style="margin: 16px auto 0;">Inherit the base, implement <span class="mono">_settle</span>, point at the v4 Court — and build the seventh consumer.</p>
           <div class="cta-row" style="justify-content: center; margin-top: 30px;">
-            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"><svg class="i"><use href="#i-play"/></svg> Watch the courtroom</a>
-            <a class="btn btn-ghost btn-lg" href="/app/">Launch the demo</a>
+            <a class="btn btn-primary btn-lg" href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk" target="_blank" rel="noopener"><svg class="i"><use href="#i-code"/></svg> Read the SDK</a>
+            <a class="btn btn-ghost btn-lg" href="/app/courtroom.html">Watch a live verdict</a>
           </div>
         </div>
       </div>
@@ -442,36 +535,6 @@
     <script type="module">
       const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12 });
       document.querySelectorAll(".rv").forEach((el) => io.observe(el));
-
-      function countUp(el, to, suffix) {
-        const dur = 1100, t0 = performance.now();
-        const tick = (t) => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))) + (suffix || ""); if (p < 1) requestAnimationFrame(tick); };
-        requestAnimationFrame(tick);
-      }
-      const seen = new WeakSet();
-      const co = new IntersectionObserver((es) => es.forEach((e) => {
-        if (!e.isIntersecting || seen.has(e.target)) return;
-        const to = e.target.getAttribute("data-count");
-        if (to && to !== "") { seen.add(e.target); countUp(e.target, Number(to), e.target.getAttribute("data-suffix") || ""); }
-      }), { threshold: 0.6 });
-      document.querySelectorAll("[data-count]").forEach((el) => co.observe(el));
-
-      // live ruling count from the v4 registry (real on-chain data)
-      try {
-        const { createPublicClient, http } = await import("https://esm.sh/viem@2.21.0?bundle");
-        const client = createPublicClient({ transport: http("https://api.infra.testnet.somnia.network/") });
-        const n = await client.readContract({
-          address: "0xe368032D85004DefeB1a3d8C26e382761BE159a6",
-          abi: [{ type: "function", name: "rulingsCount", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] }],
-          functionName: "rulingsCount",
-        });
-        const v = Number(n);
-        const a = document.getElementById("rulings"); if (a) { a.removeAttribute("data-count"); countUp(a, v, ""); }
-        const b = document.getElementById("rulings2"); if (b) b.textContent = v;
-      } catch (e) {
-        const a = document.getElementById("rulings"); if (a) a.textContent = "1";
-        const b = document.getElementById("rulings2"); if (b) b.textContent = "1";
-      }
     </script>
   </body>
 </html>
