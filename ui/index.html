@@ -928,6 +928,14 @@
           return toast("amount: invalid decimal", "err");
         }
         if (amount === 0n) return toast("amount must be greater than 0", "err");
+        if (state.account && state.publicClient) {
+          const bal = await state.publicClient.getBalance({ address: state.account });
+          if (bal < amount)
+            return toast(
+              `insufficient STT: wallet holds ${formatEther(bal)} STT — fund it at the Somnia faucet (testnet.somnia.network)`,
+              "err"
+            );
+        }
         const deliverByMs = new Date(deliverByLocal).getTime();
         if (!Number.isFinite(deliverByMs))
           return toast("deliverBy: invalid date", "err");
