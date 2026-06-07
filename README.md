@@ -44,7 +44,7 @@ Six independent consumers settle on the same Court, proving it as a shared primi
 - **`src/VerdiktTimelock.sol`** — delayed-execution governor that can own the Court, removing single-key owner trust.
 - **`src/VerdiktConsumerBase.sol`** — inherit-and-go base so a new protocol integrates the jury in a few lines (see [`src/examples/`](src/examples): `SimpleEscrow`, `VerdiktPredictionMarket`).
 - **SDK + tooling** — [`sdk/README.md`](sdk/README.md) (Foundry lib + JS client + agent SDK), `keeper/` (auto-finalize), `indexer/`, and four live app pages: escrow demo, **courtroom replay** (`ui/courtroom.html`), **case-law explorer** (`ui/explorer.html`), case-law dashboard.
-- **Design** — [`SECURITY.md`](SECURITY.md) (audit), [`ECONOMICS.md`](ECONOMICS.md) (fee model + anti-frivolous-appeal math), [`PORTABILITY.md`](PORTABILITY.md) (beyond Somnia).
+- **Design** — [`TRUST-MODEL.md`](TRUST-MODEL.md) (what's trusted vs trustless, and the honest determinism dependency), [`SECURITY.md`](SECURITY.md) (audit), [`ECONOMICS.md`](ECONOMICS.md) (fee model + anti-frivolous-appeal math), [`PORTABILITY.md`](PORTABILITY.md) (beyond Somnia).
 
 ## What makes the AI jury trustworthy
 

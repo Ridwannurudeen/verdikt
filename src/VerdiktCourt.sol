@@ -53,6 +53,7 @@ contract VerdiktCourt is IVerdiktCourt {
         uint64 rulingTime;
         uint64 appealDeadline;
         uint256 promptVersion;
+        uint256 modelId;
         string evidence;
     }
 
@@ -96,6 +97,7 @@ contract VerdiktCourt is IVerdiktCourt {
     event RefundWithdrawn(address indexed to, uint256 amount);
     event PromptVersionPublished(uint256 indexed version);
     event ActivePromptVersionSet(uint256 indexed version);
+    event AgentIdChanged(uint256 indexed oldId, uint256 indexed newId);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
@@ -148,6 +150,7 @@ contract VerdiktCourt is IVerdiktCourt {
         c.trialPanel = trialPanel;
         c.evidence = evidence;
         c.promptVersion = activePromptVersion;
+        c.modelId = agentId;
         emit CaseOpened(caseId, msg.sender, escrowRef);
         _dispatch(caseId);
         _refundExcess(msg.value, deposit);
@@ -239,7 +242,7 @@ contract VerdiktCourt is IVerdiktCourt {
         require(_availableBalance() >= deposit, "insufficient balance");
 
         uint256 requestId = platform.createAdvancedRequest{value: deposit}(
-            agentId,
+            c.modelId,
             address(this),
             this.handleVerdict.selector,
             _buildPayload(c),
@@ -392,6 +395,12 @@ contract VerdiktCourt is IVerdiktCourt {
         return cases[caseId].promptVersion;
     }
 
+    /// @notice The inference model/agent id that decided (or will decide) a case — snapshotted at
+    /// open time so a verdict can be audited against the exact model that produced it.
+    function modelOf(uint256 caseId) external view returns (uint256) {
+        return cases[caseId].modelId;
+    }
+
     /// @notice Read a published prompt version (the court's "legal code" for that version).
     function promptVersion(uint256 version) external view returns (PromptVersion memory) {
         return _promptVersions[version];
@@ -413,6 +422,7 @@ contract VerdiktCourt is IVerdiktCourt {
     // --- admin ----------------------------------------------------------------
 
     function setAgentId(uint256 id) external onlyOwner {
+        emit AgentIdChanged(agentId, id);
         agentId = id;
     }
 
