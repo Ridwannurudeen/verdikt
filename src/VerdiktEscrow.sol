@@ -23,7 +23,8 @@ contract VerdiktEscrow is IVerdiktConsumer {
         Funded,
         Delivered,
         Disputed,
-        Settled
+        Settled,
+        Disputing // evidence-collection phase before the panel is convened (appended last to keep prior values stable)
     }
 
     struct Deal {
@@ -51,10 +52,19 @@ contract VerdiktEscrow is IVerdiktConsumer {
     /// @notice pull-payment ledger: settled value waiting for its owner to withdraw.
     mapping(address => uint256) public pending;
 
+    /// @dev window (seconds) after a dispute is opened during which the counterparty may submit a statement.
+    uint64 public responseWindow = 1 hours;
+    /// @notice each party's evidence statement for a dispute. dealId => party => statement.
+    mapping(uint256 => mapping(address => string)) public statementOf;
+    /// @notice timestamp after which a disputed deal can be convened even if a party stayed silent.
+    mapping(uint256 => uint64) public responseDeadline;
+
     event DealCreated(uint256 indexed dealId, address indexed payer, address indexed payee, uint256 amount);
     event Delivered(uint256 indexed dealId);
     event Released(uint256 indexed dealId, address to, uint256 amount);
     event Disputed(uint256 indexed dealId, uint256 indexed caseId, address by);
+    event DisputeOpened(uint256 indexed dealId, address indexed by, uint64 responseDeadline);
+    event EvidenceSubmitted(uint256 indexed dealId, address indexed by);
     event AppealFiled(uint256 indexed dealId, address indexed appellant, uint256 stake, Verdict preAppealVerdict);
     event DealSettled(uint256 indexed dealId, Verdict verdict, uint256 toPayer, uint256 toPayee);
     event StakeSlashed(uint256 indexed dealId, address loser, address winner, uint256 toWinner, uint256 toTreasury);
@@ -146,6 +156,55 @@ contract VerdiktEscrow is IVerdiktConsumer {
         caseToDeal[caseId] = dealId;
         _refundExcess(msg.value, fee);
         emit Disputed(dealId, caseId, msg.sender);
+    }
+
+    // --- two-sided dispute (both parties heard before the panel rules) ---------
+
+    /// @notice Open a two-sided dispute: the opener submits their statement and starts a response
+    /// window during which the counterparty may submit theirs. No AI panel rules until convene(),
+    /// so both sides can be on record first.
+    function openDispute(uint256 dealId, string calldata evidence) external {
+        Deal storage d = _checkDisputable(dealId);
+        require(bytes(evidence).length > 0, "no evidence");
+        d.status = DealStatus.Disputing;
+        statementOf[dealId][msg.sender] = evidence;
+        uint64 deadline = uint64(block.timestamp + responseWindow);
+        responseDeadline[dealId] = deadline;
+        emit DisputeOpened(dealId, msg.sender, deadline);
+    }
+
+    /// @notice A party adds or updates their statement while the response window is open.
+    function submitEvidence(uint256 dealId, string calldata evidence) external {
+        Deal storage d = deals[dealId];
+        require(d.status == DealStatus.Disputing, "not disputing");
+        require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
+        require(block.timestamp < responseDeadline[dealId], "window closed");
+        require(bytes(evidence).length > 0, "no evidence");
+        statementOf[dealId][msg.sender] = evidence;
+        emit EvidenceSubmitted(dealId, msg.sender);
+    }
+
+    /// @notice Convene the AI panel on BOTH parties' statements. Callable once the response window
+    /// has elapsed or both parties have spoken, so a silent counterparty cannot stall settlement.
+    function convene(uint256 dealId, uint8 trialPanel) external payable {
+        Deal storage d = deals[dealId];
+        require(d.status == DealStatus.Disputing, "not disputing");
+        require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
+        bool bothSpoke =
+            bytes(statementOf[dealId][d.payer]).length > 0 && bytes(statementOf[dealId][d.payee]).length > 0;
+        require(block.timestamp >= responseDeadline[dealId] || bothSpoke, "window open");
+        uint256 fee = court.quoteOpen(trialPanel);
+        require(msg.value >= fee, "fee too low");
+        d.status = DealStatus.Disputed;
+        _recordCase(dealId, court.openCase{value: fee}(dealId, _combinedStatement(dealId, d), trialPanel), fee);
+    }
+
+    function _combinedStatement(uint256 dealId, Deal storage d) internal view returns (string memory) {
+        string memory pe = statementOf[dealId][d.payer];
+        string memory ye = statementOf[dealId][d.payee];
+        if (bytes(pe).length == 0) pe = "(no statement submitted)";
+        if (bytes(ye).length == 0) ye = "(no statement submitted)";
+        return string.concat("BUYER (payer) states:\n", pe, "\n\nSELLER (payee) states:\n", ye);
     }
 
     function appeal(uint256 dealId, string calldata newEvidence) external payable {
@@ -275,6 +334,10 @@ contract VerdiktEscrow is IVerdiktConsumer {
     function setAppealStakeBps(uint256 bps) external onlyOwner {
         require(bps <= 10000, "bps");
         appealStakeBps = bps;
+    }
+
+    function setResponseWindow(uint64 w) external onlyOwner {
+        responseWindow = w;
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {

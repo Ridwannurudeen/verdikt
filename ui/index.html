@@ -359,14 +359,39 @@
             <button id="showAppealBtn" class="ghost hidden">Appeal…</button>
           </div>
           <div id="disputeBox" class="hidden" style="margin-top: 12px">
-            <label>Evidence (dispute)</label>
+            <label>Your statement (opens a dispute)</label>
             <textarea
               id="disputeEvidence"
-              placeholder="Why you should win…"
+              placeholder="State your case — the counterparty can respond before the jury rules…"
             ></textarea>
             <div class="row">
-              <button id="disputeBtn" class="primary">Submit dispute</button>
+              <button id="openDisputeBtn" class="primary">Open dispute</button>
               <span id="disputeFee" class="muted"></span>
+            </div>
+          </div>
+          <div id="disputingBox" class="hidden" style="margin-top: 12px">
+            <h2 style="margin-bottom: 6px">Dispute in progress</h2>
+            <div class="kv">
+              <div class="k">Response window</div>
+              <div class="v" id="dpDeadline"></div>
+              <div class="k">Buyer (payer)</div>
+              <div class="v" id="dpPayerStmt"></div>
+              <div class="k">Seller (payee)</div>
+              <div class="v" id="dpPayeeStmt"></div>
+            </div>
+            <div id="dpRespondWrap" style="margin-top: 10px">
+              <label>Your statement</label>
+              <textarea
+                id="dpEvidence"
+                placeholder="Add or update your statement before the jury is convened…"
+              ></textarea>
+              <div class="row">
+                <button id="submitEvidenceBtn" class="ghost">Submit my statement</button>
+              </div>
+            </div>
+            <div class="row" style="margin-top: 8px">
+              <button id="conveneBtn" class="primary">Convene jury</button>
+              <span id="conveneHint" class="muted"></span>
             </div>
           </div>
           <div id="appealBox" class="hidden" style="margin-top: 12px">
@@ -455,6 +480,8 @@
         custom,
         defineChain,
         http,
+        keccak256,
+        stringToHex,
         parseEther,
         formatEther,
         decodeEventLog,
@@ -483,8 +510,11 @@
       // works out of the box; the user can still override in the Config panel.
       const DEPLOYED = {
         court: "0x884646F61229350De74FbFAB1308DE02c5A57c77",
-        escrow: "0xb5209372462fca2592968a0a9e8F8fC67256129E",
+        escrow: "0xbe5EF49990beD67E3Fb45d91b7d83Ec8b2b6A73B",
+        registry: "0xb9bB00bAC4bdE40f736A5f878f30bfE0487DE768",
       };
+      // topic under which a finalized case is recorded as precedent
+      const RECORD_TOPIC = keccak256(stringToHex("verdikt/escrow/dispute"));
 
       const ESCROW_ABI = [
         {
@@ -531,6 +561,53 @@
             { name: "trialPanel", type: "uint8" },
           ],
           outputs: [],
+        },
+        {
+          type: "function",
+          name: "openDispute",
+          stateMutability: "nonpayable",
+          inputs: [
+            { name: "dealId", type: "uint256" },
+            { name: "evidence", type: "string" },
+          ],
+          outputs: [],
+        },
+        {
+          type: "function",
+          name: "submitEvidence",
+          stateMutability: "nonpayable",
+          inputs: [
+            { name: "dealId", type: "uint256" },
+            { name: "evidence", type: "string" },
+          ],
+          outputs: [],
+        },
+        {
+          type: "function",
+          name: "convene",
+          stateMutability: "payable",
+          inputs: [
+            { name: "dealId", type: "uint256" },
+            { name: "trialPanel", type: "uint8" },
+          ],
+          outputs: [],
+        },
+        {
+          type: "function",
+          name: "statementOf",
+          stateMutability: "view",
+          inputs: [
+            { name: "dealId", type: "uint256" },
+            { name: "party", type: "address" },
+          ],
+          outputs: [{ type: "string" }],
+        },
+        {
+          type: "function",
+          name: "responseDeadline",
+          stateMutability: "view",
+          inputs: [{ name: "dealId", type: "uint256" }],
+          outputs: [{ type: "uint64" }],
         },
         {
           type: "function",
@@ -687,9 +764,23 @@
         "Delivered",
         "Disputed",
         "Settled",
+        "Disputing",
       ];
       const CASE_STATUS = ["None", "Pending", "Ruled", "Final", "Errored"];
       const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
+
+      const REGISTRY_ABI = [
+        {
+          type: "function",
+          name: "record",
+          stateMutability: "nonpayable",
+          inputs: [
+            { name: "caseId", type: "uint256" },
+            { name: "topic", type: "bytes32" },
+          ],
+          outputs: [],
+        },
+      ];
 
       const $ = (id) => document.getElementById(id);
 
@@ -698,6 +789,7 @@
           rpc: SHANNON.rpc,
           court: DEPLOYED.court,
           escrow: DEPLOYED.escrow,
+          registry: DEPLOYED.registry,
         },
         account: null,
         chainId: null,
@@ -751,7 +843,7 @@
           return toast("court: invalid address", "err");
         if (escrow && !isAddress(escrow))
           return toast("escrow: invalid address", "err");
-        state.cfg = { rpc, court, escrow };
+        state.cfg = { rpc, court, escrow, registry: state.cfg.registry };
         localStorage.setItem(NS, JSON.stringify(state.cfg));
         rebuildClients();
         loadPending();
@@ -1126,6 +1218,13 @@
         );
         $("disputeBox").classList.add("hidden");
 
+        // Two-sided dispute in progress: both parties submit statements before the panel rules.
+        if (d.status === 5) {
+          await renderDisputing();
+        } else {
+          $("disputingBox").classList.add("hidden");
+        }
+
         // Appeal: case must exist + Ruled + appeal window open + caller eligible.
         let canAppeal = false;
         if (
@@ -1212,25 +1311,101 @@
         }
       }
 
-      async function showDispute() {
+      function showDispute() {
         $("disputeBox").classList.remove("hidden");
-        try {
-          const fee = await state.publicClient.readContract({
-            address: state.cfg.court,
-            abi: COURT_ABI,
-            functionName: "quoteOpen",
-          });
-          $("disputeFee").textContent = `fee: ${formatEther(fee)} STT`;
-        } catch (e) {
-          $("disputeFee").textContent = `fee quote failed: ${errMsg(e)}`;
-        }
+        $("disputeFee").textContent =
+          "the counterparty can respond before the jury is convened";
       }
 
-      async function submitDispute() {
+      async function openDisputeHandler() {
         const d = state.currentDeal;
         if (!d) return;
         const evidence = $("disputeEvidence").value;
-        if (!evidence.trim()) return toast("evidence required", "err");
+        if (!evidence.trim()) return toast("your statement is required", "err");
+        const r = await sendTx({
+          address: state.cfg.escrow,
+          abi: ESCROW_ABI,
+          functionName: "openDispute",
+          args: [d.id, evidence],
+        });
+        if (r) {
+          $("disputeEvidence").value = "";
+          await loadDeal();
+        }
+      }
+
+      async function submitStatement() {
+        const d = state.currentDeal;
+        if (!d) return;
+        const evidence = $("dpEvidence").value;
+        if (!evidence.trim()) return toast("your statement is required", "err");
+        const r = await sendTx({
+          address: state.cfg.escrow,
+          abi: ESCROW_ABI,
+          functionName: "submitEvidence",
+          args: [d.id, evidence],
+        });
+        if (r) {
+          $("dpEvidence").value = "";
+          await loadDeal();
+        }
+      }
+
+      async function renderDisputing() {
+        const d = state.currentDeal;
+        $("disputingBox").classList.remove("hidden");
+        let deadline = 0n;
+        let payerStmt = "";
+        let payeeStmt = "";
+        try {
+          [deadline, payerStmt, payeeStmt] = await Promise.all([
+            state.publicClient.readContract({
+              address: state.cfg.escrow,
+              abi: ESCROW_ABI,
+              functionName: "responseDeadline",
+              args: [d.id],
+            }),
+            state.publicClient.readContract({
+              address: state.cfg.escrow,
+              abi: ESCROW_ABI,
+              functionName: "statementOf",
+              args: [d.id, d.payer],
+            }),
+            state.publicClient.readContract({
+              address: state.cfg.escrow,
+              abi: ESCROW_ABI,
+              functionName: "statementOf",
+              args: [d.id, d.payee],
+            }),
+          ]);
+        } catch (e) {
+          $("conveneHint").textContent = `load failed: ${errMsg(e)}`;
+        }
+        const now = BigInt(Math.floor(Date.now() / 1000));
+        const windowOpen = now < deadline;
+        $("dpDeadline").textContent = windowOpen
+          ? `open until ${fmtDate(deadline)}`
+          : "closed — ready to convene";
+        $("dpPayerStmt").textContent = payerStmt || "(no statement yet)";
+        $("dpPayeeStmt").textContent = payeeStmt || "(no statement yet)";
+
+        const isParty =
+          sameAddr(state.account, d.payer) || sameAddr(state.account, d.payee);
+        const bothSpoke = !!payerStmt && !!payeeStmt;
+        $("dpRespondWrap").classList.toggle("hidden", !(isParty && windowOpen));
+        const canConvene = isParty && (bothSpoke || !windowOpen);
+        $("conveneBtn").classList.toggle("hidden", !isParty);
+        $("conveneBtn").disabled = !canConvene;
+        $("conveneHint").textContent = canConvene
+          ? "both sides on record — open the jury"
+          : windowOpen
+            ? "waiting for the counterparty (or for the window to close)"
+            : "";
+      }
+
+      async function conveneCase() {
+        const d = state.currentDeal;
+        if (!d) return;
         // Pre-flight: request the largest jury panel the validator set can currently field.
         // Somnia reverts 0x8f4079ff(available, requested) when fewer validators are online
         // than requested, so step down 5 -> 4 -> 3 until a panel simulates cleanly.
@@ -1248,8 +1423,8 @@
             await state.publicClient.simulateContract({
               address: state.cfg.escrow,
               abi: ESCROW_ABI,
-              functionName: "dispute",
-              args: [d.id, evidence, p],
+              functionName: "convene",
+              args: [d.id, p],
               value: q,
               account: state.account,
             });
@@ -1260,18 +1435,18 @@
             const s = `${e?.cause?.data ?? ""} ${errMsg(e)}`;
             if (s.includes("8f4079ff")) continue; // not enough validators for this panel size
             probe.remove();
-            return toast(`dispute: ${errMsg(e)}`, "err"); // real error, not a validator shortage
+            return toast(`convene: ${errMsg(e)}`, "err"); // real error, not a validator shortage
           }
         }
         probe.remove();
         if (panel === null)
           return toast("not enough validators online for a panel (min 3) — try again shortly", "err");
-        toast(`disputing with a ${panel}-agent panel…`, "info", 6000);
+        toast(`convening a ${panel}-agent panel…`, "info", 6000);
         const r = await sendTx({
           address: state.cfg.escrow,
           abi: ESCROW_ABI,
-          functionName: "dispute",
-          args: [d.id, evidence, panel],
+          functionName: "convene",
+          args: [d.id, panel],
           value: fee,
         });
         if (r) {
@@ -1433,6 +1608,15 @@
           args: [caseId],
         });
         if (r) {
+          // Record the finalized case as on-chain precedent so it appears in caselaw/explorer.
+          if (state.cfg.registry) {
+            await sendTx({
+              address: state.cfg.registry,
+              abi: REGISTRY_ABI,
+              functionName: "record",
+              args: [caseId, RECORD_TOPIC],
+            });
+          }
           await loadCase();
           if ($("dealIdInput").value.trim()) await loadDeal();
           await loadPending();
@@ -1450,7 +1634,9 @@
       $("markDeliveredBtn").addEventListener("click", markDelivered);
       $("releaseBtn").addEventListener("click", release);
       $("showDisputeBtn").addEventListener("click", showDispute);
-      $("disputeBtn").addEventListener("click", submitDispute);
+      $("openDisputeBtn").addEventListener("click", openDisputeHandler);
+      $("submitEvidenceBtn").addEventListener("click", submitStatement);
+      $("conveneBtn").addEventListener("click", conveneCase);
       $("showAppealBtn").addEventListener("click", showAppeal);
       $("appealBtn").addEventListener("click", submitAppeal);
       $("loadCaseBtn").addEventListener("click", loadCase);
