@@ -114,6 +114,19 @@ contract VerdiktEscrowTest is Test {
         assertEq(escrow.pending(payee), 0.5 ether);
     }
 
+    function test_dispute_withTrialPanel_resolves() public {
+        uint256 dealId = _newDeal();
+        uint256 fee = court.quoteOpen(3); // smaller panel when fewer validators are online
+        vm.prank(payer);
+        escrow.dispute{value: fee}(dealId, "never received anything", 3);
+        platform.fireSuccess(_lastReq(), "PAYER");
+
+        uint256 caseId = _caseId(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+        _assertWithdraw(payer, 1 ether);
+    }
+
     function test_appeal_upheld_slashesStake() public {
         uint256 dealId = _newDeal();
         _dispute(dealId, payer, "ev0");
