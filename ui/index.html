@@ -350,6 +350,10 @@
             <div class="k">Case ID</div>
             <div class="v" id="dvCaseId"></div>
           </div>
+          <div id="verifiedFacts" style="margin-top: 12px">
+            <div class="muted">Verified facts on record</div>
+            <div class="v" id="vfBody">none yet</div>
+          </div>
           <div class="row">
             <button id="markDeliveredBtn" class="ghost hidden">
               Mark delivered
@@ -509,9 +513,10 @@
       // Live Shannon deployment (see deployments/shannon.json). Pre-fills the config so the demo
       // works out of the box; the user can still override in the Config panel.
       const DEPLOYED = {
-        court: "0x884646F61229350De74FbFAB1308DE02c5A57c77",
-        escrow: "0xbe5EF49990beD67E3Fb45d91b7d83Ec8b2b6A73B",
-        registry: "0xb9bB00bAC4bdE40f736A5f878f30bfE0487DE768",
+        court: "0xeBbA8b849343150e994BEE34778D4D8D38941eDE",
+        escrow: "0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d",
+        registry: "0xd1e91c0167a3F5a5aC0F61f86E3883921610261E",
+        attestation: "0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1",
       };
       // topic under which a finalized case is recorded as precedent
       const RECORD_TOPIC = keccak256(stringToHex("verdikt/escrow/dispute"));
@@ -782,6 +787,26 @@
         },
       ];
 
+      const ATTESTATION_ABI = [
+        {
+          type: "function",
+          name: "subjectFor",
+          stateMutability: "view",
+          inputs: [
+            { name: "consumer", type: "address" },
+            { name: "escrowRef", type: "uint256" },
+          ],
+          outputs: [{ type: "bytes32" }],
+        },
+        {
+          type: "function",
+          name: "factsFor",
+          stateMutability: "view",
+          inputs: [{ name: "subject", type: "bytes32" }],
+          outputs: [{ type: "string" }],
+        },
+      ];
+
       const $ = (id) => document.getElementById(id);
 
       const state = {
@@ -790,6 +815,7 @@
           court: DEPLOYED.court,
           escrow: DEPLOYED.escrow,
           registry: DEPLOYED.registry,
+          attestation: DEPLOYED.attestation,
         },
         account: null,
         chainId: null,
@@ -843,7 +869,7 @@
           return toast("court: invalid address", "err");
         if (escrow && !isAddress(escrow))
           return toast("escrow: invalid address", "err");
-        state.cfg = { rpc, court, escrow, registry: state.cfg.registry };
+        state.cfg = { rpc, court, escrow, registry: state.cfg.registry, attestation: state.cfg.attestation };
         localStorage.setItem(NS, JSON.stringify(state.cfg));
         rebuildClients();
         loadPending();
@@ -1194,6 +1220,27 @@
           `<span class="badge">${DEAL_STATUS[d.status]}</span>`;
         $("dvCaseId").textContent =
           d.caseId.toString() === "0" ? "—" : d.caseId.toString();
+
+        // Verified facts on record: the Court weighs facts attested in the AttestationRegistry.
+        // Read-only — a missing registry must never break deal loading.
+        let facts = "";
+        if (state.cfg.attestation && state.cfg.escrow) {
+          try {
+            const subject = await state.publicClient.readContract({
+              address: state.cfg.attestation,
+              abi: ATTESTATION_ABI,
+              functionName: "subjectFor",
+              args: [state.cfg.escrow, d.id],
+            });
+            facts = await state.publicClient.readContract({
+              address: state.cfg.attestation,
+              abi: ATTESTATION_ABI,
+              functionName: "factsFor",
+              args: [subject],
+            });
+          } catch {}
+        }
+        $("vfBody").textContent = facts && facts.trim() ? facts : "none yet";
 
         const me = state.account;
         const now = BigInt(Math.floor(Date.now() / 1000));
