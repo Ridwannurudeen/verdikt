@@ -74,6 +74,13 @@ The hardened stack is deployed live as **v4** (see `deployments/shannon.json`).
 - **Reference examples** (`SimpleEscrow`, `VerdiktPredictionMarket`, `VerdiktConsumerBase`) are teaching
   integrations — tested, not production-audited.
 
+## Known limitations / accuracy
+
+- See [`ACCURACY.md`](ACCURACY.md) for the honest accuracy treatment (92% agreement / 100%
+  byte-identical convergence on 12 curated disputes, the one divergent case, the real-money
+  error risk, and the appeal / abstention / human-escalation mitigations), and
+  [`TRUST-MODEL.md`](TRUST-MODEL.md) for the determinism dependency on Somnia's validator LLM.
+
 ## Remaining Production Work
 
 - Run an external audit + a bug bounty before mainnet.
