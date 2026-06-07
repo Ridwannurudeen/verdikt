@@ -117,15 +117,32 @@ contract VerdiktEscrow is IVerdiktConsumer {
     // --- dispute + appeal -----------------------------------------------------
 
     function dispute(uint256 dealId, string calldata evidence) external payable {
-        Deal storage d = deals[dealId];
-        require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
-        require(d.status == DealStatus.Funded || d.status == DealStatus.Delivered, "bad status");
+        Deal storage d = _checkDisputable(dealId);
         uint256 fee = court.quoteOpen();
         require(msg.value >= fee, "fee too low");
-
         d.status = DealStatus.Disputed;
-        uint256 caseId = court.openCase{value: fee}(dealId, evidence);
-        d.caseId = caseId;
+        _recordCase(dealId, court.openCase{value: fee}(dealId, evidence), fee);
+    }
+
+    /// @notice Dispute requesting a specific trial panel size (MIN_TRIAL_PANEL..MAX_TRIAL_PANEL).
+    /// Lets the caller pick the largest panel the validator set can currently field, so a dispute
+    /// can still proceed when the network has fewer than the default validators online.
+    function dispute(uint256 dealId, string calldata evidence, uint8 trialPanel) external payable {
+        Deal storage d = _checkDisputable(dealId);
+        uint256 fee = court.quoteOpen(trialPanel);
+        require(msg.value >= fee, "fee too low");
+        d.status = DealStatus.Disputed;
+        _recordCase(dealId, court.openCase{value: fee}(dealId, evidence, trialPanel), fee);
+    }
+
+    function _checkDisputable(uint256 dealId) internal view returns (Deal storage d) {
+        d = deals[dealId];
+        require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
+        require(d.status == DealStatus.Funded || d.status == DealStatus.Delivered, "bad status");
+    }
+
+    function _recordCase(uint256 dealId, uint256 caseId, uint256 fee) internal {
+        deals[dealId].caseId = caseId;
         caseToDeal[caseId] = dealId;
         _refundExcess(msg.value, fee);
         emit Disputed(dealId, caseId, msg.sender);

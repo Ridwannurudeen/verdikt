@@ -482,8 +482,8 @@
       // Live Shannon deployment (see deployments/shannon.json). Pre-fills the config so the demo
       // works out of the box; the user can still override in the Config panel.
       const DEPLOYED = {
-        court: "0x8f2a01D63D3fC0216321970510D0dDFFe9693199",
-        escrow: "0x000c7dc06aD2664295F181EA2CE119F4c7F902e0",
+        court: "0x884646F61229350De74FbFAB1308DE02c5A57c77",
+        escrow: "0xb5209372462fca2592968a0a9e8F8fC67256129E",
       };
 
       const ESCROW_ABI = [
@@ -518,6 +518,17 @@
           inputs: [
             { name: "dealId", type: "uint256" },
             { name: "evidence", type: "string" },
+          ],
+          outputs: [],
+        },
+        {
+          type: "function",
+          name: "dispute",
+          stateMutability: "payable",
+          inputs: [
+            { name: "dealId", type: "uint256" },
+            { name: "evidence", type: "string" },
+            { name: "trialPanel", type: "uint8" },
           ],
           outputs: [],
         },
@@ -597,6 +608,13 @@
           name: "quoteOpen",
           stateMutability: "view",
           inputs: [],
+          outputs: [{ type: "uint256" }],
+        },
+        {
+          type: "function",
+          name: "quoteOpen",
+          stateMutability: "view",
+          inputs: [{ name: "trialPanel", type: "uint8" }],
           outputs: [{ type: "uint256" }],
         },
         {
@@ -1213,21 +1231,47 @@
         if (!d) return;
         const evidence = $("disputeEvidence").value;
         if (!evidence.trim()) return toast("evidence required", "err");
+        // Pre-flight: request the largest jury panel the validator set can currently field.
+        // Somnia reverts 0x8f4079ff(available, requested) when fewer validators are online
+        // than requested, so step down 5 -> 4 -> 3 until a panel simulates cleanly.
+        const probe = toast("checking validator availability…", "info", 20000);
+        let panel = null;
         let fee;
-        try {
-          fee = await state.publicClient.readContract({
-            address: state.cfg.court,
-            abi: COURT_ABI,
-            functionName: "quoteOpen",
-          });
-        } catch (e) {
-          return toast(`quote: ${errMsg(e)}`, "err");
+        for (let p = 5; p >= 3; p--) {
+          try {
+            const q = await state.publicClient.readContract({
+              address: state.cfg.court,
+              abi: COURT_ABI,
+              functionName: "quoteOpen",
+              args: [p],
+            });
+            await state.publicClient.simulateContract({
+              address: state.cfg.escrow,
+              abi: ESCROW_ABI,
+              functionName: "dispute",
+              args: [d.id, evidence, p],
+              value: q,
+              account: state.account,
+            });
+            panel = p;
+            fee = q;
+            break;
+          } catch (e) {
+            const s = `${e?.cause?.data ?? ""} ${errMsg(e)}`;
+            if (s.includes("8f4079ff")) continue; // not enough validators for this panel size
+            probe.remove();
+            return toast(`dispute: ${errMsg(e)}`, "err"); // real error, not a validator shortage
+          }
         }
+        probe.remove();
+        if (panel === null)
+          return toast("not enough validators online for a panel (min 3) — try again shortly", "err");
+        toast(`disputing with a ${panel}-agent panel…`, "info", 6000);
         const r = await sendTx({
           address: state.cfg.escrow,
           abi: ESCROW_ABI,
           functionName: "dispute",
-          args: [d.id, evidence],
+          args: [d.id, evidence, panel],
           value: fee,
         });
         if (r) {
