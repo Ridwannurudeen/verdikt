@@ -127,6 +127,55 @@ contract VerdiktEscrowTest is Test {
         _assertWithdraw(payer, 1 ether);
     }
 
+    function test_twoSided_bothSpeak_resolves() public {
+        uint256 dealId = _newDeal();
+        vm.prank(payer);
+        escrow.openDispute(dealId, "buyer: never received the item");
+        vm.prank(payee);
+        escrow.submitEvidence(dealId, "seller: shipped with tracking, delivered on time");
+        // both spoke -> convene immediately, no need to wait for the window
+        uint256 fee = court.quoteOpen(3);
+        vm.prank(payer);
+        escrow.convene{value: fee}(dealId, 3);
+        platform.fireSuccess(_lastReq(), "PAYEE");
+
+        uint256 caseId = _caseId(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+        _assertWithdraw(payee, 1 ether);
+    }
+
+    function test_twoSided_silentCounterparty_convenesAfterWindow() public {
+        uint256 dealId = _newDeal();
+        vm.prank(payer);
+        escrow.openDispute(dealId, "buyer: never received anything");
+        uint256 fee = court.quoteOpen(3);
+        // cannot convene while the response window is open and the counterparty hasn't spoken
+        vm.prank(payer);
+        vm.expectRevert("window open");
+        escrow.convene{value: fee}(dealId, 3);
+        // after the window elapses, convene proceeds with the silent party's "(no statement)"
+        vm.warp(block.timestamp + escrow.responseWindow() + 1);
+        vm.prank(payer);
+        escrow.convene{value: fee}(dealId, 3);
+        platform.fireSuccess(_lastReq(), "PAYER");
+
+        uint256 caseId = _caseId(dealId);
+        vm.warp(block.timestamp + court.appealWindow() + 1);
+        court.finalize(caseId);
+        _assertWithdraw(payer, 1 ether);
+    }
+
+    function test_twoSided_submitEvidence_afterWindow_reverts() public {
+        uint256 dealId = _newDeal();
+        vm.prank(payer);
+        escrow.openDispute(dealId, "x");
+        vm.warp(block.timestamp + escrow.responseWindow() + 1);
+        vm.prank(payee);
+        vm.expectRevert("window closed");
+        escrow.submitEvidence(dealId, "too late");
+    }
+
     function test_appeal_upheld_slashesStake() public {
         uint256 dealId = _newDeal();
         _dispute(dealId, payer, "ev0");

@@ -116,24 +116,28 @@
     "label": "Two-party escrow demo (/app/) with adaptive trial-panel dispute",
     "deployedAt": "2026-06-07",
     "deployMethod": "forge create --broadcast (--gas-limit 120M court / 60M escrow)",
-    "note": "Fresh VerdiktEscrow + VerdiktCourt for the interactive escrow demo. VerdiktEscrow gained a dispute(dealId, evidence, uint8 trialPanel) overload so the demo frontend can pre-flight validator availability and dispute at the largest feasible panel (5 -> 4 -> 3), instead of the old hardcoded panel-5 that reverted 0x8f4079ff when Shannon floats below 5 validators. The /app/ demo DEPLOYED const points HERE; courtroom/explorer/caselaw still read the v4 stack (their richer graded SPLIT75 precedent). This Court is not wired to a Registry, so live demo disputes do not appear in Explorer/Caselaw by design.",
+    "note": "Interactive escrow demo (/app/) on an adaptive-panel + two-sided-evidence stack. VerdiktEscrow has (a) dispute(dealId,evidence,uint8 trialPanel) for adaptive panels (5->4->3 pre-flight, avoids 0x8f4079ff when Shannon floats below 5 validators), and (b) a two-phase dispute: openDispute(evidence) -> submitEvidence(evidence) [counterparty] -> convene(trialPanel) so BOTH parties' statements are weighed before the panel rules (can't be stonewalled: convene allowed once both spoke or the responseWindow elapses). A VerdiktRegistry bound to this Court is deployed; the demo records each finalized case so it appears in caselaw/explorer (those repointed to this registry). Courtroom still replays the v4 graded SPLIT75 case directly from the v4 court.",
     "contracts": {
       "VerdiktCourt": "0x884646F61229350De74FbFAB1308DE02c5A57c77",
-      "VerdiktEscrow": "0xb5209372462fca2592968a0a9e8F8fC67256129E"
+      "VerdiktEscrow": "0xbe5EF49990beD67E3Fb45d91b7d83Ec8b2b6A73B",
+      "VerdiktRegistry": "0xb9bB00bAC4bdE40f736A5f878f30bfE0487DE768"
     },
     "config": {
       "gradedSplit": false,
       "allowAbstention": false,
       "appealWindow": "60s (demo)",
+      "responseWindow": "120s (demo)",
       "trialPanelRange": "[3,5]",
       "quoteOpen": "panel 3/4/5 = 0.24/0.32/0.40 STT"
     },
     "liveState": {
-      "case": "deal #1 (0.01 STT), payer vs payee 0x3333...; evidence: seller never delivered.",
-      "panel": "Frontend pre-flight chose 4 (5 unavailable, available=4); byte-identical PAYER.",
-      "verdict": "PAYER (refund the buyer) — case 1 FINAL, deal SETTLED via pull-payment, payer withdrew 0.01 STT.",
-      "wiringVerified": "Escrow.court -> this Court; appealWindow=60; gradedSplit=false; MIN/MAX panel 3/5."
-    }
+      "case": "deal #1 (0.01 STT). Buyer(payer) opened claiming non-delivery; Seller(payee) responded with shipped+delivered+tracking. Both statements on record.",
+      "panel": "convene pre-flight chose panel 4 (5 unavailable); panel weighed BOTH statements.",
+      "verdict": "PAYEE (seller wins) — the disputer did NOT auto-win; case 3 FINAL, payee credited 0.01 STT, recorded as precedent (registry rulingsCount=1).",
+      "wiringVerified": "Escrow.court + Registry.court -> this Court; appealWindow=60; responseWindow=120; gradedSplit=false; MIN/MAX panel 3/5."
+    },
+    "supersedes": "Earlier same-day adaptive-only escrow 0xb5209372462fca2592968a0a9e8F8fC67256129E (no two-sided evidence, no registry) — no longer referenced by the UI.",
+    "twoSidedShippedAt": "2026-06-07"
   },
   "abstentionGate": {
     "probe": "0x7959C74608941cB02A0af3A63af79fBB68B09011",
