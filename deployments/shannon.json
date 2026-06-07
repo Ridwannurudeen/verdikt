@@ -139,6 +139,32 @@
     "supersedes": "Earlier same-day adaptive-only escrow 0xb5209372462fca2592968a0a9e8F8fC67256129E (no two-sided evidence, no registry) — no longer referenced by the UI.",
     "twoSidedShippedAt": "2026-06-07"
   },
+  "premiumStack": {
+    "label": "Consolidated premium stack: model-pinned Court + verifiable-evidence (attestation) + abstention + two-sided escrow + precedent registry",
+    "deployedAt": "2026-06-07",
+    "note": "The /app/ demo + courtroom/caselaw/explorer point HERE. Brings together every Tier-1/2 hardening on one coherent stack: (1) MODEL-VERSION PINNING — Court snapshots agentId per case (c.modelId), dispatch uses the snapshot, modelOf(caseId) exposes it, setAgentId emits AgentIdChanged + only affects new cases; (2) VERIFIABLE EVIDENCE AS DEFAULT — VerdiktAttestationRegistry wired via court.setAttestationRegistry; a registered 'Courier-Oracle' attestor posts VERIFIED facts that _buildPayload prepends ABOVE the parties' untrusted claims; (3) ABSTENTION enabled (allowAbstention=true); (4) two-sided evidence escrow (openDispute/submitEvidence/convene); (5) adaptive trial panel 3-5. Supersedes the adaptiveDemo stack (court 0x884646).",
+    "contracts": {
+      "VerdiktCourt": "0xeBbA8b849343150e994BEE34778D4D8D38941eDE",
+      "VerdiktEscrow": "0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d",
+      "VerdiktRegistry": "0xd1e91c0167a3F5a5aC0F61f86E3883921610261E",
+      "VerdiktAttestationRegistry": "0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1"
+    },
+    "config": {
+      "gradedSplit": false,
+      "allowAbstention": true,
+      "attestationRegistry": "wired (court.setAttestationRegistry)",
+      "attestor": "deployer registered as 'Courier-Oracle'",
+      "appealWindow": "60s (demo)",
+      "responseWindow": "1800s (demo)",
+      "trialPanelRange": "[3,5]"
+    },
+    "liveProof": {
+      "case": "deal #1 (0.01 STT). Courier-Oracle attested 'parcel delivered & signed before deadline'; buyer(payer) disputed with a FALSE 'never received' claim.",
+      "panel": "adaptive chose 4 (5 unavailable).",
+      "verdict": "PAYEE (seller wins) — the panel weighed the VERIFIED fact OVER the false claim; verifiable-evidence-as-default proven. case 1 FINAL, payee credited 0.01, recorded (registry rulingsCount=1).",
+      "modelPinned": "modelOf(case 1) = 12847293847561029384 (the agent/model that decided it, recorded on-chain)."
+    }
+  },
   "abstentionGate": {
     "probe": "0x7959C74608941cB02A0af3A63af79fBB68B09011",
     "result": "PASS",
