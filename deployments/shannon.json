@@ -165,6 +165,17 @@
       "modelPinned": "modelOf(case 1) = 12847293847561029384 (the agent/model that decided it, recorded on-chain)."
     }
   },
+  "serviceSLA": {
+    "label": "Reference integration ('first user'): ServiceSLA — an SLA-breach arbiter on VerdiktConsumerBase",
+    "deployedAt": "2026-06-07",
+    "note": "src/examples/ServiceSLA.sol, ~60 lines on VerdiktConsumerBase, deployed on the premiumStack court. Demonstrates 'judgment as an oracle' for autonomous services and gives the precedent ledger real diverse volume. REFERENCE DEPLOYMENT (self-driven, not an external customer) — see CASE-STUDY.md. Uses single-shot dispute (production should use the two-sided VerdiktEscrow pattern).",
+    "contract": "0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9",
+    "liveCases": {
+      "runA_unverified": "agreement #1 -> court case 2: client's UNVERIFIED breach claim -> panel-4 UNDECIDABLE (abstained) -> safe-default refund to client. Demonstrates abstention as a confidence gate.",
+      "runB_attested": "agreement #2 -> court case 3: a registered oracle attested the outage (6h12m, 97.1% vs 99.9% SLA) -> panel-4 PAYER (decisive breach) -> client refunded. Demonstrates verifiable-evidence turning abstention into a confident verdict.",
+      "ledger": "registry rulingsCount=3 across 2 consumer apps (escrow case1 PAYEE + SLA case2 UNDECIDABLE + SLA case3 PAYER), spanning verifiable-evidence, abstention, and model-pinning."
+    }
+  },
   "abstentionGate": {
     "probe": "0x7959C74608941cB02A0af3A63af79fBB68B09011",
     "result": "PASS",
