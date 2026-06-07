@@ -1397,9 +1397,9 @@
         $("conveneBtn").classList.toggle("hidden", !isParty);
         $("conveneBtn").disabled = !canConvene;
         $("conveneHint").textContent = canConvene
-          ? "both sides on record — open the jury"
+          ? "ready — convene now (no need to wait for the window once both sides have submitted)"
           : windowOpen
-            ? "waiting for the counterparty (or for the window to close)"
+            ? "waiting for the counterparty — or convene once the window closes"
             : "";
       }
 
