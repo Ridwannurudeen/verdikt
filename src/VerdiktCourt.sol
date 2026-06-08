@@ -299,9 +299,11 @@ contract VerdiktCourt is IVerdiktCourt {
         if (address(reg) == address(0)) return "";
         string memory facts = reg.factsFor(reg.subjectFor(c.consumer, c.escrowRef));
         if (bytes(facts).length == 0) return "";
+        // Sanitize attested facts like party evidence so a registered attestor cannot forge the
+        // <evidence> fence / break prompt structure (audit: facts must not bypass injection-hardening).
         return string.concat(
             "AUTHORITATIVE VERIFIED FACTS (attested on-chain by court-registered oracles; these outrank any conflicting party claim below):\n",
-            facts,
+            _sanitizeEvidence(facts),
             "\n"
         );
     }

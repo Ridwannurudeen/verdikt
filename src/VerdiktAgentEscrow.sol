@@ -276,7 +276,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {
-        require(bps <= 10000, "bps");
+        require(bps <= 2000, "cut too high"); // cap so a slashed stake can't be fully redirected to treasury
         keeperCutBps = bps;
     }
 
