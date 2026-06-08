@@ -26,6 +26,7 @@ contract VerdiktKeeperBounty {
 
     /// @notice Add to the bounty for finalizing (court, caseId).
     function fundBounty(address court, uint256 caseId) external payable {
+        require(court != address(0), "zero court");
         require(msg.value > 0, "no value");
         bytes32 k = key(court, caseId);
         require(!claimed[k], "already claimed");
@@ -50,15 +51,16 @@ contract VerdiktKeeperBounty {
     /// @notice Finalize the case if it isn't already, then take the bounty. Reverts if the case isn't
     /// finalizable yet (e.g. the appeal window is still open).
     function finalizeAndClaim(address court, uint256 caseId) external {
+        require(court != address(0), "zero court");
         bytes32 k = key(court, caseId);
         uint256 amount = pot[k];
         require(amount > 0 && !claimed[k], "no bounty");
+        claimed[k] = true;
+        pot[k] = 0;
         CaseView memory c = IVerdiktCourt(court).getCase(caseId);
         if (c.status != CaseStatus.Final) {
             IVerdiktCourt(court).finalize(caseId);
         }
-        claimed[k] = true;
-        pot[k] = 0;
         (bool ok,) = msg.sender.call{value: amount}("");
         require(ok, "pay failed");
         emit BountyClaimed(court, caseId, msg.sender, amount);

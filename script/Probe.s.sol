@@ -300,7 +300,7 @@ contract InjectionProbeDeploy is Script {
 }
 
 /// @title AbstentionProbe
-/// @notice Validates abstention LIVE: replicates the v4 Court's graded+abstention payload (6 labels
+/// @notice Validates abstention LIVE: replicates the hardened graded+abstention payload (6 labels
 /// PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE/UNDECIDABLE with the hardened prompt). Fire a clear case (expect a
 /// decisive verdict, NOT abstention) and a genuinely insufficient one (expect UNDECIDABLE) — both must
 /// converge byte-identically before enabling allowAbstention on the live Court.

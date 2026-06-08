@@ -51,6 +51,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToDeal;
     /// @notice pull-payment ledger: settled value waiting for its owner to withdraw.
     mapping(address => uint256) public pending;
+    bool private _entered;
 
     /// @dev window (seconds) after a dispute is opened during which the counterparty may submit a statement.
     uint64 public responseWindow = 1 hours;
@@ -75,6 +76,13 @@ contract VerdiktEscrow is IVerdiktConsumer {
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
         _;
+    }
+
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
     }
 
     constructor(address court_, address treasury_) {
@@ -126,23 +134,25 @@ contract VerdiktEscrow is IVerdiktConsumer {
 
     // --- dispute + appeal -----------------------------------------------------
 
-    function dispute(uint256 dealId, string calldata evidence) external payable {
+    function dispute(uint256 dealId, string calldata evidence) external payable nonReentrant {
         Deal storage d = _checkDisputable(dealId);
         uint256 fee = court.quoteOpen();
         require(msg.value >= fee, "fee too low");
         d.status = DealStatus.Disputed;
-        _recordCase(dealId, court.openCase{value: fee}(dealId, evidence), fee);
+        _refundExcess(msg.value, fee);
+        _recordCase(dealId, court.openCase{value: fee}(dealId, evidence));
     }
 
     /// @notice Dispute requesting a specific trial panel size (MIN_TRIAL_PANEL..MAX_TRIAL_PANEL).
     /// Lets the caller pick the largest panel the validator set can currently field, so a dispute
     /// can still proceed when the network has fewer than the default validators online.
-    function dispute(uint256 dealId, string calldata evidence, uint8 trialPanel) external payable {
+    function dispute(uint256 dealId, string calldata evidence, uint8 trialPanel) external payable nonReentrant {
         Deal storage d = _checkDisputable(dealId);
         uint256 fee = court.quoteOpen(trialPanel);
         require(msg.value >= fee, "fee too low");
         d.status = DealStatus.Disputed;
-        _recordCase(dealId, court.openCase{value: fee}(dealId, evidence, trialPanel), fee);
+        _refundExcess(msg.value, fee);
+        _recordCase(dealId, court.openCase{value: fee}(dealId, evidence, trialPanel));
     }
 
     function _checkDisputable(uint256 dealId) internal view returns (Deal storage d) {
@@ -151,10 +161,9 @@ contract VerdiktEscrow is IVerdiktConsumer {
         require(d.status == DealStatus.Funded || d.status == DealStatus.Delivered, "bad status");
     }
 
-    function _recordCase(uint256 dealId, uint256 caseId, uint256 fee) internal {
+    function _recordCase(uint256 dealId, uint256 caseId) internal {
         deals[dealId].caseId = caseId;
         caseToDeal[caseId] = dealId;
-        _refundExcess(msg.value, fee);
         emit Disputed(dealId, caseId, msg.sender);
     }
 
@@ -186,7 +195,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
 
     /// @notice Convene the AI panel on BOTH parties' statements. Callable once the response window
     /// has elapsed or both parties have spoken, so a silent counterparty cannot stall settlement.
-    function convene(uint256 dealId, uint8 trialPanel) external payable {
+    function convene(uint256 dealId, uint8 trialPanel) external payable nonReentrant {
         Deal storage d = deals[dealId];
         require(d.status == DealStatus.Disputing, "not disputing");
         require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
@@ -196,7 +205,8 @@ contract VerdiktEscrow is IVerdiktConsumer {
         uint256 fee = court.quoteOpen(trialPanel);
         require(msg.value >= fee, "fee too low");
         d.status = DealStatus.Disputed;
-        _recordCase(dealId, court.openCase{value: fee}(dealId, _combinedStatement(dealId, d), trialPanel), fee);
+        _refundExcess(msg.value, fee);
+        _recordCase(dealId, court.openCase{value: fee}(dealId, _combinedStatement(dealId, d), trialPanel));
     }
 
     function _combinedStatement(uint256 dealId, Deal storage d) internal view returns (string memory) {
@@ -204,13 +214,13 @@ contract VerdiktEscrow is IVerdiktConsumer {
         string memory ye = statementOf[dealId][d.payee];
         if (bytes(pe).length == 0) pe = "(no statement submitted)";
         if (bytes(ye).length == 0) ye = "(no statement submitted)";
-        // Clean each statement so it can't forge the section headers and spoof the counterparty
-        // (audit: label injection in the two-sided combined statement).
+        // Clean each party's statement so it cannot forge the section headers and spoof the
+        // counterparty's submission (audit: label injection in the two-sided combined statement).
         return string.concat("BUYER (payer) states:\n", _clean(pe), "\n\nSELLER (payee) states:\n", _clean(ye));
     }
 
-    /// @dev Neutralize newlines and angle brackets so a statement can't inject a fake
-    /// "BUYER/SELLER states:" header (or the court's evidence fence). Deterministic.
+    /// @dev Neutralize newlines and angle brackets in a party statement so it cannot inject a fake
+    /// "SELLER/BUYER states:" header line (or the court's evidence fence). Deterministic.
     function _clean(string memory s) internal pure returns (string memory) {
         bytes memory b = bytes(s);
         for (uint256 i; i < b.length; i++) {
@@ -220,7 +230,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
         return string(b);
     }
 
-    function appeal(uint256 dealId, string calldata newEvidence) external payable {
+    function appeal(uint256 dealId, string calldata newEvidence) external payable nonReentrant {
         Deal storage d = deals[dealId];
         require(d.status == DealStatus.Disputed, "not disputed");
         require(!appeals[dealId].active, "already appealed");
@@ -248,14 +258,14 @@ contract VerdiktEscrow is IVerdiktConsumer {
             active: true
         });
 
-        court.appeal{value: agentDep}(d.caseId, newEvidence);
         _refundExcess(msg.value, stake + agentDep);
+        court.appeal{value: agentDep}(d.caseId, newEvidence);
         emit AppealFiled(dealId, msg.sender, stake, cv.verdict);
     }
 
     // --- court callback -------------------------------------------------------
 
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
+    function onVerdict(uint256 escrowRef, Verdict verdict) external override nonReentrant {
         require(msg.sender == address(court), "only court");
         Deal storage d = deals[escrowRef];
         require(d.status == DealStatus.Disputed, "not disputed");
@@ -289,7 +299,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
 
     // --- pull payments --------------------------------------------------------
 
-    function withdraw() external returns (uint256 amount) {
+    function withdraw() external nonReentrant returns (uint256 amount) {
         amount = pending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pending[msg.sender] = 0;
@@ -354,7 +364,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {
-        require(bps <= 2000, "cut too high"); // cap so a slashed stake can't be fully redirected to treasury
+        require(bps <= 2000, "cut too high"); // cap the treasury cut so a slash can't be fully redirected
         keeperCutBps = bps;
     }
 

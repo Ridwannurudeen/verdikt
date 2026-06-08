@@ -49,8 +49,9 @@ contract VerdiktCourtRegistry {
     {
         require(court != address(0), "zero court");
         require(listings[court].court == address(0), "already registered");
-        try IVerdiktCourt(court).quoteOpen() returns (uint256) {}
-        catch {
+        try IVerdiktCourt(court).quoteOpen() returns (uint256 quote) {
+            require(quote > 0, "bad court");
+        } catch {
             revert("bad court");
         }
 
@@ -83,10 +84,10 @@ contract VerdiktCourtRegistry {
         external
         onlyOperator(court)
     {
-        CourtListing storage l = listings[court];
-        l.name = name;
-        l.model = model;
-        l.slaSeconds = slaSeconds;
+        CourtListing storage listing = listings[court];
+        listing.name = name;
+        listing.model = model;
+        listing.slaSeconds = slaSeconds;
         emit CourtUpdated(court, name, model, slaSeconds);
     }
 
@@ -125,7 +126,7 @@ contract VerdiktCourtRegistry {
 
     /// @notice Scan active listings and return the court with the lowest live quoteOpen.
     function cheapest() external view returns (address court, uint256 fee) {
-        bool found;
+        bool found = false;
         uint256 n = courts.length;
         for (uint256 i = 0; i < n; i++) {
             address c = courts[i];

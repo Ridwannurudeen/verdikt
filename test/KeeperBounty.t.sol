@@ -54,6 +54,12 @@ contract KeeperBountyTest is Test {
         assertEq(bounty.pot(bounty.key(address(court), caseId)), 0);
     }
 
+    function test_fundBounty_revertsZeroCourt() public {
+        vm.prank(funder);
+        vm.expectRevert(bytes("zero court"));
+        bounty.fundBounty{value: 0.5 ether}(address(0), 1);
+    }
+
     function test_finalizeAndClaim_paysKeeper_andSettles() public {
         uint256 caseId = _ruledCase();
         vm.prank(funder);
@@ -86,9 +92,12 @@ contract KeeperBountyTest is Test {
         uint256 caseId = _ruledCase();
         vm.prank(funder);
         bounty.fundBounty{value: 0.3 ether}(address(court), caseId);
+        bytes32 k = bounty.key(address(court), caseId);
         vm.prank(keeper);
         vm.expectRevert(bytes("appeal window open"));
         bounty.finalizeAndClaim(address(court), caseId);
+        assertFalse(bounty.claimed(k));
+        assertEq(bounty.pot(k), 0.3 ether);
     }
 
     function test_doubleClaim_reverts() public {

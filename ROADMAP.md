@@ -221,11 +221,11 @@ an agentic chain just _has_, the way it has price oracles.
       chain with verifiable agent inference, and a 7-item portability checklist.
 
 **Exit criteria:** ✅ governance path (timelock), ✅ marketplace, ✅ reputation, ✅ econ + portability
-design. **Phase 5 substantially complete** (full suite 213/213). The hardening + graded-split redeploy and
-the live graded determinism gate are **done** — the v4 hardened stack is live on Shannon, the graded
-determinism gate PASSED, and the caller-selectable resilient panel ships (a degraded 3-validator A2A
-dispute settled byte-identically live). Remaining: external audit + mainnet deploy (requires a funded
-mainnet key + a real auditor).
+design. **Phase 5 substantially complete** (full suite 230/230). The hardening + graded-split redeploy and
+the live graded determinism gate are **done** — the premium stack is live on Shannon, model-pinning /
+two-sided evidence / attested facts / abstention are proven live, and the caller-selectable resilient panel
+ships (a degraded 3-validator A2A dispute settled byte-identically live). Remaining: external audit +
+mainnet deploy (requires a funded mainnet key + a real auditor).
 
 **Exit criteria:** audited, non-owner-controlled Court on mainnet that multiple external protocols and
 autonomous agents depend on as shared infrastructure.

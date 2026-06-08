@@ -4,130 +4,625 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Verdikt — Case Analytics</title>
-    <meta name="description" content="How the AI jury actually rules — determinism, accuracy vs human-expected verdicts, and the live on-chain precedent registry. Real numbers, verifiable on Somnia Shannon." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E" />
+    <meta
+      name="description"
+      content="How the AI jury actually rules — determinism, accuracy vs human-expected verdicts, and the live on-chain precedent registry. Real numbers, verifiable on Somnia Shannon."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg: #0b0a09; --surface: #14110d; --surface-2: #1d1813;
-        --border: rgba(244,239,230,0.10); --border-2: rgba(244,239,230,0.20);
-        --text: #f4efe6; --muted: #c7bdac; --dim: #8d8270;
-        --violet: #c8951e; --amber: #7a1220; --green: #6fae7e; --cyan: #6fae7e;
-        --grad: linear-gradient(110deg, #e8bd5c, #c8951e 55%, #9a6f12);
+        --bg: #0b0d10;
+        --surface: #10151b;
+        --surface-2: #151b23;
+        --border: rgba(242, 245, 247, 0.1);
+        --border-2: rgba(242, 245, 247, 0.2);
+        --text: #f2f5f7;
+        --muted: #aeb8c2;
+        --dim: #737f8c;
+        --violet: #c7a45a;
+        --amber: #222a35;
+        --green: #9aa6b2;
+        --cyan: #9aa6b2;
+        --grad: #c7a45a;
         color-scheme: dark;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Switzer", system-ui, -apple-system, sans-serif; font-size: 14.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; position: relative; }
-      h1, h2, .big-stat, .brand { font-family: "Zodiak", Georgia, serif; font-weight: 700; }
-      body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(70% 50% at 50% -8%, rgba(122,18,32,0.30), transparent 60%), radial-gradient(50% 40% at 88% 6%, rgba(200,149,30,0.10), transparent 60%); }
-      a { color: #e8bd5c; text-decoration: none; } a:hover { text-decoration: underline; }
-      :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--violet); border-radius: 6px; }
-      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
-      .muted { color: var(--muted); }
-      svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; display: block; }
-      .wrap { max-width: 1040px; margin: 0 auto; padding: 0 22px; }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          "Switzer",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-size: 14.5px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        position: relative;
+      }
+      h1,
+      h2,
+      .big-stat,
+      .brand {
+        font-family: "Zodiak", Georgia, serif;
+        font-weight: 700;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(242, 245, 247, 0.035),
+            transparent 240px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(242, 245, 247, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
+        background-size:
+          auto,
+          44px 44px,
+          44px 44px;
+        opacity: 0.7;
+      }
+      a {
+        color: #d8c48a;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      :focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px var(--bg),
+          0 0 0 3.5px var(--violet);
+        border-radius: 6px;
+      }
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      svg.i {
+        width: 1em;
+        height: 1em;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.85;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        display: block;
+      }
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 0 22px;
+      }
 
-      nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px); background: rgba(6,7,12,0.7); border-bottom: 1px solid var(--border); }
-      .nav-in { max-width: 1160px; margin: 0 auto; padding: 0 22px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-      .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; }
-      .brand .logo { width: 27px; height: 27px; border-radius: 8px; background: var(--surface-2); border: 1px solid rgba(200,149,30,0.4); display: grid; place-items: center; color: #e8bd5c; font-size: 15px; box-shadow: inset 0 0 0 1px rgba(200,149,30,0.12); }
-      .nav-links { display: flex; gap: 20px; align-items: center; font-size: 14px; }
-      .nav-links a { color: var(--muted); }
-      .nav-links a.active { color: var(--text); }
-      .nav-links a:hover { color: var(--text); text-decoration: none; }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(16px);
+        background: rgba(11, 13, 16, 0.7);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-in {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 22px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 800;
+        font-size: 17px;
+      }
+      .brand .logo {
+        width: 27px;
+        height: 27px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        display: grid;
+        place-items: center;
+        color: #d8c48a;
+        font-size: 15px;
+        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
+      }
+      .nav-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        font-size: 14px;
+      }
+      .nav-links a {
+        color: var(--muted);
+      }
+      .nav-links a.active {
+        color: var(--text);
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        text-decoration: none;
+      }
+      @media (max-width: 760px) {
+        .nav-in {
+          gap: 16px;
+        }
+        .brand {
+          flex: 0 0 auto;
+        }
+        .nav-links {
+          min-width: 0;
+          max-width: calc(100vw - 146px);
+          overflow-x: auto;
+          gap: 14px;
+          white-space: nowrap;
+          scrollbar-width: none;
+        }
+        .nav-links::-webkit-scrollbar {
+          display: none;
+        }
+      }
 
-      .head { position: relative; padding: 42px 0 6px; }
-      .kicker { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e58a8f; margin: 0 0 8px; }
-      h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.035em; margin: 0; }
-      .head p { color: var(--muted); margin: 9px 0 0; max-width: 660px; }
+      .head {
+        position: relative;
+        padding: 42px 0 6px;
+      }
+      .kicker {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #aeb8c2;
+        margin: 0 0 8px;
+      }
+      h1 {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        margin: 0;
+      }
+      .head p {
+        color: var(--muted);
+        margin: 9px 0 0;
+        max-width: 660px;
+      }
 
       /* stat grid */
-      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
-      @media (max-width: 820px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
-      @media (max-width: 460px) { .stat-grid { grid-template-columns: 1fr; } }
-      .stat { position: relative; background: linear-gradient(180deg, rgba(29,24,19,0.9), rgba(11,10,9,0.9)); border: 1px solid var(--border-2); border-radius: 12px; padding: 18px; box-shadow: 0 8px 24px -16px rgba(0,0,0,0.6); }
-      .stat .big-stat { font-size: clamp(34px, 5vw, 44px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-      .stat.signature .big-stat { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 20px rgba(200,149,30,0.22)); }
-      .stat .k { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 11px; }
-      .stat .sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
-      .src { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--dim); margin-top: 9px; }
-      .src .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-top: 22px;
+      }
+      @media (max-width: 820px) {
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 460px) {
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .stat {
+        position: relative;
+        background: linear-gradient(
+          180deg,
+          rgba(29, 24, 19, 0.9),
+          rgba(11, 10, 9, 0.9)
+        );
+        border: 1px solid var(--border-2);
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 8px 24px -16px rgba(0, 0, 0, 0.6);
+      }
+      .stat .big-stat {
+        font-size: clamp(34px, 5vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat.signature .big-stat {
+        background: #c7a45a;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter: drop-shadow(0 6px 20px rgba(199, 164, 90, 0.22));
+      }
+      .stat .k {
+        font-size: 11px;
+        color: var(--dim);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        margin-bottom: 11px;
+      }
+      .stat .sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      .src {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10.5px;
+        color: var(--dim);
+        margin-top: 9px;
+      }
+      .src .dot-live {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+      }
 
-      .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin-top: 16px; }
-      .panel > h2 { font-size: 12px; margin: 0 0 4px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
-      .panel .h2sub { font-size: 12.5px; color: var(--muted); margin: 0 0 16px; }
-      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 22px;
+        margin-top: 16px;
+      }
+      .panel > h2 {
+        font-size: 12px;
+        margin: 0 0 4px;
+        color: var(--dim);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+      }
+      .panel .h2sub {
+        font-size: 12.5px;
+        color: var(--muted);
+        margin: 0 0 16px;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 760px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
 
       /* bar chart */
-      .bars { display: flex; flex-direction: column; gap: 13px; }
-      .bar-row { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 12px; }
-      .bar-row .bl { font-size: 12.5px; }
-      .bar-track { height: 12px; border-radius: 100px; background: var(--surface-2); overflow: hidden; }
-      .bar-fill { height: 100%; border-radius: 100px; transition: width 0.9s cubic-bezier(0.22,1,0.36,1); }
-      .bar-fill.PAYEE { background: var(--green); }
-      .bar-fill.PAYER { background: #c8951e; }
-      .bar-fill.SPLIT { background: #7a1220; }
-      .bar-fill.acc { background: #c8951e; }
-      .bar-row .bv { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); min-width: 64px; text-align: right; }
-      .bar-row .bv b { color: var(--text); }
+      .bars {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+      }
+      .bar-row {
+        display: grid;
+        grid-template-columns: 96px 1fr auto;
+        align-items: center;
+        gap: 12px;
+      }
+      .bar-row .bl {
+        font-size: 12.5px;
+      }
+      .bar-track {
+        height: 12px;
+        border-radius: 100px;
+        background: var(--surface-2);
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 100px;
+        transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .bar-fill.PAYEE {
+        background: var(--green);
+      }
+      .bar-fill.PAYER {
+        background: #c7a45a;
+      }
+      .bar-fill.SPLIT {
+        background: #222a35;
+      }
+      .bar-fill.acc {
+        background: #c7a45a;
+      }
+      .bar-row .bv {
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+        min-width: 64px;
+        text-align: right;
+      }
+      .bar-row .bv b {
+        color: var(--text);
+      }
 
       /* verdict pills (shared system) */
-      .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 100px; border: 1px solid rgba(200,149,30,0.4); background: rgba(200,149,30,0.14); color: #e8bd5c; }
-      .vpill-PAYEE { background: rgba(111,174,126,0.16); color: #6fae7e; border-color: rgba(111,174,126,0.4); }
-      .vpill-PAYER { background: rgba(200,149,30,0.16); color: #e8bd5c; border-color: rgba(200,149,30,0.4); }
-      .vpill-SPLIT { background: rgba(122,18,32,0.22); color: #e58a8f; border-color: rgba(122,18,32,0.5); }
-      .vpill-UNDECIDABLE { background: var(--surface-2); color: var(--muted); border-color: var(--border-2); }
-      .vpill-NONE { background: var(--surface-2); color: var(--dim); }
+      .vpill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        padding: 3px 10px;
+        border-radius: 100px;
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        background: rgba(199, 164, 90, 0.14);
+        color: #d8c48a;
+      }
+      .vpill-PAYEE {
+        background: rgba(154, 166, 178, 0.16);
+        color: #9aa6b2;
+        border-color: rgba(154, 166, 178, 0.4);
+      }
+      .vpill-PAYER {
+        background: rgba(199, 164, 90, 0.16);
+        color: #d8c48a;
+        border-color: rgba(199, 164, 90, 0.4);
+      }
+      .vpill-SPLIT {
+        background: rgba(115, 127, 140, 0.22);
+        color: #aeb8c2;
+        border-color: rgba(115, 127, 140, 0.5);
+      }
+      .vpill-UNDECIDABLE {
+        background: var(--surface-2);
+        color: var(--muted);
+        border-color: var(--border-2);
+      }
+      .vpill-NONE {
+        background: var(--surface-2);
+        color: var(--dim);
+      }
 
       /* benchmark case grid */
-      .cases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-      @media (max-width: 760px) { .cases { grid-template-columns: repeat(2, 1fr); } }
-      @media (max-width: 420px) { .cases { grid-template-columns: 1fr; } }
-      .case { background: rgba(0,0,0,0.28); border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; }
-      .case.miss { border-color: rgba(122,18,32,0.5); }
-      .case .ct { display: flex; align-items: center; justify-content: space-between; }
-      .case .cnum { font-size: 11px; color: var(--dim); font-weight: 700; letter-spacing: 0.05em; }
-      .case .agree { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; }
-      .case .agree.y { color: #6fae7e; } .case .agree.n { color: #e58a8f; }
-      .case .agree svg.i { width: 13px; height: 13px; }
-      .case .vs { display: flex; align-items: center; gap: 8px; margin-top: 11px; flex-wrap: wrap; }
-      .case .arrow { color: var(--dim); }
-      .case .conv { font-size: 10.5px; color: var(--dim); margin-top: 9px; display: flex; align-items: center; gap: 5px; }
-      .case .conv svg.i { width: 12px; height: 12px; color: #6fae7e; }
-      .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 14px; }
-      .legend .key { display: inline-flex; align-items: center; gap: 6px; }
-      .legend .sw { width: 26px; height: 6px; border-radius: 100px; }
-      .note { font-size: 12.5px; color: var(--muted); background: rgba(122,18,32,0.10); border: 1px solid rgba(122,18,32,0.30); border-left: 3px solid var(--amber); border-radius: 0 10px 10px 0; padding: 11px 14px; margin-top: 16px; line-height: 1.55; }
+      .cases {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 760px) {
+        .cases {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 420px) {
+        .cases {
+          grid-template-columns: 1fr;
+        }
+      }
+      .case {
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 13px;
+      }
+      .case.miss {
+        border-color: rgba(115, 127, 140, 0.5);
+      }
+      .case .ct {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .case .cnum {
+        font-size: 11px;
+        color: var(--dim);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+      .case .agree {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .case .agree.y {
+        color: #9aa6b2;
+      }
+      .case .agree.n {
+        color: #aeb8c2;
+      }
+      .case .agree svg.i {
+        width: 13px;
+        height: 13px;
+      }
+      .case .vs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 11px;
+        flex-wrap: wrap;
+      }
+      .case .arrow {
+        color: var(--dim);
+      }
+      .case .conv {
+        font-size: 10.5px;
+        color: var(--dim);
+        margin-top: 9px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .case .conv svg.i {
+        width: 12px;
+        height: 12px;
+        color: #9aa6b2;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 14px;
+      }
+      .legend .key {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend .sw {
+        width: 26px;
+        height: 6px;
+        border-radius: 100px;
+      }
+      .note {
+        font-size: 12.5px;
+        color: var(--muted);
+        background: rgba(115, 127, 140, 0.1);
+        border: 1px solid rgba(115, 127, 140, 0.3);
+        border-left: 3px solid var(--amber);
+        border-radius: 0 10px 10px 0;
+        padding: 11px 14px;
+        margin-top: 16px;
+        line-height: 1.55;
+      }
 
       /* live registry table */
-      table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
-      th { color: var(--dim); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; }
-      tbody tr:hover { background: rgba(244,239,230,0.03); }
-      .live-line { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--dim); }
-      .live-line .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(111,174,126,0.6); } 70% { box-shadow: 0 0 0 7px rgba(111,174,126,0); } 100% { box-shadow: 0 0 0 0 rgba(111,174,126,0); } }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 4px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        font-size: 13px;
+      }
+      th {
+        color: var(--dim);
+        font-weight: 600;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      tbody tr:hover {
+        background: rgba(242, 245, 247, 0.03);
+      }
+      .live-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        color: var(--dim);
+      }
+      .live-line .dot-live {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: none;
+      }
+      #recent {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      #recent table {
+        min-width: 440px;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.6);
+        }
+        70% {
+          box-shadow: 0 0 0 7px rgba(154, 166, 178, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
+        }
+      }
 
-      .foot { font-size: 12px; color: var(--dim); margin: 26px 0 56px; line-height: 1.6; }
-      .foot a { color: #e8bd5c; }
-      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+      .foot {
+        font-size: 12px;
+        color: var(--dim);
+        margin: 26px 0 56px;
+        line-height: 1.6;
+      }
+      .foot a {
+        color: #d8c48a;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
     </style>
   </head>
   <body>
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-      <symbol id="i-scale" viewBox="0 0 24 24"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
-      <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
-      <symbol id="i-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
-    </defs></svg>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-scale" viewBox="0 0 24 24">
+          <path
+            d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
+          />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m15 9-6 6M9 9l6 6" />
+        </symbol>
+      </defs>
+    </svg>
 
     <nav>
       <div class="nav-in">
-        <a class="brand" href="/"><span class="logo"><svg class="i"><use href="#i-scale"/></svg></span> Verdikt</a>
+        <a class="brand" href="/"
+          ><span class="logo"
+            ><svg class="i"><use href="#i-scale" /></svg
+          ></span>
+          Verdikt</a
+        >
         <div class="nav-links">
           <a href="arena.html">Arena</a>
           <a href="./">Demo</a>
@@ -144,46 +639,91 @@
       <div class="head">
         <span class="kicker">How the AI jury actually rules</span>
         <h1>Case Analytics</h1>
-        <p>Determinism, accuracy against human-expected verdicts, and the live on-chain precedent registry. Every figure here is a real measurement — the benchmark is reproducible, the registry is read live from Somnia Shannon. No rounded-up vanity numbers.</p>
+        <p>
+          Determinism, accuracy against human-expected verdicts, and the live
+          on-chain precedent registry. Every figure here is a real measurement —
+          the benchmark is reproducible, the registry is read live from Somnia
+          Shannon. No rounded-up vanity numbers.
+        </p>
       </div>
 
       <div class="stat-grid">
         <div class="stat signature">
           <div class="k">Determinism</div>
           <div class="big-stat" id="statConv">100%</div>
-          <div class="sub">byte-identical convergence — every panel reached unanimous consensus</div>
+          <div class="sub">
+            byte-identical convergence — every panel reached unanimous consensus
+          </div>
           <div class="src">12/12 benchmark panels</div>
         </div>
         <div class="stat">
           <div class="k">Accuracy</div>
-          <div class="big-stat" id="statAcc" style="color:#e8bd5c">92%</div>
-          <div class="sub">agreement with the human-expected verdict across the benchmark</div>
+          <div class="big-stat" id="statAcc" style="color: #d8c48a">92%</div>
+          <div class="sub">
+            agreement with the human-expected verdict across the benchmark
+          </div>
           <div class="src">11/12 curated disputes</div>
         </div>
         <div class="stat">
           <div class="k">On-chain precedents</div>
           <div class="big-stat" id="statCount">—</div>
-          <div class="sub">finalized rulings recorded in the v4 precedent registry</div>
-          <div class="src"><span class="dot-live"></span> <span id="statCountSrc">reading Shannon…</span></div>
+          <div class="sub">
+            finalized rulings recorded in the premium precedent registry
+          </div>
+          <div class="src">
+            <span class="dot-live"></span>
+            <span id="statCountSrc">reading Shannon…</span>
+          </div>
         </div>
         <div class="stat">
           <div class="k">Trial panel</div>
           <div class="big-stat">5</div>
-          <div class="sub">Somnia validator agents per trial — escalates to 9 on appeal</div>
+          <div class="sub">
+            Somnia validator agents per trial — escalates to 9 on appeal
+          </div>
           <div class="src">degrades gracefully if fewer are available</div>
         </div>
       </div>
 
       <div class="panel">
         <h2>The accuracy &amp; determinism benchmark</h2>
-        <p class="h2sub">12 curated disputes (balanced 4 PAYER · 4 PAYEE · 4 SPLIT), each with a defensible human-expected verdict, fired through the hardened panel of 5 on Shannon. Reproducible from <span class="mono">script/benchmark-cases.json</span>.</p>
+        <p class="h2sub">
+          12 curated disputes (balanced 4 PAYER · 4 PAYEE · 4 SPLIT), each with
+          a defensible human-expected verdict, fired through the hardened panel
+          of 5 on Shannon. Reproducible from
+          <span class="mono">script/benchmark-cases.json</span>.
+        </p>
         <div class="two-col">
           <div>
-            <div class="k" style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:13px">How the panel ruled</div>
+            <div
+              class="k"
+              style="
+                font-size: 11px;
+                color: var(--dim);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                font-weight: 700;
+                margin-bottom: 13px;
+              "
+            >
+              How the panel ruled
+            </div>
             <div class="bars" id="distBars"></div>
           </div>
           <div>
-            <div class="k" style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:13px">Accuracy by outcome</div>
+            <div
+              class="k"
+              style="
+                font-size: 11px;
+                color: var(--dim);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                font-weight: 700;
+                margin-bottom: 13px;
+              "
+            >
+              Accuracy by outcome
+            </div>
             <div class="bars" id="accBars"></div>
           </div>
         </div>
@@ -191,34 +731,81 @@
 
       <div class="panel">
         <h2>Per-case results</h2>
-        <p class="h2sub">Human-expected verdict → the panel's byte-identical ruling. Every panel converged unanimously; the one disagreement is the inherently debatable SPLIT tail, flagged below.</p>
+        <p class="h2sub">
+          Human-expected verdict → the panel's byte-identical ruling. Every
+          panel converged unanimously; the one disagreement is the inherently
+          debatable SPLIT tail, flagged below.
+        </p>
         <div class="cases" id="caseGrid"></div>
         <div class="legend">
-          <span class="key"><span class="sw" style="background:#c8951e"></span> PAYER (refund payer)</span>
-          <span class="key"><span class="sw" style="background:#6fae7e"></span> PAYEE (release to payee)</span>
-          <span class="key"><span class="sw" style="background:#7a1220"></span> SPLIT (graded)</span>
+          <span class="key"
+            ><span class="sw" style="background: #c7a45a"></span> PAYER (refund
+            payer)</span
+          >
+          <span class="key"
+            ><span class="sw" style="background: #9aa6b2"></span> PAYEE (release
+            to payee)</span
+          >
+          <span class="key"
+            ><span class="sw" style="background: #222a35"></span> SPLIT
+            (graded)</span
+          >
         </div>
         <div class="note">
-          <b>The one disagreement (case 9).</b> Correct item shipped but arrived 10 days late, still as-described and usable. Expected SPLIT; the panel ruled PAYEE 5/5. A defensible judgment, not an error — the goods were delivered and retain value. SPLIT is the debatable tail where human arbitrators also diverge.
+          <b>The one disagreement (case 9).</b> Correct item shipped but arrived
+          10 days late, still as-described and usable. Expected SPLIT; the panel
+          ruled PAYEE 5/5. A defensible judgment, not an error — the goods were
+          delivered and retain value. SPLIT is the debatable tail where human
+          arbitrators also diverge.
         </div>
       </div>
 
-      <div class="panel" style="margin-bottom: 8px;">
+      <div class="panel" style="margin-bottom: 8px">
         <h2>Live precedent registry</h2>
-        <p class="h2sub">Finalized rulings recorded on-chain in the v4 <span class="mono">VerdiktRegistry</span>, read live. This is real production state — small and honest, growing as agents settle. <span class="live-line"><span class="dot-live"></span><span id="regStatus">reading…</span></span></p>
+        <p class="h2sub">
+          Finalized rulings recorded on-chain in the premium
+          <span class="mono">VerdiktRegistry</span>, read live. This is real
+          production state — small and honest, growing as agents settle.
+          <span class="live-line"
+            ><span class="dot-live"></span
+            ><span id="regStatus">reading…</span></span
+          >
+        </p>
         <div id="recent"><p class="muted">loading…</p></div>
       </div>
 
       <div class="foot">
-        Sources — benchmark: <span class="mono">script/benchmark-results.md</span> (live run, panel of 5, probe <a href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8" target="_blank" rel="noopener" class="mono">0xEfac…0eD8</a>). Precedent registry: <a href="https://shannon-explorer.somnia.network/address/0xe368032D85004DefeB1a3d8C26e382761BE159a6" target="_blank" rel="noopener" class="mono">0xe368…59a6</a> on Somnia Shannon. Every number on this page is verifiable on-chain or reproducible from the repo.
+        Sources — benchmark:
+        <span class="mono">script/benchmark-results.md</span> (live run, panel
+        of 5, probe
+        <a
+          href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8"
+          target="_blank"
+          rel="noopener"
+          class="mono"
+          >0xEfac…0eD8</a
+        >). Precedent registry:
+        <a
+          href="https://shannon-explorer.somnia.network/address/0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"
+          target="_blank"
+          rel="noopener"
+          class="mono"
+          >0xd1e9…261E</a
+        >
+        on Somnia Shannon. Every number on this page is verifiable on-chain or
+        reproducible from the repo.
       </div>
     </div>
 
     <script type="module">
-      import { createPublicClient, http, parseAbi } from "https://esm.sh/viem@2.21.0";
+      import {
+        createPublicClient,
+        http,
+        parseAbi,
+      } from "https://esm.sh/viem@2.21.0";
 
       const RPC = "https://api.infra.testnet.somnia.network/";
-      const REG = "0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"; // v4 VerdiktRegistry (8-field, payeeBps)
+      const REG = "0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"; // premium VerdiktRegistry (8-field, payeeBps)
       const EXP = "https://shannon-explorer.somnia.network/address/";
       const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
 
@@ -242,7 +829,18 @@
 
       const $ = (id) => document.getElementById(id);
       const client = createPublicClient({ transport: http(RPC) });
-      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const pill = (v) => `<span class="vpill vpill-${v}">${v}</span>`;
       const ORDER = ["PAYER", "PAYEE", "SPLIT"];
@@ -255,21 +853,26 @@
       $("statAcc").textContent = Math.round((agreed / total) * 100) + "%";
 
       // panel verdict distribution
-      const dist = {}; for (const v of ORDER) dist[v] = 0;
+      const dist = {};
+      for (const v of ORDER) dist[v] = 0;
       for (const c of BENCH) dist[c.panel] = (dist[c.panel] ?? 0) + 1;
       const maxDist = Math.max(...Object.values(dist));
-      $("distBars").innerHTML = ORDER.map((v) => `
+      $("distBars").innerHTML = ORDER.map(
+        (v) => `
         <div class="bar-row">
           <span class="bl">${pill(v)}</span>
           <span class="bar-track"><span class="bar-fill ${v}" style="width:${maxDist ? (dist[v] / maxDist) * 100 : 0}%"></span></span>
           <span class="bv"><b>${dist[v]}</b> / ${total} <span class="muted">· ${Math.round((dist[v] / total) * 100)}%</span></span>
-        </div>`).join("");
+        </div>`,
+      ).join("");
 
       // accuracy by expected outcome
       $("accBars").innerHTML = ORDER.map((v) => {
         const inClass = BENCH.filter((c) => c.expected === v);
         const hit = inClass.filter((c) => c.panel === c.expected).length;
-        const pct = inClass.length ? Math.round((hit / inClass.length) * 100) : 0;
+        const pct = inClass.length
+          ? Math.round((hit / inClass.length) * 100)
+          : 0;
         return `<div class="bar-row">
           <span class="bl">${pill(v)}</span>
           <span class="bar-track"><span class="bar-fill acc" style="width:${pct}%"></span></span>
@@ -299,19 +902,52 @@
 
       async function loadRegistry() {
         try {
-          const count = await client.readContract({ address: REG, abi: REG_ABI, functionName: "rulingsCount" });
+          const count = await client.readContract({
+            address: REG,
+            abi: REG_ABI,
+            functionName: "rulingsCount",
+          });
           $("statCount").textContent = count.toString();
           $("statCountSrc").textContent = "live on Shannon";
-          $("regStatus").textContent = `${count} ruling${count === 1n ? "" : "s"} on record`;
+          $("regStatus").textContent =
+            `${count} ruling${count === 1n ? "" : "s"} on record`;
           const n = count > 12n ? 12n : count;
-          const ids = n > 0n ? await client.readContract({ address: REG, abi: REG_ABI, functionName: "allRulings", args: [0n, n] }) : [];
-          const rulings = await Promise.all(ids.map((id) => client.readContract({ address: REG, abi: REG_ABI, functionName: "getRuling", args: [id] })));
-          if (!rulings.length) { $("recent").innerHTML = `<p class="muted">No finalized rulings recorded yet on this registry — the empty state is the honest one.</p>`; return; }
-          const rows = rulings.map((r) => {
-            const v = VERDICT[r.verdict] ?? "NONE";
-            const split = v === "SPLIT" ? ` <span class="muted">${Number(r.payeeBps) / 100}% payee</span>` : "";
-            const receipt = r.receiptId > 0n ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank" rel="noopener">receipt ↗</a>` : `<span class="muted">—</span>`;
-            return `<tr>
+          const ids =
+            n > 0n
+              ? await client.readContract({
+                  address: REG,
+                  abi: REG_ABI,
+                  functionName: "allRulings",
+                  args: [0n, n],
+                })
+              : [];
+          const rulings = await Promise.all(
+            ids.map((id) =>
+              client.readContract({
+                address: REG,
+                abi: REG_ABI,
+                functionName: "getRuling",
+                args: [id],
+              }),
+            ),
+          );
+          if (!rulings.length) {
+            $("recent").innerHTML =
+              `<p class="muted">No finalized rulings recorded yet on this registry — the empty state is the honest one.</p>`;
+            return;
+          }
+          const rows = rulings
+            .map((r) => {
+              const v = VERDICT[r.verdict] ?? "NONE";
+              const split =
+                v === "SPLIT"
+                  ? ` <span class="muted">${Number(r.payeeBps) / 100}% payee</span>`
+                  : "";
+              const receipt =
+                r.receiptId > 0n
+                  ? `<a href="https://agents.somnia.network/receipts/${r.receiptId}" target="_blank" rel="noopener">receipt ↗</a>`
+                  : `<span class="muted">—</span>`;
+              return `<tr>
               <td>${r.caseId}</td>
               <td>${pill(v)}${split}</td>
               <td class="mono"><a href="${EXP}${r.consumer}" target="_blank" rel="noopener">${short(r.consumer)}</a></td>
@@ -319,13 +955,16 @@
               <td class="mono muted">${r.topic.slice(0, 10)}…</td>
               <td>${receipt}</td>
             </tr>`;
-          }).join("");
-          $("recent").innerHTML = `<table><thead><tr><th>case</th><th>verdict</th><th>consumer</th><th>ref</th><th>topic</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+            })
+            .join("");
+          $("recent").innerHTML =
+            `<table><thead><tr><th>case</th><th>verdict</th><th>consumer</th><th>ref</th><th>topic</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
         } catch (e) {
           $("statCount").textContent = "—";
           $("statCountSrc").textContent = "registry unreachable";
           $("regStatus").textContent = "could not reach the registry";
-          $("recent").innerHTML = `<p class="muted">Could not read the registry: ${esc(e.shortMessage ?? e.message)}</p>`;
+          $("recent").innerHTML =
+            `<p class="muted">Could not read the registry: ${esc(e.shortMessage ?? e.message)}</p>`;
         }
       }
 

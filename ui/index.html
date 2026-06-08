@@ -4,11 +4,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Verdikt — escrow demo</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         color-scheme: dark;
@@ -16,11 +25,11 @@
       html,
       body {
         margin: 0;
-        background: #0b0a09;
-        color: #f4efe6;
+        background: #0b0d10;
+        color: #f2f5f7;
         font-family:
-          "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          "Liberation Mono", monospace;
+          "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, "Liberation Mono", monospace;
         font-size: 13px;
         line-height: 1.55;
         position: relative;
@@ -30,22 +39,26 @@
         position: fixed;
         inset: 0;
         z-index: -2;
-        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-        background-size: 34px 34px;
-        -webkit-mask-image: radial-gradient(120% 70% at 50% 0%, #000 20%, transparent 70%);
-        mask-image: radial-gradient(120% 70% at 50% 0%, #000 20%, transparent 70%);
+        pointer-events: none;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(242, 245, 247, 0.035),
+            transparent 220px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(242, 245, 247, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
+        background-size:
+          auto,
+          44px 44px,
+          44px 44px;
       }
       body::after {
-        content: "";
-        position: fixed;
-        top: -320px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 800px;
-        height: 540px;
-        z-index: -1;
-        pointer-events: none;
-        background: radial-gradient(closest-side, rgba(122, 18, 32, 0.2), transparent 70%);
+        content: none;
       }
       .wrap {
         max-width: 920px;
@@ -56,7 +69,7 @@
         gap: 12px;
       }
       .panel {
-        background: #11131e;
+        background: #10151b;
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
         padding: 18px;
@@ -75,7 +88,7 @@
         font-family: "Zodiak", Georgia, serif;
         text-transform: uppercase;
         letter-spacing: -0.03em;
-        color: #9fa2ba;
+        color: #aeb8c2;
       }
       .header {
         display: flex;
@@ -91,13 +104,13 @@
         flex-wrap: wrap;
       }
       .conn-info {
-        color: #8b949e;
+        color: #737f8c;
         font-size: 12px;
       }
       label {
         display: block;
         margin-top: 10px;
-        color: #8b949e;
+        color: #737f8c;
         font-size: 12px;
       }
       input,
@@ -105,9 +118,9 @@
         width: 100%;
         box-sizing: border-box;
         padding: 8px;
-        background: #0d1117;
-        border: 1px solid #30363d;
-        color: #e6edf3;
+        background: #0b0d10;
+        border: 1px solid #2a3440;
+        color: #f2f5f7;
         border-radius: 4px;
         font: inherit;
         margin-top: 4px;
@@ -124,20 +137,20 @@
         border: 1px solid transparent;
       }
       button.primary {
-        background: #238636;
-        color: #fff;
-        border-color: #238636;
+        background: #c7a45a;
+        color: #0b0d10;
+        border-color: #c7a45a;
       }
       button.primary:hover:not(:disabled) {
-        background: #2ea043;
+        background: #d8c48a;
       }
       button.ghost {
         background: transparent;
-        color: #e6edf3;
-        border-color: #30363d;
+        color: #f2f5f7;
+        border-color: #2a3440;
       }
       button.ghost:hover:not(:disabled) {
-        background: #21262d;
+        background: #1b232d;
       }
       button:disabled {
         opacity: 0.5;
@@ -161,7 +174,7 @@
         font-size: 12px;
       }
       .kv .k {
-        color: #8b949e;
+        color: #737f8c;
       }
       .kv .v {
         word-break: break-all;
@@ -177,25 +190,25 @@
         max-width: 380px;
       }
       .toast {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-left: 3px solid #238636;
+        background: #151b23;
+        border: 1px solid #2a3440;
+        border-left: 3px solid #c7a45a;
         padding: 8px 12px;
         border-radius: 4px;
         font-size: 12px;
         word-break: break-all;
       }
       .toast.err {
-        border-left-color: #f85149;
+        border-left-color: #d8c48a;
       }
       .toast.info {
-        border-left-color: #1f6feb;
+        border-left-color: #c7a45a;
       }
       a {
-        color: #58a6ff;
+        color: #d8c48a;
       }
       .muted {
-        color: #8b949e;
+        color: #737f8c;
         font-size: 12px;
       }
       .hidden {
@@ -206,9 +219,9 @@
         padding: 2px 6px;
         border-radius: 3px;
         font-size: 11px;
-        background: #1d1813;
-        color: #f4efe6;
-        border: 1px solid rgba(244, 239, 230, 0.2);
+        background: #151b23;
+        color: #f2f5f7;
+        border: 1px solid rgba(242, 245, 247, 0.2);
       }
       .kicker {
         display: inline-flex;
@@ -217,9 +230,9 @@
         font-weight: 700;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #e8bd5c;
-        background: rgba(200, 149, 30, 0.14);
-        border: 1px solid rgba(200, 149, 30, 0.4);
+        color: #d8c48a;
+        background: rgba(199, 164, 90, 0.14);
+        border: 1px solid rgba(199, 164, 90, 0.4);
         border-radius: 100px;
         padding: 4px 11px;
         margin: 0 0 8px;
@@ -233,16 +246,36 @@
         letter-spacing: 0.02em;
         padding: 4px 11px;
         border-radius: 100px;
-        border: 1px solid rgba(200, 149, 30, 0.4);
-        background: rgba(200, 149, 30, 0.14);
-        color: #e8bd5c;
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        background: rgba(199, 164, 90, 0.14);
+        color: #d8c48a;
         font-family: "Switzer", system-ui, sans-serif;
       }
-      .vpill-NONE { background: #1d1813; color: #c7bdac; border-color: rgba(244, 239, 230, 0.15); }
-      .vpill-PAYEE { background: rgba(111, 174, 126, 0.14); color: #6fae7e; border-color: rgba(111, 174, 126, 0.4); }
-      .vpill-PAYER { background: rgba(122, 18, 32, 0.2); color: #e58a8f; border-color: rgba(122, 18, 32, 0.5); }
-      .vpill-SPLIT { background: rgba(200, 149, 30, 0.14); color: #e8bd5c; border-color: rgba(200, 149, 30, 0.4); }
-      .vpill-UNDECIDABLE { background: rgba(141, 130, 112, 0.18); color: #c7bdac; border-color: rgba(244, 239, 230, 0.15); }
+      .vpill-NONE {
+        background: #151b23;
+        color: #aeb8c2;
+        border-color: rgba(242, 245, 247, 0.15);
+      }
+      .vpill-PAYEE {
+        background: rgba(154, 166, 178, 0.14);
+        color: #9aa6b2;
+        border-color: rgba(154, 166, 178, 0.4);
+      }
+      .vpill-PAYER {
+        background: rgba(115, 127, 140, 0.2);
+        color: #aeb8c2;
+        border-color: rgba(115, 127, 140, 0.5);
+      }
+      .vpill-SPLIT {
+        background: rgba(199, 164, 90, 0.14);
+        color: #d8c48a;
+        border-color: rgba(199, 164, 90, 0.4);
+      }
+      .vpill-UNDECIDABLE {
+        background: rgba(141, 130, 112, 0.18);
+        color: #aeb8c2;
+        border-color: rgba(242, 245, 247, 0.15);
+      }
       details.cfg-panel > summary {
         cursor: pointer;
         list-style: none;
@@ -251,38 +284,116 @@
         font-family: "Zodiak", Georgia, serif;
         text-transform: uppercase;
         letter-spacing: -0.03em;
-        color: #9fa2ba;
+        color: #aeb8c2;
       }
-      details.cfg-panel > summary::-webkit-details-marker { display: none; }
-      details.cfg-panel > summary::before { content: "▸ "; }
-      details.cfg-panel[open] > summary::before { content: "▾ "; }
-      details.cfg-panel > summary .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
+      details.cfg-panel > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.cfg-panel > summary::before {
+        content: "▸ ";
+      }
+      details.cfg-panel[open] > summary::before {
+        content: "▾ ";
+      }
+      details.cfg-panel > summary .muted {
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 400;
+      }
       :focus-visible {
         outline: none;
-        box-shadow: 0 0 0 2px #0b0a09, 0 0 0 3.5px #c8951e;
+        box-shadow:
+          0 0 0 2px #0b0d10,
+          0 0 0 3.5px #c7a45a;
         border-radius: 6px;
       }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <nav style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:13px;font-family:"Switzer",system-ui,sans-serif;background:#11131e;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:11px 16px;margin-bottom:12px">
-        <a href="/" style="display:flex;align-items:center;gap:8px;color:#f6f7fc;text-decoration:none;font-family:'Zodiak',serif;font-weight:800">
-          <span style="width:24px;height:24px;border-radius:7px;background:linear-gradient(140deg,rgba(200,149,30,0.25),rgba(122,18,32,0.18));border:1px solid rgba(200,149,30,0.4);display:grid;place-items:center;color:#e8bd5c">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
-          </span> Verdikt
+      <nav
+        style="
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          flex-wrap: wrap;
+          font-size: 13px;
+          font-family: &quot;Switzer&quot;, system-ui, sans-serif;
+          background: #10151b;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          padding: 11px 16px;
+          margin-bottom: 12px;
+        "
+      >
+        <a
+          href="/"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f2f5f7;
+            text-decoration: none;
+            font-family: &quot;Zodiak&quot;, serif;
+            font-weight: 800;
+          "
+        >
+          <span
+            style="
+              width: 24px;
+              height: 24px;
+              border-radius: 7px;
+              background: #151b23;
+              border: 1px solid rgba(199, 164, 90, 0.4);
+              display: grid;
+              place-items: center;
+              color: #d8c48a;
+            "
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.85"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
+              />
+            </svg>
+          </span>
+          Verdikt
         </a>
-        <a href="arena.html" style="color:#9fa2ba;text-decoration:none">Arena</a>
-        <a href="./" style="color:#f6f7fc;text-decoration:none">Demo</a>
-        <a href="courtroom.html" style="color:#9fa2ba;text-decoration:none">Courtroom</a>
-        <a href="explorer.html" style="color:#9fa2ba;text-decoration:none">Explorer</a>
-        <a href="caselaw.html" style="color:#9fa2ba;text-decoration:none">Case law</a>
-        <a href="analytics.html" style="color:#9fa2ba;text-decoration:none">Analytics</a>
-        <a href="/" style="color:#6a6e87;text-decoration:none;margin-left:auto">Home ↗</a>
+        <a href="arena.html" style="color: #aeb8c2; text-decoration: none"
+          >Arena</a
+        >
+        <a href="./" style="color: #f2f5f7; text-decoration: none">Demo</a>
+        <a href="courtroom.html" style="color: #aeb8c2; text-decoration: none"
+          >Courtroom</a
+        >
+        <a href="explorer.html" style="color: #aeb8c2; text-decoration: none"
+          >Explorer</a
+        >
+        <a href="caselaw.html" style="color: #aeb8c2; text-decoration: none"
+          >Case law</a
+        >
+        <a href="analytics.html" style="color: #aeb8c2; text-decoration: none"
+          >Analytics</a
+        >
+        <a
+          href="/"
+          style="color: #737f8c; text-decoration: none; margin-left: auto"
+          >Home ↗</a
+        >
       </nav>
       <div class="panel header">
         <div>
-          <span class="kicker">Interactive · wired to live Shannon contracts</span>
+          <span class="kicker"
+            >Interactive · wired to live Shannon contracts</span
+          >
           <h1>Verdikt — escrow demo</h1>
         </div>
         <div class="conn">
@@ -292,7 +403,13 @@
       </div>
 
       <details class="panel cfg-panel">
-        <summary>Config <span class="muted">— pre-filled with the live Shannon deployment; expand to override</span></summary>
+        <summary>
+          Config
+          <span class="muted"
+            >— pre-filled with the live Shannon deployment; expand to
+            override</span
+          >
+        </summary>
         <label>RPC URL</label>
         <input
           id="cfgRpc"
@@ -390,7 +507,9 @@
                 placeholder="Add or update your statement before the jury is convened…"
               ></textarea>
               <div class="row">
-                <button id="submitEvidenceBtn" class="ghost">Submit my statement</button>
+                <button id="submitEvidenceBtn" class="ghost">
+                  Submit my statement
+                </button>
               </div>
             </div>
             <div class="row" style="margin-top: 8px">
@@ -506,7 +625,11 @@
       const SHANNON_CHAIN = defineChain({
         id: SHANNON.chainIdNum,
         name: SHANNON.name,
-        nativeCurrency: { name: SHANNON.symbol, symbol: SHANNON.symbol, decimals: SHANNON.decimals },
+        nativeCurrency: {
+          name: SHANNON.symbol,
+          symbol: SHANNON.symbol,
+          decimals: SHANNON.decimals,
+        },
         rpcUrls: { default: { http: [SHANNON.rpc] } },
       });
 
@@ -869,7 +992,13 @@
           return toast("court: invalid address", "err");
         if (escrow && !isAddress(escrow))
           return toast("escrow: invalid address", "err");
-        state.cfg = { rpc, court, escrow, registry: state.cfg.registry, attestation: state.cfg.attestation };
+        state.cfg = {
+          rpc,
+          court,
+          escrow,
+          registry: state.cfg.registry,
+          attestation: state.cfg.attestation,
+        };
         localStorage.setItem(NS, JSON.stringify(state.cfg));
         rebuildClients();
         loadPending();
@@ -1080,8 +1209,14 @@
         const amountStr = $("newAmount").value.trim();
         const deliverByLocal = $("newDeliverBy").value;
         if (!isAddress(payee)) return toast("payee: invalid address", "err");
-        if (state.account && payee.toLowerCase() === state.account.toLowerCase())
-          return toast("payee can't be your own address — use a different wallet", "err");
+        if (
+          state.account &&
+          payee.toLowerCase() === state.account.toLowerCase()
+        )
+          return toast(
+            "payee can't be your own address — use a different wallet",
+            "err",
+          );
         if (!amountStr) return toast("amount required", "err");
         if (!deliverByLocal) return toast("deliverBy required", "err");
         let amount;
@@ -1092,11 +1227,13 @@
         }
         if (amount === 0n) return toast("amount must be greater than 0", "err");
         if (state.account && state.publicClient) {
-          const bal = await state.publicClient.getBalance({ address: state.account });
+          const bal = await state.publicClient.getBalance({
+            address: state.account,
+          });
           if (bal < amount)
             return toast(
               `insufficient STT: wallet holds ${formatEther(bal)} STT — fund it at the Somnia faucet (testnet.somnia.network)`,
-              "err"
+              "err",
             );
         }
         const deliverByMs = new Date(deliverByLocal).getTime();
@@ -1487,7 +1624,10 @@
         }
         probe.remove();
         if (panel === null)
-          return toast("not enough validators online for a panel (min 3) — try again shortly", "err");
+          return toast(
+            "not enough validators online for a panel (min 3) — try again shortly",
+            "err",
+          );
         toast(`convening a ${panel}-agent panel…`, "info", 6000);
         const r = await sendTx({
           address: state.cfg.escrow,

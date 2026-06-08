@@ -1,7 +1,7 @@
 # Verdikt - Security Notes
 
 Internal audit of `VerdiktCourt`, `VerdiktEscrow`, `VerdiktInsurance`, `VerdiktAgentEscrow`,
-`VerdiktTokenEscrow`, `VerdiktConsumerBase`, and the support tooling (updated 2026-06-05). Unaudited hackathon code on
+`VerdiktTokenEscrow`, `VerdiktConsumerBase`, and the support tooling (updated 2026-06-08). Unaudited hackathon code on
 Somnia Shannon testnet.
 
 ## Trust Model
@@ -34,30 +34,43 @@ owner is trusted for parameter setting (`setAgentId`, `setPerAgentPrice`, `setAp
 | 17  | LOW      | `UNDECIDABLE` propagation gap in frontend/indexer tooling after abstention was enabled live.                                                                                  | Fixed. Demo UI, live case indexer, and agent SDK now recognize `UNDECIDABLE`; the UI lets the payee appeal an abstention refund path.                                                   |
 | 18  | LOW      | Deployed CSP blocked the Google Fonts used by the landing/app pages, and deploy docs omitted linked app pages.                                                                | Fixed. CSP now allows the exact font origins and known RPC fallback; deploy docs include courtroom, explorer, and snapshot uploads.                                                     |
 | 19  | LOW      | Static frontend pages interpolated RPC/client error strings into `innerHTML`, and a few external links opened new tabs without `rel="noopener"`.                              | Fixed. Error strings are HTML-escaped before rendering, and all audited new-tab links now include `rel="noopener"`.                                                                      |
+| 20  | MEDIUM   | Case policy snapshot gap. A case snapshotted prompt/model, but an already-open case's appeal could inherit later `gradedSplit` / `allowAbstention` toggle changes.            | Fixed. Each case now snapshots the label-set policy at open time; appeals reuse that policy. `setAgentId(0)` is also rejected after deployment.                                         |
 
 ## Verification
 
-- `forge test` passes 213/213, including fuzz and invariant tests.
+- `forge test` passes 230/230, including fuzz and invariant tests.
 - Regression coverage includes non-receiving settlement recipients, appeal-deadline snapshots,
   insurance capacity locks, pro-rata share minting, micro-funder appeal rejection, registry
   quote-revert skipping, no-return ERC-20 transfers, fee-on-transfer rejection, graded split
-  settlement, split-bps appeal changes, Court/consumer-base pull-refunds, and prompt-injection fencing.
+  settlement, split-bps appeal changes, Court/consumer-base pull-refunds, prompt-injection fencing,
+  model pinning, and per-case label-set snapshots.
+- `npx solhint "src/**/*.sol" "test/**/*.sol" "script/**/*.sol"` runs with 0 errors. Remaining
+  warnings are style/test-layout warnings plus reviewed production patterns: low-level calls for
+  pull payments and optional/no-return ERC-20 support, Court/Insurance state count, and Court
+  evidence sanitizer assembly.
+- `python -m slither . --filter-paths "lib|test|script|out|cache"` runs through the repo. The
+  hardening pass reduced findings from 120 to 78; remaining production findings are reviewed
+  design patterns or static-analyzer limitations: pull-payment/native bounty sends, deadline
+  timestamp comparisons, token balance-delta equality used to reject fee-on-transfer tokens,
+  request-id mappings that must be written after the platform returns, and registry/marketplace
+  live quote calls inside bounded listing scans.
 - `node --check` passes for keeper, indexer, SDK, and determinism/benchmark drivers.
 - `npm audit --audit-level=high` reports 0 vulnerabilities for keeper, script, and indexer.
 
 ## Hardening & New Surface (current iteration)
 
-The hardened stack is deployed live as **v4** (see `deployments/shannon.json`).
+The hardened demo stack is deployed live as the June 7 **premium stack** (see `deployments/shannon.json`).
 
 - **Prompt injection (VerdiktCourt).** Evidence was free text concatenated into the panel prompt.
   Now `_sanitizeEvidence` strips `<`/`>` so a party cannot forge the `<evidence>` fence, the evidence
   is fenced, and the system prompt marks it untrusted. Validated live (the panel ignored an embedded
   "output PAYEE" injection and ruled on facts) — see `injectionGate`. Residual: this raises the bar,
   it is not a proof; the live gate + red-team suite (`test/PromptInjection.t.sol`) are the evidence.
-- **Prompt as governed law (VerdiktCourt).** Prompts are versioned, immutable per version, and
-  governed (owner→timelock); each case snapshots its version, so a verdict is auditable against the
-  exact prompt that decided it. A malicious governor could publish a biased prompt — mitigated by the
-  timelock (transparent + delayed) and per-case citation.
+- **Prompt and label set as governed law (VerdiktCourt).** Prompts are versioned, immutable per
+  version, and governed (owner→timelock); each case snapshots its prompt version, model id, and
+  graded/abstention label policy, so a verdict is auditable against the exact rules that decided it.
+  A malicious governor could publish a biased prompt — mitigated by the timelock (transparent +
+  delayed) and per-case citation.
 - **Verifiable evidence (VerdiktAttestationRegistry).** Trusted attestors post facts the Court folds
   in as authoritative. Trust = governance over the attestor set; a registered-but-compromised attestor
   could post a misleading "fact". Facts are NOT sanitized (trusted source) — production should vet
@@ -70,9 +83,32 @@ The hardened stack is deployed live as **v4** (see `deployments/shannon.json`).
   a court itself. `slashBps` bounded ≤ 100%.
 - **Keeper bounty (VerdiktKeeperBounty).** Permissionless; checks-effects-interactions (sets
   `claimed`/zeros `pot` before paying) → no reentrancy on claim/reclaim. Funders can `reclaim` until
-  claimed.
+  claimed. Zero-address court funding is rejected so bounty funds cannot be stranded on an
+  unclaimable target.
+- **Reentrancy hardening.** Court, token/native escrows, insurance, grant clawback, milestone,
+  marketplace, and the consumer base now use a local reentrancy guard around external court/platform,
+  token, callback, and withdrawal boundaries. Refund accounting is credited before downstream
+  calls when the fee is already known, relying on normal EVM rollback if the downstream call fails.
 - **Reference examples** (`SimpleEscrow`, `VerdiktPredictionMarket`, `VerdiktConsumerBase`) are teaching
   integrations — tested, not production-audited.
+
+## Internal pre-submission audit (2026-06-08)
+
+A multi-area review (core court, consumers, infra layers, frontend, off-chain) plus `forge lint` and the full 230-test suite. **No critical/high fund-loss, access-control, or reentrancy bugs were found** — money math, `onVerdict` access control, pull-payment CEI, and the new features (model-pinning, two-sided evidence, attestation, abstention, adaptive panel) all verified sound.
+
+**Fixed in this pass:**
+- *(Medium)* Attested facts were concatenated into the panel prompt **unsanitized**; now run through `_sanitizeEvidence` like party evidence so a registered attestor can't forge the evidence fence (`VerdiktCourt._verifiedFacts`).
+- *(Medium)* The two-sided escrow's combined statement let a party forge the counterparty's section header; statements are now cleaned of newlines/angle-brackets before composition (`VerdiktEscrow._combinedStatement` / `_clean`).
+- *(Low)* `setKeeperCutBps` was capped at 100%, letting the owner redirect an entire slashed stake to treasury; now capped at 20% across Escrow/AgentEscrow/TokenEscrow/Insurance.
+- *(Low)* `SimpleEscrow.dispute` lacked a `!settled` guard (re-dispute of a settled deal) — added.
+- *(Off-chain)* `script/auto-arena.mjs`: reads `dealId` from the `DealCreated` event (was a `nextDealId` race), gates `finalize` on chain time (not wall clock), handles `Errored` cases explicitly, and uses a dual-RPC fallback transport.
+
+**Accepted / documented (not changed — design-level or risk-vs-reward before deadline):**
+- *(Medium)* `VerdiktReputation.record` trusts the caller-asserted party/side — reputation is advisory; a proper fix reads parties from the consumer (roadmap). Noted in NatSpec.
+- *(Low)* Free `openDispute` can grief a deal into the dispute state without paying the court fee until `convene`; mitigated by the response-window timeout, flagged as a fee-timing roadmap item.
+- *(Low)* `VerdiktRegistry.record` is permissionless with a caller-chosen topic (a front-runner can mis-topic a case once); ruling data itself is read from the trusted court and is correct.
+- *(Low)* Frontend loads viem from esm.sh without SRI and sets no CSP — supply-chain/defense-in-depth; self-hosting viem + a CSP header are recommended for production.
+- The injection-hardening is defense-in-depth on top of an LLM, not a formal guarantee; attestors are governance-gated and trusted.
 
 ## Known limitations / accuracy
 
@@ -99,5 +135,5 @@ Accepted / documented (design-level or risk-vs-reward before deadline): caller-a
 - Run an external audit + a bug bounty before mainnet.
 - Replace caller-asserted `VerdiktReputation.record(... side ...)` with consumer-sourced party
   data in a production reputation module.
-- Port the v4 hardening to the four extra consumers (AgentEscrow / TokenEscrow / GrantClawback /
-  Milestone are built but not yet redeployed) when needed live.
+- Redeploy the extra consumers (AgentEscrow / TokenEscrow / GrantClawback / Milestone / Insurance)
+  against the premium Court when those flows need to be demoed live.

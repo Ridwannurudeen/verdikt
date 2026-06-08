@@ -62,6 +62,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     mapping(address => uint256) public pending;
     /// @notice native STT refunds from court-fee overpayment, claimable via withdrawNative().
     mapping(address => uint256) public nativePending;
+    bool private _entered;
 
     event DealCreated(uint256 indexed dealId, address indexed payer, address indexed payee, uint256 amount);
     event Delivered(uint256 indexed dealId);
@@ -80,6 +81,13 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         _;
     }
 
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
+    }
+
     constructor(address court_, address treasury_, address token_) {
         require(court_ != address(0), "zero court");
         require(treasury_ != address(0), "zero treasury");
@@ -92,16 +100,20 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
 
     // --- lifecycle ------------------------------------------------------------
 
-    function createDeal(address payee, uint256 amount, uint64 deliverBy) external returns (uint256 dealId) {
+    function createDeal(address payee, uint256 amount, uint64 deliverBy)
+        external
+        nonReentrant
+        returns (uint256 dealId)
+    {
         require(amount > 0, "no funds");
         require(payee != address(0) && payee != msg.sender, "bad payee");
-        uint256 beforeBalance = token.balanceOf(address(this));
-        _safeTransferFrom(msg.sender, address(this), amount);
-        require(token.balanceOf(address(this)) - beforeBalance == amount, "fee token unsupported");
         dealId = nextDealId++;
         deals[dealId] = Deal({
             payer: msg.sender, payee: payee, amount: amount, status: DealStatus.Funded, deliverBy: deliverBy, caseId: 0
         });
+        uint256 beforeBalance = token.balanceOf(address(this));
+        _safeTransferFrom(msg.sender, address(this), amount);
+        require(token.balanceOf(address(this)) - beforeBalance == amount, "fee token unsupported");
         emit DealCreated(dealId, msg.sender, payee, amount);
     }
 
@@ -129,7 +141,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
 
     // --- dispute + appeal -----------------------------------------------------
 
-    function dispute(uint256 dealId, string calldata evidence) external payable {
+    function dispute(uint256 dealId, string calldata evidence) external payable nonReentrant {
         Deal storage d = deals[dealId];
         require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
         require(d.status == DealStatus.Funded || d.status == DealStatus.Delivered, "bad status");
@@ -137,14 +149,14 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         require(msg.value >= fee, "fee too low");
 
         d.status = DealStatus.Disputed;
+        _refundExcess(msg.value, fee);
         uint256 caseId = court.openCase{value: fee}(dealId, evidence);
         d.caseId = caseId;
         caseToDeal[caseId] = dealId;
-        _refundExcess(msg.value, fee);
         emit Disputed(dealId, caseId, msg.sender);
     }
 
-    function appeal(uint256 dealId, string calldata newEvidence) external payable {
+    function appeal(uint256 dealId, string calldata newEvidence) external payable nonReentrant {
         Deal storage d = deals[dealId];
         require(d.status == DealStatus.Disputed, "not disputed");
         require(!appeals[dealId].active, "already appealed");
@@ -164,26 +176,27 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         uint256 agentDep = court.quoteAppeal(d.caseId);
         require(msg.value >= agentDep, "value too low");
 
-        uint256 beforeBalance = token.balanceOf(address(this));
-        _safeTransferFrom(msg.sender, address(this), stake);
-        require(token.balanceOf(address(this)) - beforeBalance == stake, "fee token unsupported");
-
+        uint16 preAppealPayeeBps = court.splitBps(d.caseId);
         appeals[dealId] = AppealInfo({
             appellant: msg.sender,
             stake: stake,
             preAppealVerdict: cv.verdict,
-            preAppealPayeeBps: court.splitBps(d.caseId),
+            preAppealPayeeBps: preAppealPayeeBps,
             active: true
         });
 
-        court.appeal{value: agentDep}(d.caseId, newEvidence);
         _refundExcess(msg.value, agentDep);
+        uint256 beforeBalance = token.balanceOf(address(this));
+        _safeTransferFrom(msg.sender, address(this), stake);
+        require(token.balanceOf(address(this)) - beforeBalance == stake, "fee token unsupported");
+
+        court.appeal{value: agentDep}(d.caseId, newEvidence);
         emit AppealFiled(dealId, msg.sender, stake, cv.verdict);
     }
 
     // --- court callback -------------------------------------------------------
 
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
+    function onVerdict(uint256 escrowRef, Verdict verdict) external override nonReentrant {
         require(msg.sender == address(court), "only court");
         Deal storage d = deals[escrowRef];
         require(d.status == DealStatus.Disputed, "not disputed");
@@ -217,7 +230,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
 
     // --- withdrawal -----------------------------------------------------------
 
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         uint256 amt = pending[msg.sender];
         require(amt > 0, "nothing to withdraw");
         pending[msg.sender] = 0;
@@ -225,7 +238,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
         emit Withdrawn(msg.sender, amt);
     }
 
-    function withdrawNative() external returns (uint256 amount) {
+    function withdrawNative() external nonReentrant returns (uint256 amount) {
         amount = nativePending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         nativePending[msg.sender] = 0;
@@ -291,7 +304,7 @@ contract VerdiktTokenEscrow is IVerdiktConsumer {
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {
-        require(bps <= 2000, "cut too high"); // cap so a slashed stake can't be fully redirected to treasury
+        require(bps <= 2000, "cut too high"); // cap the treasury cut so a slash can't be fully redirected
         keeperCutBps = bps;
     }
 

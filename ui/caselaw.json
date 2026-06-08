@@ -1,3 +1,38 @@
 [
-  { "caseId": "1", "consumer": "0x000c7dc06aD2664295F181EA2CE119F4c7F902e0", "escrowRef": "1", "verdict": "SPLIT", "payeeBps": 7500, "round": 0, "receiptId": null, "rulingTime": 1780399918, "appealed": false, "finalized": true, "status": "Final" }
+  {
+    "caseId": "1",
+    "consumer": "0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d",
+    "escrowRef": "1",
+    "verdict": "PAYEE",
+    "payeeBps": 10000,
+    "receiptId": null,
+    "rulingTime": 1780837185,
+    "appealed": false,
+    "finalized": true,
+    "status": "Final"
+  },
+  {
+    "caseId": "2",
+    "consumer": "0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9",
+    "escrowRef": "1",
+    "verdict": "UNDECIDABLE",
+    "payeeBps": 0,
+    "receiptId": null,
+    "rulingTime": 1780851750,
+    "appealed": false,
+    "finalized": true,
+    "status": "Final"
+  },
+  {
+    "caseId": "3",
+    "consumer": "0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9",
+    "escrowRef": "2",
+    "verdict": "PAYER",
+    "payeeBps": 0,
+    "receiptId": null,
+    "rulingTime": 1780852066,
+    "appealed": false,
+    "finalized": true,
+    "status": "Final"
+  }
 ]

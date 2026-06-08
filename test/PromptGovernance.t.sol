@@ -36,6 +36,26 @@ contract PromptGovernanceTest is Test {
         (prompt, system, cot, allowed) = abi.decode(args, (string, string, bool, string[]));
     }
 
+    function _dispatchedAllowed() internal view returns (string[] memory allowed) {
+        (,,, bytes memory payload,,,,) = platform.requests(platform.nextId() - 1);
+        bytes memory args = new bytes(payload.length - 4);
+        for (uint256 i = 0; i < args.length; i++) {
+            args[i] = payload[i + 4];
+        }
+        string memory prompt;
+        string memory system;
+        bool cot;
+        (prompt, system, cot, allowed) = abi.decode(args, (string, string, bool, string[]));
+    }
+
+    function _hasLabel(string[] memory labels, string memory label) internal pure returns (bool) {
+        bytes32 want = keccak256(bytes(label));
+        for (uint256 i = 0; i < labels.length; i++) {
+            if (keccak256(bytes(labels[i])) == want) return true;
+        }
+        return false;
+    }
+
     function _contains(string memory h, string memory n) internal pure returns (bool) {
         bytes memory hb = bytes(h);
         bytes memory nb = bytes(n);
@@ -137,5 +157,21 @@ contract PromptGovernanceTest is Test {
         // the law in force when the case opened still governs the appeal
         assertEq(court.promptVersionOf(caseId), 1);
         assertTrue(_contains(_dispatchedSystem(), "untrusted"), "appeal must reuse v1 system");
+    }
+
+    function test_appealKeepsSnapshottedLabelSet() public {
+        court.setGradedSplit(true);
+        court.setAllowAbstention(true);
+        uint256 caseId = _open("partial delivery");
+        platform.fireSuccess(platform.nextId() - 1, "PAYEE"); // case -> Ruled
+
+        court.setGradedSplit(false);
+        court.setAllowAbstention(false);
+
+        court.appeal{value: court.quoteAppeal(caseId)}(caseId, "new evidence");
+        string[] memory labels = _dispatchedAllowed();
+        assertEq(labels.length, 6);
+        assertTrue(_hasLabel(labels, "SPLIT75"), "appeal must keep the graded label set");
+        assertTrue(_hasLabel(labels, "UNDECIDABLE"), "appeal must keep abstention if snapshotted on");
     }
 }

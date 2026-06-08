@@ -2,7 +2,7 @@
 
 A scoping packet for a third-party auditor. It summarizes the architecture, trust boundaries,
 in-scope contracts, known/accepted risks, the invariants the system must hold, test coverage,
-and how to build and reproduce. Pair it with [`SECURITY.md`](SECURITY.md) (internal review, 19
+and how to build and reproduce. Pair it with [`SECURITY.md`](SECURITY.md) (internal review, 20
 findings, all marked Fixed) and [`deployments/shannon.json`](deployments/shannon.json) (live
 addresses + live gate results).
 
@@ -40,7 +40,7 @@ Consumer (e.g. VerdiktEscrow)        VerdiktCourt (arbitration primitive)       
   gracefully when Somnia's validator set dips below full strength (avoids platform revert
   `0x8f4079ff`).
 
-**Hardening surface on the Court** (all live as v4): governed/versioned immutable prompt with
+**Hardening surface on the Court** (all live in the June 7 premium stack): governed/versioned immutable prompt with
 per-case version snapshot; an attestation-registry hook folding VERIFIED facts in as
 authoritative; opt-in abstention (`UNDECIDABLE`); graded splits; injection-resistant
 sanitized+fenced evidence; 2-step ownership.
@@ -104,7 +104,7 @@ production-audited; review for reference, not for production sign-off.
 
 ## Known issues / accepted risks
 
-From the internal review (`SECURITY.md`). All 19 findings are marked **Fixed**; the standing
+From the internal review (`SECURITY.md`). All 20 findings are marked **Fixed**; the standing
 accepted-risk set is:
 
 - `handleVerdict` trusts `responses[0]` as canonical — within the platform-Majority trust model
@@ -118,9 +118,9 @@ accepted-risk set is:
 - Agent-fee rebates accrue to the Court (owner `sweep`), not per-request refunds.
 
 **Remaining production work** (from `SECURITY.md`): external audit + bug bounty before mainnet;
-consumer-sourced reputation; port the v4 hardening to the four extra consumers
-(AgentEscrow/TokenEscrow/GrantClawback/Milestone are built but not all redeployed with the full
-v4 surface). Re-run the determinism gates after any prompt or label-set change.
+consumer-sourced reputation; redeploy the extra consumers
+(AgentEscrow/TokenEscrow/GrantClawback/Milestone/Insurance are built but not all redeployed with the full
+premium surface). Re-run the determinism gates after any prompt or label-set change.
 
 ---
 
@@ -156,18 +156,36 @@ stateful invariant runner.
 
 ## Test coverage
 
-- **Documented suite: `forge test` passes 213/213**, including fuzz and invariant tests
+- **Documented suite: `forge test` passes 230/230**, including fuzz and invariant tests
   (`SECURITY.md` line 40; `README.md`). Coverage spans non-receiving settlement recipients,
   appeal-deadline snapshots, insurance capacity locks, pro-rata share minting, micro-funder
   appeal rejection, registry quote-revert skipping, no-return + fee-on-transfer ERC-20s, graded
   split settlement, split-bps appeal changes, pull-refunds, and prompt-injection fencing.
-- 24 `test/*.sol` files (per-contract suites + `Invariant.t.sol` + `PromptInjection.t.sol` /
+- 25 `test/*.sol` files (per-contract suites + `Invariant.t.sol` + `PromptInjection.t.sol` /
   `PromptGovernance.t.sol` / `Attestation.t.sol` / `Abstention.t.sol` / `GradedSplit.t.sol` /
-  `Marketplace.t.sol` / `KeeperBounty.t.sol` / `AgentToAgentDemo.t.sol`).
-- **Reproduce the live number with `forge test`** — `forge` was not on PATH in the doc-build
-  environment, so the 213/213 figure is the documented count, not re-run here. A static grep of
-  `test*/testFuzz*/invariant*` function declarations returns 217 across 23 files (the delta vs.
-  213 is invariant handlers / non-case helpers).
+  `Marketplace.t.sol` / `KeeperBounty.t.sol` / `AgentToAgentDemo.t.sol` / `ServiceSLA.t.sol` /
+  `ModelVersion.t.sol`).
+- **Reproduce the live number with `forge test`**. A static grep of `test*` / `testFuzz*` /
+  `invariant*` function declarations also returns 230, matching the Foundry run.
+
+---
+
+## Static analysis
+
+The repo now carries `.solhint.json`; the lint command runs without a missing-config blocker.
+
+```bash
+npx solhint "src/**/*.sol" "test/**/*.sol" "script/**/*.sol"   # 0 errors; style/pattern warnings remain
+python -m slither . --filter-paths "lib|test|script|out|cache" # completed; 78 reviewed findings
+```
+
+The Slither hardening pass fixed the actionable findings by adding reentrancy guards around
+court/platform, token, callback, and withdrawal boundaries; moving refund/bookkeeping before
+external calls where the fee is already known; rejecting zero-address keeper-bounty courts; and
+adding governance parameter events. Remaining Slither output is reviewed residual risk/design
+surface: pull-payment/native bounty sends, deadline timestamp comparisons, token balance-delta
+equality used to reject fee-on-transfer tokens, request-id mappings that must be written after the
+Somnia platform returns, and live quote calls inside bounded registry/marketplace scans.
 
 ---
 
@@ -175,7 +193,7 @@ stateful invariant runner.
 
 ```bash
 forge build
-forge test            # 213/213 (solc 0.8.24, evm_version cancun)
+forge test            # 230/230 (solc 0.8.24, evm_version cancun)
 forge test --gas-report
 forge coverage        # optional, for line/branch coverage
 ```

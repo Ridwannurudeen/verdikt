@@ -26,7 +26,7 @@ node script/auto-arena.mjs        # createDeal → auto-dispute → AI verdict �
 - **Agent-first design** — disputes are resolved by a panel of agents convened *by the contract itself* via `createAdvancedRequest`; the court is an open primitive any agent/contract invokes autonomously. The autonomous loop (`script/auto-arena.mjs`) runs the full lifecycle agent-to-agent.
 - **Autonomous performance** — no human in the settlement loop: dispute → panel verdict → (optional staked appeal → larger panel) → permissionless `finalize` settles and slashes. A keeper drives `finalize`/auto-release.
 - **Innovation** — *judgment as an on-chain oracle*: byte-identical AI consensus, a stake-secured appeal layer, verifiable-evidence attestation, abstention, model + prompt versioning per verdict.
-- **Functionality** — full lifecycle implemented and tested (**227/227**, incl. invariant/fuzz), **deployed and exercised live on Shannon** with real settlements across multiple apps.
+- **Functionality** — full lifecycle implemented and tested (**230/230**, incl. invariant/fuzz), **deployed and exercised live on Shannon** with real settlements across multiple apps.
 
 ## What makes the AI jury trustworthy
 
@@ -91,7 +91,7 @@ The **current demo runs the premium stack** — model-pinned Court, two-sided ev
 
 ```bash
 forge build
-forge test                         # 227/227 (solc 0.8.24, evm_version cancun)
+forge test                         # 230/230 (solc 0.8.24, evm_version cancun)
 cp .env.example .env               # PRIVATE_KEY + LLM_AGENT_ID (from agents.somnia.network)
 forge script script/Deploy.s.sol --rpc-url shannon --broadcast
 ```
@@ -114,7 +114,7 @@ cd script && npm install && node run-determinism-gate.mjs <PROBE_ADDR>       # f
 
 ## Status & honest limitations
 
-Phases 0–5 are built, tested (**227/227**), and live on Shannon (full [`ROADMAP.md`](ROADMAP.md)). Honest gaps:
+Phases 0–5 are built, tested (**230/230**), and live on Shannon (full [`ROADMAP.md`](ROADMAP.md)). Honest gaps:
 
 - **Reference deployment, not external adoption** — real on-chain verdicts, but the cases were self-driven; a real external integrator is the next growth step.
 - **No third-party audit yet** — [`AUDIT-READINESS.md`](AUDIT-READINESS.md) + [`BUG-BOUNTY.md`](BUG-BOUNTY.md) are prepared; audit is the gate before mainnet.

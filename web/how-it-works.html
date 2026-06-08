@@ -4,328 +4,1544 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>How Verdikt works — how a verdict is reached</title>
-    <meta name="description" content="How a Verdikt verdict is reached: a consumer opens a case with evidence and a panel fee, the court convenes a panel of Somnia validator LLM agents via createAdvancedRequest, each runs the same inference, they converge byte-identically on a majority verdict, it is delivered via onVerdict(), the consumer settles by pull-payment, and the ruling is recorded as precedent. Live on Somnia Shannon." />
+    <meta
+      name="description"
+      content="How a Verdikt verdict is reached: a consumer opens a case with evidence and a panel fee, the court convenes a panel of Somnia validator LLM agents via createAdvancedRequest, each runs the same inference, they converge byte-identically on a majority verdict, it is delivered via onVerdict(), the consumer settles by pull-payment, and the ruling is recorded as precedent. Live on Somnia Shannon."
+    />
     <meta name="author" content="Verdikt" />
     <link rel="canonical" href="https://verdikt.gudman.xyz/how-it-works.html" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://verdikt.gudman.xyz/how-it-works.html" />
-    <meta property="og:title" content="How Verdikt works — how a verdict is reached" />
-    <meta property="og:description" content="The dispute lifecycle, end to end: open a case, convene a validator panel via createAdvancedRequest, byte-identical majority consensus, onVerdict() settlement, precedent — live on Somnia Shannon." />
+    <meta
+      property="og:url"
+      content="https://verdikt.gudman.xyz/how-it-works.html"
+    />
+    <meta
+      property="og:title"
+      content="How Verdikt works — how a verdict is reached"
+    />
+    <meta
+      property="og:description"
+      content="The dispute lifecycle, end to end: open a case, convene a validator panel via createAdvancedRequest, byte-identical majority consensus, onVerdict() settlement, precedent — live on Somnia Shannon."
+    />
     <meta property="og:site_name" content="Verdikt" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="How Verdikt works — how a verdict is reached" />
-    <meta name="twitter:description" content="The dispute lifecycle, end to end: open a case, convene a validator panel, byte-identical majority consensus, onVerdict() settlement, precedent — live on Shannon." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E" />
+    <meta
+      name="twitter:title"
+      content="How Verdikt works — how a verdict is reached"
+    />
+    <meta
+      name="twitter:description"
+      content="The dispute lifecycle, end to end: open a case, convene a validator panel, byte-identical majority consensus, onVerdict() settlement, precedent — live on Shannon."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
     <script type="application/ld+json">
-      { "@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Verdikt", "applicationCategory": "DeveloperApplication", "operatingSystem": "Somnia Shannon (EVM)", "description": "A reusable on-chain AI-jury arbitration primitive for subjective disputes.", "url": "https://verdikt.gudman.xyz/" }
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Verdikt",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Somnia Shannon (EVM)",
+        "description": "A reusable on-chain AI-jury arbitration primitive for subjective disputes.",
+        "url": "https://verdikt.gudman.xyz/"
+      }
     </script>
     <style>
       /* ============ THE BENCH — design tokens ============ */
       :root {
-        --ink: #0b0a09;          /* warm near-black base */
-        --ink-2: #14110d;        /* raised surface */
-        --ink-3: #1d1813;        /* card */
-        --ink-4: #271f18;        /* hover / inset */
-        --ivory: #f4efe6;        /* primary text */
-        --ivory-dim: #c7bdac;    /* secondary text */
-        --dim: #8d8270;          /* tertiary / labels */
-        --oxblood: #7a1220;      /* deep brand red (fills/tints) */
-        --oxblood-ink: #e58a8f;  /* legible oxblood on dark (text) */
-        --gold: #c8951e;         /* verdict gold — primary accent */
-        --gold-ink: #e8bd5c;     /* legible gold on dark (text) */
-        --green: #6fae7e;        /* settled / released (warm) */
-        --border: rgba(244,239,230,0.10);
-        --border-2: rgba(244,239,230,0.20);
-        --seal: linear-gradient(110deg, #e8bd5c, #c8951e 55%, #9a6f12);
+        --ink: #0b0d10; /* warm near-black base */
+        --ink-2: #10151b; /* raised surface */
+        --ink-3: #151b23; /* card */
+        --ink-4: #1b232d; /* hover / inset */
+        --ivory: #f2f5f7; /* primary text */
+        --ivory-dim: #aeb8c2; /* secondary text */
+        --dim: #737f8c; /* tertiary / labels */
+        --oxblood: #222a35; /* neutral fill alias */
+        --oxblood-ink: #aeb8c2; /* muted label alias */
+        --gold: #c7a45a; /* primary brass accent */
+        --gold-ink: #d8c48a; /* readable accent text */
+        --green: #9aa6b2; /* neutral status tone */
+        --border: rgba(242, 245, 247, 0.1);
+        --border-2: rgba(242, 245, 247, 0.2);
+        --seal: #c7a45a;
         color-scheme: dark;
       }
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
-        margin: 0; background: var(--ink); color: var(--ivory);
-        font-family: "Switzer", system-ui, -apple-system, sans-serif;
-        font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased; overflow-x: hidden; position: relative;
+        margin: 0;
+        background: var(--ink);
+        color: var(--ivory);
+        font-family:
+          "Switzer",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.62;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+        position: relative;
       }
       /* editorial serif reserved for display; grotesque for everything else */
-      h1, h2, h3, .display, .brand-name, .stat-n, .big-stat { font-family: "Zodiak", Georgia, serif; font-weight: 700; }
-      a { color: inherit; text-decoration: none; }
-      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-      .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
-      svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
-      :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); border-radius: 6px; }
-      ::selection { background: rgba(200,149,30,0.28); }
+      h1,
+      h2,
+      h3,
+      .display,
+      .brand-name,
+      .stat-n,
+      .big-stat {
+        font-family: "Zodiak", Georgia, serif;
+        font-weight: 700;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+      .wrap {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      @media (max-width: 520px) {
+        .wrap {
+          padding: 0 20px;
+        }
+      }
+      svg.i {
+        width: 1em;
+        height: 1em;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        display: block;
+      }
+      :focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px var(--ink),
+          0 0 0 4px var(--gold);
+        border-radius: 6px;
+      }
+      ::selection {
+        background: rgba(199, 164, 90, 0.28);
+      }
 
       /* one restrained signature light source — not a dot-grid/glow cliché */
       body::before {
-        content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
         background:
-          radial-gradient(70% 50% at 50% -8%, rgba(122,18,32,0.30), transparent 60%),
-          radial-gradient(50% 40% at 88% 6%, rgba(200,149,30,0.10), transparent 60%);
+          linear-gradient(
+            180deg,
+            rgba(242, 245, 247, 0.035),
+            transparent 260px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(242, 245, 247, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
+        background-size:
+          auto,
+          48px 48px,
+          48px 48px;
+        opacity: 0.72;
       }
 
       /* ---- nav ---- */
-      nav { position: sticky; top: 0; z-index: 60; backdrop-filter: blur(14px); background: rgba(11,10,9,0.72); border-bottom: 1px solid var(--border); }
-      .nav-in { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 18px; }
-      .brand { display: flex; align-items: center; gap: 11px; }
-      .brand .seal { width: 32px; height: 32px; border-radius: 9px; background: var(--ink-3); border: 1px solid rgba(200,149,30,0.4); display: grid; place-items: center; color: var(--gold-ink); box-shadow: inset 0 0 0 1px rgba(200,149,30,0.12); }
-      .brand .seal svg.i { width: 19px; height: 19px; }
-      .brand-name { font-size: 20px; letter-spacing: -0.01em; font-weight: 800; }
-      .nav-links { display: flex; gap: 26px; align-items: center; }
-      .nav-links a { color: var(--ivory-dim); font-size: 14.5px; font-weight: 500; transition: color 0.15s; }
-      .nav-links a:hover { color: var(--ivory); }
-      .nav-links a.active { color: var(--ivory); }
-      @media (max-width: 920px) { .nav-links .hide-sm { display: none; } }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 60;
+        backdrop-filter: blur(14px);
+        background: rgba(11, 13, 16, 0.72);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-in {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 68px;
+        gap: 18px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+      .brand .seal {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: var(--ink-3);
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        display: grid;
+        place-items: center;
+        color: var(--gold-ink);
+        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
+      }
+      .brand .seal svg.i {
+        width: 19px;
+        height: 19px;
+      }
+      .brand-name {
+        font-size: 20px;
+        letter-spacing: -0.01em;
+        font-weight: 800;
+      }
+      .nav-links {
+        display: flex;
+        gap: 26px;
+        align-items: center;
+      }
+      .nav-links a {
+        color: var(--ivory-dim);
+        font-size: 14.5px;
+        font-weight: 500;
+        transition: color 0.15s;
+      }
+      .nav-links a:hover {
+        color: var(--ivory);
+      }
+      .nav-links a.active {
+        color: var(--ivory);
+      }
+      @media (max-width: 920px) {
+        .nav-links .hide-sm {
+          display: none;
+        }
+      }
 
-      .btn { display: inline-flex; align-items: center; gap: 8px; font-family: "Switzer", sans-serif; font-weight: 600; font-size: 14.5px; border-radius: 8px; padding: 10px 17px; border: 1px solid transparent; cursor: pointer; transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease; }
-      .btn svg.i { width: 16px; height: 16px; }
-      .btn-primary { background: var(--seal); color: #241704; font-weight: 700; box-shadow: 0 8px 26px -12px rgba(200,149,30,0.7); }
-      .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px -12px rgba(200,149,30,0.85); }
-      .btn-ghost { background: transparent; border-color: var(--border-2); color: var(--ivory); }
-      .btn-ghost:hover { background: rgba(244,239,230,0.05); border-color: rgba(244,239,230,0.32); }
-      .btn-lg { padding: 14px 24px; font-size: 15.5px; border-radius: 9px; }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Switzer", sans-serif;
+        font-weight: 600;
+        font-size: 14.5px;
+        border-radius: 8px;
+        padding: 10px 17px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition:
+          transform 0.16s ease,
+          background 0.16s ease,
+          border-color 0.16s ease,
+          box-shadow 0.16s ease;
+      }
+      .btn svg.i {
+        width: 16px;
+        height: 16px;
+      }
+      .btn-primary {
+        background: #c7a45a;
+        color: #0b0d10;
+        font-weight: 700;
+        box-shadow: none;
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: none;
+      }
+      .btn-ghost {
+        background: transparent;
+        border-color: var(--border-2);
+        color: var(--ivory);
+      }
+      .btn-ghost:hover {
+        background: rgba(242, 245, 247, 0.05);
+        border-color: rgba(242, 245, 247, 0.32);
+      }
+      .btn-lg {
+        padding: 14px 24px;
+        font-size: 15.5px;
+        border-radius: 9px;
+      }
 
-      .rv { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
-      .rv.in { opacity: 1; transform: none; }
+      .rv {
+        opacity: 0;
+        transform: translateY(16px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+      .rv.in {
+        opacity: 1;
+        transform: none;
+      }
 
       /* ---- hero ---- */
-      .hero { position: relative; padding: 96px 0 78px; }
-      .hero-grid { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 56px; align-items: center; }
-      @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 46px; } }
-      .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--gold-ink); background: rgba(200,149,30,0.10); border: 1px solid rgba(200,149,30,0.3); padding: 6px 13px; border-radius: 100px; }
-      .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2.2s infinite; }
-      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(111,174,126,0.6); } 70% { box-shadow: 0 0 0 7px rgba(111,174,126,0); } 100% { box-shadow: 0 0 0 0 rgba(111,174,126,0); } }
-      .kicker { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--oxblood-ink); margin: 20px 0 0; font-family: "Switzer", sans-serif; }
-      h1 { font-size: 70px; line-height: 1.02; letter-spacing: -0.02em; font-weight: 800; margin: 14px 0 0; text-wrap: balance; }
-      @media (max-width: 960px) { h1 { font-size: 52px; } }
-      @media (max-width: 480px) { h1 { font-size: 38px; } }
-      /* the one signature gradient moment — a gold 'seal' under a single word */
-      .seal-word { position: relative; white-space: nowrap; color: var(--gold-ink); }
-      .seal-word::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.06em; height: 0.10em; background: var(--seal); border-radius: 2px; }
-      .lede { font-size: 18.5px; color: var(--ivory-dim); margin: 24px 0 0; max-width: 540px; }
-      .cta-row { display: flex; gap: 13px; margin-top: 32px; flex-wrap: wrap; }
-      .hero-meta { margin-top: 28px; display: flex; gap: 26px; flex-wrap: wrap; }
-      .hero-meta .m { font-size: 13px; color: var(--dim); }
-      .hero-meta .m b { display: block; font-family: "Zodiak", serif; font-size: 25px; color: var(--ivory); font-weight: 700; letter-spacing: -0.01em; }
+      .hero {
+        position: relative;
+        padding: 96px 0 78px;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 56px;
+        align-items: center;
+      }
+      .hero-grid > * {
+        min-width: 0;
+      }
+      @media (max-width: 960px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+          gap: 46px;
+        }
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.1);
+        border: 1px solid rgba(199, 164, 90, 0.3);
+        padding: 6px 13px;
+        border-radius: 100px;
+      }
+      .dot-live {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: none;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.6);
+        }
+        70% {
+          box-shadow: 0 0 0 7px rgba(154, 166, 178, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
+        }
+      }
+      .kicker {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--oxblood-ink);
+        margin: 20px 0 0;
+        font-family: "Switzer", sans-serif;
+      }
+      h1 {
+        font-size: 70px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        font-weight: 800;
+        margin: 14px 0 0;
+        text-wrap: balance;
+      }
+      @media (max-width: 960px) {
+        h1 {
+          font-size: 52px;
+        }
+      }
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 38px;
+        }
+      }
+      /* subtle emphasis without decorative gradients */
+      .seal-word {
+        position: relative;
+        white-space: normal;
+        color: inherit;
+      }
+      .seal-word::after {
+        display: none;
+      }
+      .lede {
+        font-size: 18.5px;
+        color: var(--ivory-dim);
+        margin: 24px 0 0;
+        max-width: 540px;
+      }
+      .cta-row {
+        display: flex;
+        gap: 13px;
+        margin-top: 32px;
+        flex-wrap: wrap;
+      }
+      .hero-meta {
+        margin-top: 28px;
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+      }
+      .hero-meta .m {
+        font-size: 13px;
+        color: var(--dim);
+      }
+      .hero-meta .m b {
+        display: block;
+        font-family: "Zodiak", serif;
+        font-size: 25px;
+        color: var(--ivory);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
 
       /* ---- the docket card (signature motif) ---- */
-      .docket { position: relative; background: var(--ink-2); border: 1px solid var(--border-2); border-radius: 12px; padding: 22px; box-shadow: 0 40px 80px -50px #000; }
-      .docket .hd { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.13em; font-weight: 700; }
-      .docket .hd .no { color: var(--gold-ink); }
-      .case-card { margin-top: 13px; background: rgba(0,0,0,0.30); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
-      .case-card .q { font-weight: 600; font-size: 14.5px; }
-      .case-card .ev { color: var(--ivory-dim); font-size: 12.5px; margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; }
-      .case-card .ev svg.i { width: 14px; height: 14px; color: var(--green); flex: 0 0 auto; margin-top: 3px; }
-      .jurors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 15px 0; }
-      .juror { background: var(--ink-3); border: 1px solid var(--border); border-radius: 9px; padding: 11px 4px 9px; text-align: center; animation: rise 0.5s both; }
-      .juror:nth-child(2){animation-delay:.07s}.juror:nth-child(3){animation-delay:.14s}.juror:nth-child(4){animation-delay:.21s}.juror:nth-child(5){animation-delay:.28s}
-      @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
-      .juror .av { width: 25px; height: 25px; margin: 0 auto; border-radius: 7px; background: var(--ink-4); border: 1px solid rgba(200,149,30,0.32); display: grid; place-items: center; color: var(--gold-ink); }
-      .juror .av svg.i { width: 13px; height: 13px; }
-      .juror .v { display: inline-block; margin-top: 8px; font-size: 9px; font-weight: 800; letter-spacing: 0.04em; color: var(--gold-ink); background: rgba(200,149,30,0.12); border: 1px solid rgba(200,149,30,0.3); border-radius: 100px; padding: 2px 6px; }
-      .consensus { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(200,149,30,0.08); border: 1px solid rgba(200,149,30,0.28); border-radius: 10px; padding: 12px 15px; }
-      .consensus .lbl { font-size: 11.5px; color: var(--ivory-dim); display: flex; align-items: center; gap: 7px; }
-      .consensus .lbl svg.i { width: 14px; height: 14px; color: var(--gold-ink); }
-      .verdict-pill { display: inline-flex; align-items: center; font-weight: 800; font-size: 12px; letter-spacing: 0.02em; color: var(--gold-ink); background: rgba(200,149,30,0.14); border: 1px solid rgba(200,149,30,0.4); border-radius: 100px; padding: 4px 11px; }
-      .settle { margin-top: 13px; display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 12.5px; font-weight: 600; }
-      .settle svg.i { width: 15px; height: 15px; }
+      .docket {
+        position: relative;
+        background: var(--ink-2);
+        border: 1px solid var(--border-2);
+        border-radius: 12px;
+        padding: 22px;
+        box-shadow: 0 40px 80px -50px #000;
+      }
+      .docket .hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--dim);
+        text-transform: uppercase;
+        letter-spacing: 0.13em;
+        font-weight: 700;
+      }
+      .docket .hd .no {
+        color: var(--gold-ink);
+      }
+      .case-card {
+        margin-top: 13px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+      }
+      .case-card .q {
+        font-weight: 600;
+        font-size: 14.5px;
+      }
+      .case-card .ev {
+        color: var(--ivory-dim);
+        font-size: 12.5px;
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .case-card .ev svg.i {
+        width: 14px;
+        height: 14px;
+        color: var(--green);
+        flex: 0 0 auto;
+        margin-top: 3px;
+      }
+      .jurors {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin: 15px 0;
+      }
+      .juror {
+        background: var(--ink-3);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 11px 4px 9px;
+        text-align: center;
+        animation: none;
+      }
+      .juror:nth-child(2) {
+        animation-delay: 0.07s;
+      }
+      .juror:nth-child(3) {
+        animation-delay: 0.14s;
+      }
+      .juror:nth-child(4) {
+        animation-delay: 0.21s;
+      }
+      .juror:nth-child(5) {
+        animation-delay: 0.28s;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+      }
+      .juror .av {
+        width: 25px;
+        height: 25px;
+        margin: 0 auto;
+        border-radius: 7px;
+        background: var(--ink-4);
+        border: 1px solid rgba(199, 164, 90, 0.32);
+        display: grid;
+        place-items: center;
+        color: var(--gold-ink);
+      }
+      .juror .av svg.i {
+        width: 13px;
+        height: 13px;
+      }
+      .juror .v {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.12);
+        border: 1px solid rgba(199, 164, 90, 0.3);
+        border-radius: 100px;
+        padding: 2px 6px;
+      }
+      .consensus {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: rgba(199, 164, 90, 0.08);
+        border: 1px solid rgba(199, 164, 90, 0.28);
+        border-radius: 10px;
+        padding: 12px 15px;
+      }
+      .consensus .lbl {
+        font-size: 11.5px;
+        color: var(--ivory-dim);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .consensus .lbl svg.i {
+        width: 14px;
+        height: 14px;
+        color: var(--gold-ink);
+      }
+      .verdict-pill {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.14);
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        border-radius: 100px;
+        padding: 4px 11px;
+      }
+      .settle {
+        margin-top: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--green);
+        font-size: 12.5px;
+        font-weight: 600;
+      }
+      .settle svg.i {
+        width: 15px;
+        height: 15px;
+      }
 
       /* ---- proof strip ---- */
-      .proof { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.18); }
-      .proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
-      @media (max-width: 760px) { .proof-grid { grid-template-columns: repeat(2, 1fr); } .stat:nth-child(2){border-right:0} }
-      .stat { padding: 34px 24px; border-right: 1px solid var(--border); }
-      .stat:last-child { border-right: 0; }
-      .stat-n { font-size: clamp(34px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-      .stat-n.gold { color: var(--gold-ink); }
-      .stat .l { color: var(--ivory-dim); font-size: 13.5px; margin-top: 5px; }
+      .proof {
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.18);
+      }
+      .proof-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+      @media (max-width: 760px) {
+        .proof-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .stat:nth-child(2) {
+          border-right: 0;
+        }
+      }
+      .stat {
+        padding: 34px 24px;
+        border-right: 1px solid var(--border);
+      }
+      .stat:last-child {
+        border-right: 0;
+      }
+      .stat-n {
+        font-size: clamp(34px, 4vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat-n.gold {
+        color: var(--ivory);
+      }
+      .stat .l {
+        color: var(--ivory-dim);
+        font-size: 13.5px;
+        margin-top: 5px;
+      }
 
       /* ---- sections ---- */
-      section { position: relative; padding: 96px 0; }
-      .eyebrow { color: var(--oxblood-ink); font-weight: 700; font-size: 12.5px; letter-spacing: 0.16em; text-transform: uppercase; font-family: "Switzer", sans-serif; }
-      h2 { font-size: 44px; line-height: 1.08; letter-spacing: -0.02em; margin: 14px 0 0; text-wrap: balance; }
-      @media (max-width: 480px) { h2 { font-size: 32px; } }
-      .sub { color: var(--ivory-dim); font-size: 17.5px; margin: 16px 0 0; max-width: 660px; }
-      .sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
-      .sec-head .more { color: var(--gold-ink); font-weight: 600; font-size: 14.5px; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
-      .sec-head .more svg.i { width: 16px; height: 16px; }
+      section {
+        position: relative;
+        padding: 96px 0;
+      }
+      .eyebrow {
+        color: var(--oxblood-ink);
+        font-weight: 700;
+        font-size: 12.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-family: "Switzer", sans-serif;
+      }
+      h2 {
+        font-size: 44px;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        margin: 14px 0 0;
+        text-wrap: balance;
+      }
+      @media (max-width: 480px) {
+        h2 {
+          font-size: 32px;
+        }
+      }
+      .sub {
+        color: var(--ivory-dim);
+        font-size: 17.5px;
+        margin: 16px 0 0;
+        max-width: 660px;
+      }
+      .sec-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .sec-head .more {
+        color: var(--gold-ink);
+        font-weight: 600;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        white-space: nowrap;
+      }
+      .sec-head .more svg.i {
+        width: 16px;
+        height: 16px;
+      }
 
       /* docket flow (how it works) */
-      .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 50px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--ink-2); }
-      @media (max-width: 880px) { .flow { grid-template-columns: 1fr 1fr; } }
-      .node { padding: 24px 20px; border-right: 1px solid var(--border); }
-      .node:last-child { border-right: 0; }
-      @media (max-width: 880px) { .node { border-bottom: 1px solid var(--border); } }
-      .node .step { font-family: "Zodiak", serif; font-size: 13px; color: var(--gold-ink); font-weight: 700; letter-spacing: 0.06em; }
-      .node .ic { width: 38px; height: 38px; border-radius: 8px; background: var(--ink-4); border: 1px solid var(--border-2); display: grid; place-items: center; color: var(--oxblood-ink); margin-top: 14px; }
-      .node .ic svg.i { width: 19px; height: 19px; }
-      .node h4 { margin: 14px 0 6px; font-size: 15.5px; font-weight: 700; font-family: "Switzer", sans-serif; }
-      .node p { color: var(--ivory-dim); font-size: 13px; margin: 0; }
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        margin-top: 50px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--ink-2);
+      }
+      @media (max-width: 880px) {
+        .flow {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 520px) {
+        .flow {
+          grid-template-columns: 1fr;
+        }
+      }
+      .node {
+        padding: 24px 20px;
+        border-right: 1px solid var(--border);
+      }
+      .node:last-child {
+        border-right: 0;
+      }
+      @media (max-width: 880px) {
+        .node {
+          border-bottom: 1px solid var(--border);
+        }
+      }
+      .node .step {
+        font-family: "Zodiak", serif;
+        font-size: 13px;
+        color: var(--gold-ink);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+      .node .ic {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: var(--ink-4);
+        border: 1px solid var(--border-2);
+        display: grid;
+        place-items: center;
+        color: var(--oxblood-ink);
+        margin-top: 14px;
+      }
+      .node .ic svg.i {
+        width: 19px;
+        height: 19px;
+      }
+      .node h4 {
+        margin: 14px 0 6px;
+        font-size: 15.5px;
+        font-weight: 700;
+        font-family: "Switzer", sans-serif;
+      }
+      .node p {
+        color: var(--ivory-dim);
+        font-size: 13px;
+        margin: 0;
+      }
 
       /* trust cards */
-      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 50px; }
-      @media (max-width: 880px) { .cards { grid-template-columns: 1fr; } }
-      .card { background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 26px; transition: transform 0.18s, border-color 0.18s; }
-      .card:hover { transform: translateY(-2px); border-color: var(--border-2); }
-      .card .ic { width: 42px; height: 42px; border-radius: 9px; background: rgba(122,18,32,0.16); border: 1px solid rgba(122,18,32,0.4); display: grid; place-items: center; color: var(--oxblood-ink); }
-      .card .ic svg.i { width: 21px; height: 21px; }
-      .card h3 { font-size: 18px; font-weight: 700; margin: 17px 0 8px; }
-      .card p { color: var(--ivory-dim); font-size: 14px; margin: 0; }
-      .tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 15px; font-size: 11.5px; font-weight: 700; color: var(--gold-ink); background: rgba(200,149,30,0.1); border: 1px solid rgba(200,149,30,0.28); border-radius: 100px; padding: 4px 11px; }
-      .tag svg.i { width: 12px; height: 12px; }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 50px;
+      }
+      @media (max-width: 880px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--ink-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 26px;
+        transition:
+          transform 0.18s,
+          border-color 0.18s;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-2);
+      }
+      .card .ic {
+        width: 42px;
+        height: 42px;
+        border-radius: 9px;
+        background: rgba(115, 127, 140, 0.16);
+        border: 1px solid rgba(115, 127, 140, 0.4);
+        display: grid;
+        place-items: center;
+        color: var(--oxblood-ink);
+      }
+      .card .ic svg.i {
+        width: 21px;
+        height: 21px;
+      }
+      .card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 17px 0 8px;
+      }
+      .card p {
+        color: var(--ivory-dim);
+        font-size: 14px;
+        margin: 0;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 15px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.1);
+        border: 1px solid rgba(199, 164, 90, 0.28);
+        border-radius: 100px;
+        padding: 4px 11px;
+      }
+      .tag svg.i {
+        width: 12px;
+        height: 12px;
+      }
 
       /* solutions */
-      .grid6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 46px; }
-      @media (max-width: 760px) { .grid6 { grid-template-columns: 1fr; } }
-      .mini { background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start; transition: border-color 0.18s; }
-      .mini:hover { border-color: var(--border-2); }
-      .mini .ic { width: 38px; height: 38px; flex: 0 0 auto; border-radius: 8px; background: var(--ink-4); border: 1px solid var(--border-2); display: grid; place-items: center; color: var(--gold-ink); }
-      .mini .ic svg.i { width: 19px; height: 19px; }
-      .mini b { font-weight: 700; font-size: 15px; font-family: "Switzer", sans-serif; }
-      .mini span { display: block; color: var(--ivory-dim); font-size: 13px; margin-top: 3px; }
+      .grid6 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 46px;
+      }
+      @media (max-width: 760px) {
+        .grid6 {
+          grid-template-columns: 1fr;
+        }
+      }
+      .mini {
+        background: var(--ink-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 20px;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        transition: border-color 0.18s;
+      }
+      .mini:hover {
+        border-color: var(--border-2);
+      }
+      .mini .ic {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 auto;
+        border-radius: 8px;
+        background: var(--ink-4);
+        border: 1px solid var(--border-2);
+        display: grid;
+        place-items: center;
+        color: var(--gold-ink);
+      }
+      .mini .ic svg.i {
+        width: 19px;
+        height: 19px;
+      }
+      .mini b {
+        font-weight: 700;
+        font-size: 15px;
+        font-family: "Switzer", sans-serif;
+      }
+      .mini span {
+        display: block;
+        color: var(--ivory-dim);
+        font-size: 13px;
+        margin-top: 3px;
+      }
 
       /* live */
-      .live { background: rgba(0,0,0,0.18); border-top: 1px solid var(--border); }
-      .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 50px; }
-      @media (max-width: 880px) { .live-grid { grid-template-columns: 1fr; } }
-      .panel { background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 26px; }
-      .panel h3 { margin: 0 0 16px; font-size: 16px; font-family: "Switzer", sans-serif; font-weight: 700; }
-      .addr { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
-      .addr:last-child { border-bottom: 0; }
-      .addr .k { color: var(--ivory-dim); }
-      .addr a { color: var(--gold-ink); }
-      .big-stat { font-size: 56px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: var(--gold-ink); }
-      .big-stat .unit { font-size: 16px; color: var(--ivory-dim); font-weight: 500; font-family: "Switzer", sans-serif; }
+      .live {
+        background: rgba(0, 0, 0, 0.18);
+        border-top: 1px solid var(--border);
+      }
+      .live-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-top: 50px;
+      }
+      @media (max-width: 880px) {
+        .live-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .panel {
+        background: var(--ink-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 26px;
+      }
+      .live-grid > *,
+      .panel,
+      .docket {
+        min-width: 0;
+      }
+      .panel h3 {
+        margin: 0 0 16px;
+        font-size: 16px;
+        font-family: "Switzer", sans-serif;
+        font-weight: 700;
+      }
+      .addr {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13.5px;
+      }
+      .addr:last-child {
+        border-bottom: 0;
+      }
+      .addr .k {
+        color: var(--ivory-dim);
+      }
+      .addr a {
+        color: var(--gold-ink);
+        overflow-wrap: anywhere;
+      }
+      .big-stat {
+        font-size: 56px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        color: var(--gold-ink);
+      }
+      .big-stat .unit {
+        font-size: 16px;
+        color: var(--ivory-dim);
+        font-weight: 500;
+        font-family: "Switzer", sans-serif;
+      }
 
       /* faq */
-      details { border-bottom: 1px solid var(--border); padding: 18px 0; }
-      summary { cursor: pointer; font-weight: 600; font-size: 16.5px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
-      summary::-webkit-details-marker { display: none; }
-      summary::after { content: "+"; color: var(--gold-ink); font-size: 22px; line-height: 1; }
-      details[open] summary::after { content: "−"; }
-      details p { color: var(--ivory-dim); margin: 12px 0 0; font-size: 15px; }
+      details {
+        border-bottom: 1px solid var(--border);
+        padding: 18px 0;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 16.5px;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      summary::after {
+        content: "+";
+        color: var(--gold-ink);
+        font-size: 22px;
+        line-height: 1;
+      }
+      details[open] summary::after {
+        content: "−";
+      }
+      details p {
+        color: var(--ivory-dim);
+        margin: 12px 0 0;
+        font-size: 15px;
+      }
 
       /* band + footer */
-      .band { position: relative; border: 1px solid var(--border-2); border-radius: 14px; padding: 64px 28px; text-align: center; overflow: hidden; background: radial-gradient(120% 150% at 50% 0%, rgba(122,18,32,0.32), transparent 60%); }
-      footer { border-top: 1px solid var(--border); padding: 40px 0; color: var(--dim); font-size: 13.5px; }
-      .foot-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
-      .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
-      .foot-links a:hover { color: var(--ivory); }
-      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+      .band {
+        position: relative;
+        border: 1px solid var(--border-2);
+        border-radius: 14px;
+        padding: 64px 28px;
+        text-align: center;
+        overflow: hidden;
+        background: var(--ink-2);
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 40px 0;
+        color: var(--dim);
+        font-size: 13.5px;
+      }
+      .foot-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .foot-links {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+      .foot-links a:hover {
+        color: var(--ivory);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
 
       /* ---- how-it-works page: lifecycle steps + determinism panel + panel/appeal table ---- */
-      .steps { margin-top: 50px; display: grid; gap: 16px; }
-      .lstep { display: grid; grid-template-columns: 64px 1fr; gap: 22px; background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 26px 28px; align-items: start; transition: border-color 0.18s; }
-      .lstep:hover { border-color: var(--border-2); }
-      @media (max-width: 620px) { .lstep { grid-template-columns: 1fr; gap: 14px; } }
-      .lstep .num { font-family: "Zodiak", serif; font-size: 30px; font-weight: 800; color: var(--gold-ink); line-height: 1; }
-      .lstep .num .of { display: block; font-size: 11px; color: var(--dim); font-family: "Switzer", sans-serif; font-weight: 700; letter-spacing: 0.1em; margin-top: 8px; }
-      .lstep .icbadge { width: 38px; height: 38px; border-radius: 9px; background: rgba(122,18,32,0.16); border: 1px solid rgba(122,18,32,0.4); display: grid; place-items: center; color: var(--oxblood-ink); margin-top: 14px; }
-      .lstep .icbadge svg.i { width: 19px; height: 19px; }
-      .lstep h3 { font-size: 20px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 11px; }
-      .lstep h3 .hic { width: 30px; height: 30px; flex: 0 0 auto; border-radius: 8px; background: rgba(122,18,32,0.16); border: 1px solid rgba(122,18,32,0.4); display: grid; place-items: center; color: var(--oxblood-ink); }
-      .lstep h3 .hic svg.i { width: 16px; height: 16px; }
-      .lstep p { color: var(--ivory-dim); font-size: 14.5px; margin: 12px 0 0; }
-      .lstep p .mono { color: var(--gold-ink); }
-      .lstep .meta { margin-top: 14px; display: flex; gap: 9px; flex-wrap: wrap; }
-      .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--ivory-dim); background: var(--ink-4); border: 1px solid var(--border); border-radius: 100px; padding: 4px 11px; }
-      .chip svg.i { width: 12px; height: 12px; color: var(--gold-ink); }
-      .chip.gold { color: var(--gold-ink); background: rgba(200,149,30,0.1); border-color: rgba(200,149,30,0.28); }
-      .chip.green { color: var(--green); background: rgba(111,174,126,0.1); border-color: rgba(111,174,126,0.3); }
+      .steps {
+        margin-top: 50px;
+        display: grid;
+        gap: 16px;
+      }
+      .lstep {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 22px;
+        background: var(--ink-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 26px 28px;
+        align-items: start;
+        transition: border-color 0.18s;
+      }
+      .lstep:hover {
+        border-color: var(--border-2);
+      }
+      @media (max-width: 620px) {
+        .lstep {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+      }
+      .lstep .num {
+        font-family: "Zodiak", serif;
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--gold-ink);
+        line-height: 1;
+      }
+      .lstep .num .of {
+        display: block;
+        font-size: 11px;
+        color: var(--dim);
+        font-family: "Switzer", sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        margin-top: 8px;
+      }
+      .lstep .icbadge {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        background: rgba(115, 127, 140, 0.16);
+        border: 1px solid rgba(115, 127, 140, 0.4);
+        display: grid;
+        place-items: center;
+        color: var(--oxblood-ink);
+        margin-top: 14px;
+      }
+      .lstep .icbadge svg.i {
+        width: 19px;
+        height: 19px;
+      }
+      .lstep h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+      .lstep h3 .hic {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 auto;
+        border-radius: 8px;
+        background: rgba(115, 127, 140, 0.16);
+        border: 1px solid rgba(115, 127, 140, 0.4);
+        display: grid;
+        place-items: center;
+        color: var(--oxblood-ink);
+      }
+      .lstep h3 .hic svg.i {
+        width: 16px;
+        height: 16px;
+      }
+      .lstep p {
+        color: var(--ivory-dim);
+        font-size: 14.5px;
+        margin: 12px 0 0;
+      }
+      .lstep p .mono {
+        color: var(--gold-ink);
+      }
+      .lstep .meta {
+        margin-top: 14px;
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ivory-dim);
+        background: var(--ink-4);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 4px 11px;
+      }
+      .chip svg.i {
+        width: 12px;
+        height: 12px;
+        color: var(--gold-ink);
+      }
+      .chip.gold {
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.1);
+        border-color: rgba(199, 164, 90, 0.28);
+      }
+      .chip.green {
+        color: var(--green);
+        background: rgba(154, 166, 178, 0.1);
+        border-color: rgba(154, 166, 178, 0.3);
+      }
 
       /* determinism split */
-      .det { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; margin-top: 50px; align-items: center; }
-      @media (max-width: 880px) { .det { grid-template-columns: 1fr; gap: 28px; } }
-      .det .checklist { list-style: none; margin: 22px 0 0; padding: 0; }
-      .det .checklist li { display: flex; gap: 12px; align-items: flex-start; padding: 13px 0; border-bottom: 1px solid var(--border); }
-      .det .checklist li:last-child { border-bottom: 0; }
-      .det .checklist li svg.i { width: 18px; height: 18px; color: var(--green); flex: 0 0 auto; margin-top: 3px; }
-      .det .checklist li b { font-weight: 700; font-family: "Switzer", sans-serif; }
-      .det .checklist li span { color: var(--ivory-dim); font-size: 14.5px; }
-      .histo { background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 26px; }
-      .histo h3 { margin: 0 0 4px; font-size: 16px; font-family: "Switzer", sans-serif; font-weight: 700; }
-      .histo .cap { color: var(--dim); font-size: 12.5px; margin: 0 0 18px; }
-      .bar-row { display: grid; grid-template-columns: 96px 1fr 52px; gap: 12px; align-items: center; padding: 7px 0; font-size: 13px; }
-      .bar-row .lab { font-weight: 800; font-size: 12px; color: var(--gold-ink); }
-      .bar-row .track { height: 18px; background: var(--ink-4); border-radius: 100px; overflow: hidden; border: 1px solid var(--border); }
-      .bar-row .fill { height: 100%; background: var(--seal); border-radius: 100px; }
-      .bar-row .cnt { color: var(--ivory-dim); text-align: right; }
-      .histo .pass { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; font-weight: 800; font-size: 12px; letter-spacing: 0.04em; color: var(--green); background: rgba(111,174,126,0.12); border: 1px solid rgba(111,174,126,0.34); border-radius: 100px; padding: 5px 13px; }
-      .histo .pass svg.i { width: 14px; height: 14px; }
+      .det {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 40px;
+        margin-top: 50px;
+        align-items: center;
+      }
+      @media (max-width: 880px) {
+        .det {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+      }
+      .det .checklist {
+        list-style: none;
+        margin: 22px 0 0;
+        padding: 0;
+      }
+      .det .checklist li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .det .checklist li:last-child {
+        border-bottom: 0;
+      }
+      .det .checklist li svg.i {
+        width: 18px;
+        height: 18px;
+        color: var(--green);
+        flex: 0 0 auto;
+        margin-top: 3px;
+      }
+      .det .checklist li b {
+        font-weight: 700;
+        font-family: "Switzer", sans-serif;
+      }
+      .det .checklist li span {
+        color: var(--ivory-dim);
+        font-size: 14.5px;
+      }
+      .histo {
+        background: var(--ink-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 26px;
+      }
+      .histo h3 {
+        margin: 0 0 4px;
+        font-size: 16px;
+        font-family: "Switzer", sans-serif;
+        font-weight: 700;
+      }
+      .histo .cap {
+        color: var(--dim);
+        font-size: 12.5px;
+        margin: 0 0 18px;
+      }
+      .bar-row {
+        display: grid;
+        grid-template-columns: 96px 1fr 52px;
+        gap: 12px;
+        align-items: center;
+        padding: 7px 0;
+        font-size: 13px;
+      }
+      .bar-row .lab {
+        font-weight: 800;
+        font-size: 12px;
+        color: var(--gold-ink);
+      }
+      .bar-row .track {
+        height: 18px;
+        background: var(--ink-4);
+        border-radius: 100px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .bar-row .fill {
+        height: 100%;
+        background: #c7a45a;
+        border-radius: 100px;
+      }
+      .bar-row .cnt {
+        color: var(--ivory-dim);
+        text-align: right;
+      }
+      .histo .pass {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 18px;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: var(--green);
+        background: rgba(154, 166, 178, 0.12);
+        border: 1px solid rgba(154, 166, 178, 0.34);
+        border-radius: 100px;
+        padding: 5px 13px;
+      }
+      .histo .pass svg.i {
+        width: 14px;
+        height: 14px;
+      }
 
       /* panel / appeal table */
-      .ptable { margin-top: 50px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--ink-2); }
-      .prow { display: grid; grid-template-columns: 1.3fr 2.4fr 1fr; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--border); align-items: center; font-size: 14px; }
-      .prow:last-child { border-bottom: 0; }
-      .prow.head { background: rgba(0,0,0,0.22); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: var(--dim); }
-      @media (max-width: 760px) { .prow { grid-template-columns: 1fr 1fr; gap: 8px 16px; } .prow .pd { grid-column: 1 / -1; order: 5; color: var(--ivory-dim); } .prow.head { display: none; } }
-      .prow .pn { font-weight: 700; font-family: "Switzer", sans-serif; display: flex; align-items: center; gap: 9px; }
-      .prow .pn svg.i { width: 17px; height: 17px; color: var(--oxblood-ink); flex: 0 0 auto; }
-      .prow .pd { color: var(--ivory-dim); font-size: 13.5px; }
-      .live-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 11.5px; letter-spacing: 0.04em; color: var(--green); background: rgba(111,174,126,0.12); border: 1px solid rgba(111,174,126,0.34); border-radius: 100px; padding: 3px 11px; }
-      .live-tag svg.i { width: 12px; height: 12px; }
-      .test-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 11.5px; letter-spacing: 0.04em; color: var(--gold-ink); background: rgba(200,149,30,0.1); border: 1px solid rgba(200,149,30,0.3); border-radius: 100px; padding: 3px 11px; }
-      .test-tag svg.i { width: 12px; height: 12px; }
+      .ptable {
+        margin-top: 50px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--ink-2);
+      }
+      .prow {
+        display: grid;
+        grid-template-columns: 1.3fr 2.4fr 1fr;
+        gap: 16px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+        font-size: 14px;
+      }
+      .prow:last-child {
+        border-bottom: 0;
+      }
+      .prow.head {
+        background: rgba(0, 0, 0, 0.22);
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        color: var(--dim);
+      }
+      @media (max-width: 760px) {
+        .prow {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px 16px;
+        }
+        .prow .pd {
+          grid-column: 1 / -1;
+          order: 5;
+          color: var(--ivory-dim);
+        }
+        .prow.head {
+          display: none;
+        }
+      }
+      .prow .pn {
+        font-weight: 700;
+        font-family: "Switzer", sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .prow .pn svg.i {
+        width: 17px;
+        height: 17px;
+        color: var(--oxblood-ink);
+        flex: 0 0 auto;
+      }
+      .prow .pd {
+        color: var(--ivory-dim);
+        font-size: 13.5px;
+      }
+      .live-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 800;
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        color: var(--green);
+        background: rgba(154, 166, 178, 0.12);
+        border: 1px solid rgba(154, 166, 178, 0.34);
+        border-radius: 100px;
+        padding: 3px 11px;
+      }
+      .live-tag svg.i {
+        width: 12px;
+        height: 12px;
+      }
+      .test-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 800;
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.1);
+        border: 1px solid rgba(199, 164, 90, 0.3);
+        border-radius: 100px;
+        padding: 3px 11px;
+      }
+      .test-tag svg.i {
+        width: 12px;
+        height: 12px;
+      }
 
       /* honesty call-out */
-      .honesty { border: 1px solid rgba(122,18,32,0.5); border-radius: 14px; padding: 38px 32px; background: radial-gradient(120% 150% at 0% 0%, rgba(122,18,32,0.28), transparent 62%); }
-      .honesty .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--oxblood-ink); background: rgba(122,18,32,0.18); border: 1px solid rgba(122,18,32,0.5); border-radius: 100px; padding: 5px 13px; }
-      .honesty .badge svg.i { width: 14px; height: 14px; }
-      .honesty h2 { font-size: 34px; margin-top: 16px; }
-      .honesty p { color: var(--ivory-dim); font-size: 16px; margin: 14px 0 0; max-width: 760px; }
+      .honesty {
+        border: 1px solid rgba(115, 127, 140, 0.5);
+        border-radius: 14px;
+        padding: 38px 32px;
+        background: var(--ink-2);
+      }
+      .honesty .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--oxblood-ink);
+        background: rgba(115, 127, 140, 0.18);
+        border: 1px solid rgba(115, 127, 140, 0.5);
+        border-radius: 100px;
+        padding: 5px 13px;
+      }
+      .honesty .badge svg.i {
+        width: 14px;
+        height: 14px;
+      }
+      .honesty h2 {
+        font-size: 34px;
+        margin-top: 16px;
+      }
+      .honesty p {
+        color: var(--ivory-dim);
+        font-size: 16px;
+        margin: 14px 0 0;
+        max-width: 760px;
+      }
 
       /* verdict legend */
-      .verdicts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 50px; }
-      @media (max-width: 880px) { .verdicts { grid-template-columns: 1fr 1fr; } }
-      @media (max-width: 480px) { .verdicts { grid-template-columns: 1fr; } }
-      .vcard { background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 22px; transition: border-color 0.18s; }
-      .vcard:hover { border-color: var(--border-2); }
-      .vcard .vlabel { display: inline-flex; align-items: center; font-weight: 800; font-size: 12px; letter-spacing: 0.02em; color: var(--gold-ink); background: rgba(200,149,30,0.14); border: 1px solid rgba(200,149,30,0.4); border-radius: 100px; padding: 4px 12px; }
-      .vcard p { color: var(--ivory-dim); font-size: 13.5px; margin: 14px 0 0; }
-      .vcard .splits { margin-top: 14px; display: flex; gap: 7px; flex-wrap: wrap; }
-      .vcard .splits .s { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--ivory-dim); background: var(--ink-4); border: 1px solid var(--border); border-radius: 7px; padding: 3px 9px; }
+      .verdicts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-top: 50px;
+      }
+      @media (max-width: 880px) {
+        .verdicts {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 480px) {
+        .verdicts {
+          grid-template-columns: 1fr;
+        }
+      }
+      .vcard {
+        background: var(--ink-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px;
+        transition: border-color 0.18s;
+      }
+      .vcard:hover {
+        border-color: var(--border-2);
+      }
+      .vcard .vlabel {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: var(--gold-ink);
+        background: rgba(199, 164, 90, 0.14);
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        border-radius: 100px;
+        padding: 4px 12px;
+      }
+      .vcard p {
+        color: var(--ivory-dim);
+        font-size: 13.5px;
+        margin: 14px 0 0;
+      }
+      .vcard .splits {
+        margin-top: 14px;
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .vcard .splits .s {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        color: var(--ivory-dim);
+        background: var(--ink-4);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 3px 9px;
+      }
     </style>
   </head>
   <body>
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-      <symbol id="i-scale" viewBox="0 0 24 24"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
-      <symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></symbol>
-      <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></symbol>
-      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
-      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
-      <symbol id="i-check2" viewBox="0 0 24 24"><path d="M18 6 7 17l-5-5M22 10l-7.5 7.5L13 16"/></symbol>
-      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 11v6M9 14h6"/></symbol>
-      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
-      <symbol id="i-circlecheck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
-      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
-      <symbol id="i-bars" viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"/></symbol>
-      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
-      <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/></symbol>
-      <symbol id="i-handshake" viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l3.6-3.6"/><path d="m16 16 2-2a1 1 0 0 0 0-1.4L13 7.5 8 12l-2-2a1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 0 1.4l5 5"/><path d="m21 14-7-7-2 2"/></symbol>
-      <symbol id="i-umbrella" viewBox="0 0 24 24"><path d="M22 12a10.06 10.06 0 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0M12 2v1"/></symbol>
-      <symbol id="i-trend" viewBox="0 0 24 24"><path d="M22 7 13.5 15.5l-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
-      <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 22h18M4 10h16M5 6l7-4 7 4M6 10v8M10 10v8M14 10v8M18 10v8"/></symbol>
-      <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></symbol>
-      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
-      <symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></symbol>
-      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
-    </defs></svg>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-scale" viewBox="0 0 24 24">
+          <path
+            d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
+          />
+        </symbol>
+        <symbol id="i-play" viewBox="0 0 24 24">
+          <polygon
+            points="6 4 20 12 6 20 6 4"
+            fill="currentColor"
+            stroke="none"
+          />
+        </symbol>
+        <symbol id="i-cpu" viewBox="0 0 24 24">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
+        </symbol>
+        <symbol id="i-link" viewBox="0 0 24 24">
+          <path
+            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+          />
+          <path
+            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+          />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="M20 6 9 17l-5-5" />
+        </symbol>
+        <symbol id="i-check2" viewBox="0 0 24 24">
+          <path d="M18 6 7 17l-5-5M22 10l-7.5 7.5L13 16" />
+        </symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24">
+          <path
+            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+          />
+          <path d="M12 11v6M9 14h6" />
+        </symbol>
+        <symbol id="i-users" viewBox="0 0 24 24">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path
+            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+          />
+          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+        </symbol>
+        <symbol id="i-circlecheck" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-bars" viewBox="0 0 24 24">
+          <path d="M12 20V10M18 20V4M6 20v-4" />
+        </symbol>
+        <symbol id="i-help" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+          <path d="M12 17h.01" />
+        </symbol>
+        <symbol id="i-scroll" viewBox="0 0 24 24">
+          <path
+            d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"
+          />
+          <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+        </symbol>
+        <symbol id="i-handshake" viewBox="0 0 24 24">
+          <path d="m11 17 2 2a1 1 0 0 0 1.4 0l3.6-3.6" />
+          <path
+            d="m16 16 2-2a1 1 0 0 0 0-1.4L13 7.5 8 12l-2-2a1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 0 1.4l5 5"
+          />
+          <path d="m21 14-7-7-2 2" />
+        </symbol>
+        <symbol id="i-umbrella" viewBox="0 0 24 24">
+          <path d="M22 12a10.06 10.06 0 0 0-20 0Z" />
+          <path d="M12 12v8a2 2 0 0 0 4 0M12 2v1" />
+        </symbol>
+        <symbol id="i-trend" viewBox="0 0 24 24">
+          <path d="M22 7 13.5 15.5l-5-5L2 17" />
+          <path d="M16 7h6v6" />
+        </symbol>
+        <symbol id="i-bank" viewBox="0 0 24 24">
+          <path
+            d="M3 22h18M4 10h16M5 6l7-4 7 4M6 10v8M10 10v8M14 10v8M18 10v8"
+          />
+        </symbol>
+        <symbol id="i-flag" viewBox="0 0 24 24">
+          <path
+            d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"
+          />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </symbol>
+        <symbol id="i-code" viewBox="0 0 24 24">
+          <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </symbol>
+      </defs>
+    </svg>
 
     <nav>
       <div class="wrap nav-in">
-        <a class="brand" href="/"><span class="seal"><svg class="i"><use href="#i-scale"/></svg></span> <span class="brand-name">Verdikt</span></a>
+        <a class="brand" href="/"
+          ><span class="seal"
+            ><svg class="i"><use href="#i-scale" /></svg
+          ></span>
+          <span class="brand-name">Verdikt</span></a
+        >
         <div class="nav-links">
           <a class="hide-sm active" href="how-it-works.html">How it works</a>
           <a class="hide-sm" href="solutions.html">Solutions</a>
           <a class="hide-sm" href="developers.html">Developers</a>
           <a class="hide-sm" href="security.html">Security</a>
           <a class="hide-sm" href="/app/courtroom.html">Courtroom</a>
-          <a class="hide-sm" href="https://github.com/Ridwannurudeen/verdikt" target="_blank" rel="noopener">GitHub</a>
+          <a
+            class="hide-sm"
+            href="https://github.com/Ridwannurudeen/verdikt"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
           <a class="btn btn-primary" href="/app/">Launch app</a>
         </div>
       </div>
@@ -334,13 +1550,30 @@
     <header class="hero">
       <div class="wrap hero-grid">
         <div class="rv in">
-          <span class="pill"><span class="dot-live"></span> Live on Somnia Shannon · Agentic L1</span>
-          <span class="kicker">The dispute lifecycle · claim to settlement</span>
+          <span class="pill"
+            ><span class="dot-live"></span> Live on Somnia Shannon · Agentic
+            L1</span
+          >
+          <span class="kicker"
+            >The dispute lifecycle · claim to settlement</span
+          >
           <h1>How a verdict is <span class="seal-word">reached</span>.</h1>
-          <p class="lede">A consumer opens a case with evidence and a panel fee. The court convenes a panel of Somnia validator LLM agents that each run the <b>same inference</b> and must converge <b>byte-identically</b>. The verdict comes back through <span class="mono">onVerdict()</span>, the consumer settles by pull-payment, and the ruling is filed as precedent — no human in the loop.</p>
+          <p class="lede">
+            A consumer opens a case with evidence and a panel fee. The court
+            convenes a panel of Somnia validator LLM agents that each run the
+            <b>same inference</b> and must converge <b>byte-identically</b>. The
+            verdict comes back through <span class="mono">onVerdict()</span>,
+            the consumer settles by pull-payment, and the ruling is filed as
+            precedent — no human in the loop.
+          </p>
           <div class="cta-row">
-            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"><svg class="i"><use href="#i-play"/></svg> Watch a live verdict</a>
-            <a class="btn btn-ghost btn-lg" href="#lifecycle">Read the lifecycle</a>
+            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"
+              ><svg class="i"><use href="#i-play" /></svg> Watch a live
+              verdict</a
+            >
+            <a class="btn btn-ghost btn-lg" href="#lifecycle"
+              >Read the lifecycle</a
+            >
           </div>
           <div class="hero-meta">
             <span class="m"><b>7</b> on-chain steps, claim to precedent</span>
@@ -350,33 +1583,82 @@
         </div>
 
         <div class="docket rv in">
-          <div class="hd"><span>Docket · live ruling</span><span class="no">№ 001</span></div>
+          <div class="hd">
+            <span>Docket · live ruling</span><span class="no">№ 001</span>
+          </div>
           <div class="case-card">
             <div class="q">Did the seller deliver the order?</div>
-            <div class="ev"><svg class="i"><use href="#i-link"/></svg> Courier Oracle attested 3 of 4 units delivered. The payer claims nothing arrived and demands a full refund.</div>
+            <div class="ev">
+              <svg class="i"><use href="#i-link" /></svg> Courier Oracle
+              attested 3 of 4 units delivered. The payer claims nothing arrived
+              and demands a full refund.
+            </div>
           </div>
           <div class="jurors">
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
-            <div class="juror"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="v">SPLIT75</div></div>
+            <div class="juror">
+              <div class="av">
+                <svg class="i"><use href="#i-cpu" /></svg>
+              </div>
+              <div class="v">SPLIT75</div>
+            </div>
+            <div class="juror">
+              <div class="av">
+                <svg class="i"><use href="#i-cpu" /></svg>
+              </div>
+              <div class="v">SPLIT75</div>
+            </div>
+            <div class="juror">
+              <div class="av">
+                <svg class="i"><use href="#i-cpu" /></svg>
+              </div>
+              <div class="v">SPLIT75</div>
+            </div>
+            <div class="juror">
+              <div class="av">
+                <svg class="i"><use href="#i-cpu" /></svg>
+              </div>
+              <div class="v">SPLIT75</div>
+            </div>
+            <div class="juror">
+              <div class="av">
+                <svg class="i"><use href="#i-cpu" /></svg>
+              </div>
+              <div class="v">SPLIT75</div>
+            </div>
           </div>
           <div class="consensus">
-            <span class="lbl"><svg class="i"><use href="#i-check2"/></svg> Byte-identical · 5 of 5 jurors</span>
+            <span class="lbl"
+              ><svg class="i"><use href="#i-check2" /></svg> Byte-identical · 5
+              of 5 jurors</span
+            >
             <span class="verdict-pill">SPLIT · 75% → payee</span>
           </div>
-          <div class="settle"><svg class="i"><use href="#i-circlecheck"/></svg> Attested fact beat the false claim — settled on-chain, no human</div>
+          <div class="settle">
+            <svg class="i"><use href="#i-circlecheck" /></svg> Attested fact
+            beat the false claim — settled on-chain, no human
+          </div>
         </div>
       </div>
     </header>
 
     <div class="proof">
       <div class="wrap proof-grid">
-        <div class="stat"><div class="stat-n gold">5</div><div class="l">validators on the default trial panel</div></div>
-        <div class="stat"><div class="stat-n">100%</div><div class="l">byte-identical at the determinism gate</div></div>
-        <div class="stat"><div class="stat-n">6</div><div class="l">verdict labels, incl. graded splits</div></div>
-        <div class="stat"><div class="stat-n">0.4</div><div class="l">STT to open a case (quoteOpen)</div></div>
+        <div class="stat">
+          <div class="stat-n gold">5</div>
+          <div class="l">validators on the default trial panel</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">100%</div>
+          <div class="l">byte-identical at the determinism gate</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">6</div>
+          <div class="l">verdict labels, incl. graded splits</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">0.4</div>
+          <div class="l">STT to open a case (quoteOpen)</div>
+        </div>
       </div>
     </div>
 
@@ -384,75 +1666,289 @@
       <div class="wrap rv">
         <span class="eyebrow">The problem</span>
         <h2>Contracts can't judge.<br />Agents can't sue each other.</h2>
-        <p class="sub">A smart contract enforces rules, but it can't make a subjective call — "was this delivered as described?", "did the work meet the brief?". A price feed or a rigid parametric rule can't answer those, and a single off-chain bot can't be trusted to. Meanwhile on an Agentic L1, autonomous agents transact constantly — but when a deal goes wrong there is no neutral arbiter, and one agent has no way to take another to court.</p>
+        <p class="sub">
+          A smart contract enforces rules, but it can't make a subjective call —
+          "was this delivered as described?", "did the work meet the brief?". A
+          price feed or a rigid parametric rule can't answer those, and a single
+          off-chain bot can't be trusted to. Meanwhile on an Agentic L1,
+          autonomous agents transact constantly — but when a deal goes wrong
+          there is no neutral arbiter, and one agent has no way to take another
+          to court.
+        </p>
         <div class="cards">
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-help"/></svg></div><h3>Judgment is subjective</h3><p>"Delivered as described" or "violated the charter" is a judgment call. Oracles report facts like price and weather; a claims adjuster weighs context — something rigid on-chain logic was never built to do.</p></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-cpu"/></svg></div><h3>Agents have no court</h3><p>Autonomous agents can fund deals and settle payments, but they cannot sue each other. On a chain whose thesis is agents, subjective disputes between them have no judge at all.</p></div>
-          <div class="card"><div class="ic"><svg class="i"><use href="#i-scale"/></svg></div><h3>One off-chain judge can't be trusted</h3><p>A lone LLM in a server is unverifiable. Verdikt makes the judgment trust-minimized: a subcommittee of Somnia validators each runs the inference and consensus is taken on a byte-identical result.</p></div>
+          <div class="card">
+            <div class="ic">
+              <svg class="i"><use href="#i-help" /></svg>
+            </div>
+            <h3>Judgment is subjective</h3>
+            <p>
+              "Delivered as described" or "violated the charter" is a judgment
+              call. Oracles report facts like price and weather; a claims
+              adjuster weighs context — something rigid on-chain logic was never
+              built to do.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">
+              <svg class="i"><use href="#i-cpu" /></svg>
+            </div>
+            <h3>Agents have no court</h3>
+            <p>
+              Autonomous agents can fund deals and settle payments, but they
+              cannot sue each other. On a chain whose thesis is agents,
+              subjective disputes between them have no judge at all.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">
+              <svg class="i"><use href="#i-scale" /></svg>
+            </div>
+            <h3>One off-chain judge can't be trusted</h3>
+            <p>
+              A lone LLM in a server is unverifiable. Verdikt makes the judgment
+              trust-minimized: a subcommittee of Somnia validators each runs the
+              inference and consensus is taken on a byte-identical result.
+            </p>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="lifecycle" style="background: rgba(0,0,0,0.18); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <section
+      id="lifecycle"
+      style="
+        background: rgba(0, 0, 0, 0.18);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      "
+    >
       <div class="wrap rv">
         <span class="eyebrow">The docket lifecycle · seven steps</span>
         <h2>From an open case to recorded precedent.</h2>
-        <p class="sub">Every step below runs on-chain on Somnia Shannon. The contract convenes the panel itself — there is no admin, no UI, and no human in the settlement path.</p>
+        <p class="sub">
+          Every step below runs on-chain on Somnia Shannon. The contract
+          convenes the panel itself — there is no admin, no UI, and no human in
+          the settlement path.
+        </p>
         <div class="steps">
           <div class="lstep">
             <div class="num">01<span class="of">OPEN</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-folder"/></svg></span> The consumer opens a case</h3>
-              <p>A consumer contract — an escrow, an insurance pool, or an agent-to-agent deal — calls into <span class="mono">VerdiktCourt</span> with the dispute: a question, the structured evidence each side has submitted, and the panel fee. Evidence is formatted deterministically (via <span class="mono">EvidenceLib</span>) so the prompt every validator sees is identical, and it is sanitized and fenced as untrusted so a party can't smuggle instructions into it. Opening a case quotes at <span class="mono">quoteOpen = 0.4 STT</span>, the cost of dispatching the default five-validator panel.</p>
-              <div class="meta"><span class="chip"><svg class="i"><use href="#i-file"/></svg> dispute + evidence + fee</span><span class="chip gold"><svg class="i"><use href="#i-check"/></svg> quoteOpen 0.4 STT</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-folder" /></svg
+                ></span>
+                The consumer opens a case
+              </h3>
+              <p>
+                A consumer contract — an escrow, an insurance pool, or an
+                agent-to-agent deal — calls into
+                <span class="mono">VerdiktCourt</span> with the dispute: a
+                question, the structured evidence each side has submitted, and
+                the panel fee. Evidence is formatted deterministically (via
+                <span class="mono">EvidenceLib</span>) so the prompt every
+                validator sees is identical, and it is sanitized and fenced as
+                untrusted so a party can't smuggle instructions into it. Opening
+                a case quotes at <span class="mono">quoteOpen = 0.4 STT</span>,
+                the cost of dispatching the default five-validator panel.
+              </p>
+              <div class="meta">
+                <span class="chip"
+                  ><svg class="i"><use href="#i-file" /></svg> dispute +
+                  evidence + fee</span
+                ><span class="chip gold"
+                  ><svg class="i"><use href="#i-check" /></svg> quoteOpen 0.4
+                  STT</span
+                >
+              </div>
             </div>
           </div>
           <div class="lstep">
             <div class="num">02<span class="of">CONVENE</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-users"/></svg></span> The court convenes a validator panel</h3>
-              <p>The Court builds a fixed <span class="mono">inferString</span> request — a prompt with a fixed allowed-values set so every juror can only answer with one of the legal labels — and dispatches a panel of Somnia validator LLM agents via <span class="mono">createAdvancedRequest(agentId, cb, selector, payload, subcommitteeSize, threshold, ConsensusType.Majority, timeout)</span>. The contract does this itself: no operator, no wallet prompt. The trial panel is five validators by default, caller-selectable down to three when the validator set is thin.</p>
-              <div class="meta"><span class="chip"><svg class="i"><use href="#i-cpu"/></svg> createAdvancedRequest</span><span class="chip"><svg class="i"><use href="#i-users"/></svg> Majority consensus · panel 5</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-users" /></svg
+                ></span>
+                The court convenes a validator panel
+              </h3>
+              <p>
+                The Court builds a fixed
+                <span class="mono">inferString</span> request — a prompt with a
+                fixed allowed-values set so every juror can only answer with one
+                of the legal labels — and dispatches a panel of Somnia validator
+                LLM agents via
+                <span class="mono"
+                  >createAdvancedRequest(agentId, cb, selector, payload,
+                  subcommitteeSize, threshold, ConsensusType.Majority,
+                  timeout)</span
+                >. The contract does this itself: no operator, no wallet prompt.
+                The trial panel is five validators by default, caller-selectable
+                down to three when the validator set is thin.
+              </p>
+              <div class="meta">
+                <span class="chip"
+                  ><svg class="i"><use href="#i-cpu" /></svg>
+                  createAdvancedRequest</span
+                ><span class="chip"
+                  ><svg class="i"><use href="#i-users" /></svg> Majority
+                  consensus · panel 5</span
+                >
+              </div>
             </div>
           </div>
           <div class="lstep">
             <div class="num">03<span class="of">INFER</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-cpu"/></svg></span> Each validator runs the same inference</h3>
-              <p>Every validator in the subcommittee runs the identical LLM inference over the identical prompt, independently. The allowed-values set constrains each output to a single canonical label (no free-form text to drift on), and each juror's chain-of-thought is captured in an off-chain receipt — retrievable per node at <span class="mono">agents.somnia.network/receipts/&lt;id&gt;</span> — so the reasoning behind every vote is auditable.</p>
-              <div class="meta"><span class="chip"><svg class="i"><use href="#i-cpu"/></svg> inferString · fixed allowedValues</span><span class="chip"><svg class="i"><use href="#i-scroll"/></svg> per-juror receipt</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-cpu" /></svg
+                ></span>
+                Each validator runs the same inference
+              </h3>
+              <p>
+                Every validator in the subcommittee runs the identical LLM
+                inference over the identical prompt, independently. The
+                allowed-values set constrains each output to a single canonical
+                label (no free-form text to drift on), and each juror's
+                chain-of-thought is captured in an off-chain receipt —
+                retrievable per node at
+                <span class="mono"
+                  >agents.somnia.network/receipts/&lt;id&gt;</span
+                >
+                — so the reasoning behind every vote is auditable.
+              </p>
+              <div class="meta">
+                <span class="chip"
+                  ><svg class="i"><use href="#i-cpu" /></svg> inferString ·
+                  fixed allowedValues</span
+                ><span class="chip"
+                  ><svg class="i"><use href="#i-scroll" /></svg> per-juror
+                  receipt</span
+                >
+              </div>
             </div>
           </div>
           <div class="lstep">
             <div class="num">04<span class="of">CONSENSUS</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-check2"/></svg></span> Byte-identical majority consensus</h3>
-              <p>Because the label set is fixed, the validators' outputs are directly comparable, and the platform takes a Majority consensus over them. In practice the panels converge <b>byte-identically</b> — every juror returning the same label — which is the property the determinism gate proved live (PAYEE 5/5). Consensus here is unanimous convergence on one label, not an averaged or split tally.</p>
-              <div class="meta"><span class="chip green"><svg class="i"><use href="#i-check"/></svg> byte-identical 5/5</span><span class="chip"><svg class="i"><use href="#i-check2"/></svg> Majority, threshold = panel</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-check2" /></svg
+                ></span>
+                Byte-identical majority consensus
+              </h3>
+              <p>
+                Because the label set is fixed, the validators' outputs are
+                directly comparable, and the platform takes a Majority consensus
+                over them. In practice the panels converge
+                <b>byte-identically</b> — every juror returning the same label —
+                which is the property the determinism gate proved live (PAYEE
+                5/5). Consensus here is unanimous convergence on one label, not
+                an averaged or split tally.
+              </p>
+              <div class="meta">
+                <span class="chip green"
+                  ><svg class="i"><use href="#i-check" /></svg> byte-identical
+                  5/5</span
+                ><span class="chip"
+                  ><svg class="i"><use href="#i-check2" /></svg> Majority,
+                  threshold = panel</span
+                >
+              </div>
             </div>
           </div>
           <div class="lstep">
             <div class="num">05<span class="of">DELIVER</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-file"/></svg></span> The verdict is delivered programmatically</h3>
-              <p>The platform calls the Court's response handler with the consensus result and a receipt id; the Court decodes it and, after the appeal window, delivers the verdict back to the consumer via <span class="mono">onVerdict(escrowRef, verdict)</span>. There is no off-chain relayer to trust — the verdict arrives as a contract call. The appeal window is short for the live demo (<span class="mono">appealWindow = 60s</span>); the deadline is snapshotted on the ruling so it can't be retro-changed.</p>
-              <div class="meta"><span class="chip gold"><svg class="i"><use href="#i-arrow"/></svg> onVerdict(escrowRef, verdict)</span><span class="chip"><svg class="i"><use href="#i-check"/></svg> appealWindow 60s (demo)</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-file" /></svg
+                ></span>
+                The verdict is delivered programmatically
+              </h3>
+              <p>
+                The platform calls the Court's response handler with the
+                consensus result and a receipt id; the Court decodes it and,
+                after the appeal window, delivers the verdict back to the
+                consumer via
+                <span class="mono">onVerdict(escrowRef, verdict)</span>. There
+                is no off-chain relayer to trust — the verdict arrives as a
+                contract call. The appeal window is short for the live demo
+                (<span class="mono">appealWindow = 60s</span>); the deadline is
+                snapshotted on the ruling so it can't be retro-changed.
+              </p>
+              <div class="meta">
+                <span class="chip gold"
+                  ><svg class="i"><use href="#i-arrow" /></svg>
+                  onVerdict(escrowRef, verdict)</span
+                ><span class="chip"
+                  ><svg class="i"><use href="#i-check" /></svg> appealWindow 60s
+                  (demo)</span
+                >
+              </div>
             </div>
           </div>
           <div class="lstep">
             <div class="num">06<span class="of">SETTLE</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-handshake"/></svg></span> The consumer settles by pull-payment</h3>
-              <p>On <span class="mono">onVerdict</span> the consumer credits the winning party in a <span class="mono">pending[]</span> ledger and the party calls <span class="mono">withdraw()</span> to collect. Pull-payment is deliberate: a reverting recipient can't brick finalization. A guard prevents settling the same deal twice, and graded splits pay out at the verdict's ratio — a live SPLIT75 credited the payee 0.0075 STT and the payer 0.0025 STT. Finalization is permissionless, so a keeper can drive it.</p>
-              <div class="meta"><span class="chip green"><svg class="i"><use href="#i-circlecheck"/></svg> pull-payment · withdraw()</span><span class="chip"><svg class="i"><use href="#i-shield"/></svg> no double-settle</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-handshake" /></svg
+                ></span>
+                The consumer settles by pull-payment
+              </h3>
+              <p>
+                On <span class="mono">onVerdict</span> the consumer credits the
+                winning party in a <span class="mono">pending[]</span> ledger
+                and the party calls <span class="mono">withdraw()</span> to
+                collect. Pull-payment is deliberate: a reverting recipient can't
+                brick finalization. A guard prevents settling the same deal
+                twice, and graded splits pay out at the verdict's ratio — a live
+                SPLIT75 credited the payee 0.0075 STT and the payer 0.0025 STT.
+                Finalization is permissionless, so a keeper can drive it.
+              </p>
+              <div class="meta">
+                <span class="chip green"
+                  ><svg class="i"><use href="#i-circlecheck" /></svg>
+                  pull-payment · withdraw()</span
+                ><span class="chip"
+                  ><svg class="i"><use href="#i-shield" /></svg> no
+                  double-settle</span
+                >
+              </div>
             </div>
           </div>
           <div class="lstep">
             <div class="num">07<span class="of">RECORD</span></div>
             <div>
-              <h3><span class="hic"><svg class="i"><use href="#i-scroll"/></svg></span> The ruling is filed as precedent</h3>
-              <p>Once a case is final, anyone can record it into <span class="mono">VerdiktRegistry</span> — a permissionless, append-only index that reads <span class="mono">court.getCase</span> and stores the verdict plus receipt id, indexed by topic and consumer. The result is queryable, on-chain, AI-authored case law that the next dispute's evidence can cite as a prior. The party's win/loss/split record is also written to <span class="mono">VerdiktReputation</span> as a portable credential.</p>
-              <div class="meta"><span class="chip gold"><svg class="i"><use href="#i-scroll"/></svg> VerdiktRegistry · precedent</span><span class="chip"><svg class="i"><use href="#i-bars"/></svg> VerdiktReputation</span></div>
+              <h3>
+                <span class="hic"
+                  ><svg class="i"><use href="#i-scroll" /></svg
+                ></span>
+                The ruling is filed as precedent
+              </h3>
+              <p>
+                Once a case is final, anyone can record it into
+                <span class="mono">VerdiktRegistry</span> — a permissionless,
+                append-only index that reads
+                <span class="mono">court.getCase</span> and stores the verdict
+                plus receipt id, indexed by topic and consumer. The result is
+                queryable, on-chain, AI-authored case law that the next
+                dispute's evidence can cite as a prior. The party's
+                win/loss/split record is also written to
+                <span class="mono">VerdiktReputation</span> as a portable
+                credential.
+              </p>
+              <div class="meta">
+                <span class="chip gold"
+                  ><svg class="i"><use href="#i-scroll" /></svg> VerdiktRegistry
+                  · precedent</span
+                ><span class="chip"
+                  ><svg class="i"><use href="#i-bars" /></svg>
+                  VerdiktReputation</span
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -461,62 +1957,177 @@
 
     <section>
       <div class="wrap rv">
-        <span class="eyebrow">Why byte-identical determinism is the whole game</span>
+        <span class="eyebrow"
+          >Why byte-identical determinism is the whole game</span
+        >
         <h2>An AI verdict only counts if validators converge.</h2>
-        <p class="sub">Majority consensus is only meaningful if the jurors can actually agree on the exact same answer. If five validators returned five paraphrases of "the payee wins", there would be nothing to take consensus over. The entire design rests on one claim — that a validator subcommittee converges byte-identically on an LLM verdict — and it was the first thing proven live.</p>
+        <p class="sub">
+          Majority consensus is only meaningful if the jurors can actually agree
+          on the exact same answer. If five validators returned five paraphrases
+          of "the payee wins", there would be nothing to take consensus over.
+          The entire design rests on one claim — that a validator subcommittee
+          converges byte-identically on an LLM verdict — and it was the first
+          thing proven live.
+        </p>
         <div class="det">
           <div>
             <ul class="checklist">
-              <li><svg class="i"><use href="#i-circlecheck"/></svg><span><b>A fixed allowed-values set.</b> Each juror can only return one of the legal labels — no free-form text to drift on — so outputs are directly comparable.</span></li>
-              <li><svg class="i"><use href="#i-circlecheck"/></svg><span><b>The same prompt for everyone.</b> Evidence is formatted deterministically, so every validator sees byte-for-byte the same input.</span></li>
-              <li><svg class="i"><use href="#i-circlecheck"/></svg><span><b>Threshold equals the panel.</b> The gate is run with threshold = panel size, so every validator's raw label is collected and compared — not just a quorum.</span></li>
-              <li><svg class="i"><use href="#i-circlecheck"/></svg><span><b>Proven, not asserted.</b> The determinism gate fired a real five-validator panel on Shannon and it converged byte-identically.</span></li>
+              <li>
+                <svg class="i"><use href="#i-circlecheck" /></svg
+                ><span
+                  ><b>A fixed allowed-values set.</b> Each juror can only return
+                  one of the legal labels — no free-form text to drift on — so
+                  outputs are directly comparable.</span
+                >
+              </li>
+              <li>
+                <svg class="i"><use href="#i-circlecheck" /></svg
+                ><span
+                  ><b>The same prompt for everyone.</b> Evidence is formatted
+                  deterministically, so every validator sees byte-for-byte the
+                  same input.</span
+                >
+              </li>
+              <li>
+                <svg class="i"><use href="#i-circlecheck" /></svg
+                ><span
+                  ><b>Threshold equals the panel.</b> The gate is run with
+                  threshold = panel size, so every validator's raw label is
+                  collected and compared — not just a quorum.</span
+                >
+              </li>
+              <li>
+                <svg class="i"><use href="#i-circlecheck" /></svg
+                ><span
+                  ><b>Proven, not asserted.</b> The determinism gate fired a
+                  real five-validator panel on Shannon and it converged
+                  byte-identically.</span
+                >
+              </li>
             </ul>
           </div>
           <div class="histo">
             <h3>Determinism gate — live on Shannon</h3>
             <p class="cap">Probe 0xDCF1…02bb · panel 5 · requestId 3486438</p>
-            <div class="bar-row"><span class="lab">PAYEE</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="cnt">5/5</span></div>
-            <div class="bar-row"><span class="lab">PAYER</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="cnt">0/5</span></div>
-            <div class="bar-row"><span class="lab">SPLIT</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="cnt">0/5</span></div>
-            <div class="pass"><svg class="i"><use href="#i-check"/></svg> PASS · panel converged byte-identically</div>
+            <div class="bar-row">
+              <span class="lab">PAYEE</span
+              ><span class="track"
+                ><span class="fill" style="width: 100%"></span></span
+              ><span class="cnt">5/5</span>
+            </div>
+            <div class="bar-row">
+              <span class="lab">PAYER</span
+              ><span class="track"
+                ><span class="fill" style="width: 0%"></span></span
+              ><span class="cnt">0/5</span>
+            </div>
+            <div class="bar-row">
+              <span class="lab">SPLIT</span
+              ><span class="track"
+                ><span class="fill" style="width: 0%"></span></span
+              ><span class="cnt">0/5</span>
+            </div>
+            <div class="pass">
+              <svg class="i"><use href="#i-check" /></svg> PASS · panel
+              converged byte-identically
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section style="background: rgba(0,0,0,0.18); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <section
+      style="
+        background: rgba(0, 0, 0, 0.18);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      "
+    >
       <div class="wrap rv">
         <div class="sec-head">
           <div>
             <span class="eyebrow">Panels &amp; appeals</span>
             <h2>The panel sizes to the case — and to the network.</h2>
           </div>
-          <a class="more" href="security.html">See the live gates <svg class="i"><use href="#i-arrow"/></svg></a>
+          <a class="more" href="security.html"
+            >See the live gates <svg class="i"><use href="#i-arrow" /></svg
+          ></a>
         </div>
-        <p class="sub">A trial runs on five validators by default, but the caller can request fewer when the validator set is thin, and the losing party can stake to escalate the case to a larger panel with new evidence.</p>
+        <p class="sub">
+          A trial runs on five validators by default, but the caller can request
+          fewer when the validator set is thin, and the losing party can stake
+          to escalate the case to a larger panel with new evidence.
+        </p>
         <div class="ptable">
-          <div class="prow head"><div>Stage</div><div>What happens</div><div>Status</div></div>
-          <div class="prow">
-            <div class="pn"><svg class="i"><use href="#i-users"/></svg> Trial panel — 5</div>
-            <div class="pd">The default. Five validators each run the inference and converge byte-identically on the verdict.</div>
-            <div><span class="live-tag"><svg class="i"><use href="#i-check"/></svg> LIVE</span></div>
+          <div class="prow head">
+            <div>Stage</div>
+            <div>What happens</div>
+            <div>Status</div>
           </div>
           <div class="prow">
-            <div class="pn"><svg class="i"><use href="#i-shield"/></svg> Resilient panel — 3</div>
-            <div class="pd">The trial panel is caller-selectable down to <span class="mono">MIN_TRIAL_PANEL = 3</span>. When the validator set dips below full strength, a dispute degrades gracefully to the validators present instead of reverting — a degraded 3-validator agent-to-agent case settled byte-identically (PAYER) live.</div>
-            <div><span class="live-tag"><svg class="i"><use href="#i-check"/></svg> LIVE</span></div>
+            <div class="pn">
+              <svg class="i"><use href="#i-users" /></svg> Trial panel — 5
+            </div>
+            <div class="pd">
+              The default. Five validators each run the inference and converge
+              byte-identically on the verdict.
+            </div>
+            <div>
+              <span class="live-tag"
+                ><svg class="i"><use href="#i-check" /></svg> LIVE</span
+              >
+            </div>
           </div>
           <div class="prow">
-            <div class="pn"><svg class="i"><use href="#i-scale"/></svg> Appeal panel — 9</div>
-            <div class="pd">The losing party can appeal by <b>staking</b>; the case escalates to a larger panel of nine and re-tries with <b>new evidence</b> (the honest design under deterministic inference — re-running the same input would only reproduce the same answer). If the original verdict holds, the frivolous appeal's stake is slashed.</div>
-            <div><span class="test-tag"><svg class="i"><use href="#i-flag"/></svg> UNIT-TESTED</span></div>
+            <div class="pn">
+              <svg class="i"><use href="#i-shield" /></svg> Resilient panel — 3
+            </div>
+            <div class="pd">
+              The trial panel is caller-selectable down to
+              <span class="mono">MIN_TRIAL_PANEL = 3</span>. When the validator
+              set dips below full strength, a dispute degrades gracefully to the
+              validators present instead of reverting — a degraded 3-validator
+              agent-to-agent case settled byte-identically (PAYER) live.
+            </div>
+            <div>
+              <span class="live-tag"
+                ><svg class="i"><use href="#i-check" /></svg> LIVE</span
+              >
+            </div>
+          </div>
+          <div class="prow">
+            <div class="pn">
+              <svg class="i"><use href="#i-scale" /></svg> Appeal panel — 9
+            </div>
+            <div class="pd">
+              The losing party can appeal by <b>staking</b>; the case escalates
+              to a larger panel of nine and re-tries with
+              <b>new evidence</b> (the honest design under deterministic
+              inference — re-running the same input would only reproduce the
+              same answer). If the original verdict holds, the frivolous
+              appeal's stake is slashed.
+            </div>
+            <div>
+              <span class="test-tag"
+                ><svg class="i"><use href="#i-flag" /></svg> UNIT-TESTED</span
+              >
+            </div>
           </div>
         </div>
-        <div class="honesty" style="margin-top: 28px;">
-          <span class="badge"><svg class="i"><use href="#i-flag"/></svg> The honest part</span>
+        <div class="honesty" style="margin-top: 28px">
+          <span class="badge"
+            ><svg class="i"><use href="#i-flag" /></svg> The honest part</span
+          >
           <h2>The 9-panel appeal can't run live on this testnet.</h2>
-          <p>We'd rather say it plainly: Somnia's validator subcommittee effectively caps at about six on Shannon today, so a nine-validator appeal panel cannot be convened on the live testnet — requesting more validators than are available reverts. The staked-appeal and slashing path is fully implemented and unit-tested, but it runs live only on a larger validator set. It is exactly why the resilient panel exists, and why trial panels are kept at five or below.</p>
+          <p>
+            We'd rather say it plainly: Somnia's validator subcommittee
+            effectively caps at about six on Shannon today, so a nine-validator
+            appeal panel cannot be convened on the live testnet — requesting
+            more validators than are available reverts. The staked-appeal and
+            slashing path is fully implemented and unit-tested, but it runs live
+            only on a larger validator set. It is exactly why the resilient
+            panel exists, and why trial panels are kept at five or below.
+          </p>
         </div>
       </div>
     </section>
@@ -525,12 +2136,45 @@
       <div class="wrap rv">
         <span class="eyebrow">Verdict types</span>
         <h2>The labels a panel can return.</h2>
-        <p class="sub">The Court runs a fixed allowed-values set so outputs stay byte-comparable. The graded set adds partial-fault buckets and an abstain label — both implemented, and validated live.</p>
+        <p class="sub">
+          The Court runs a fixed allowed-values set so outputs stay
+          byte-comparable. The graded set adds partial-fault buckets and an
+          abstain label — both implemented, and validated live.
+        </p>
         <div class="verdicts">
-          <div class="vcard"><span class="vlabel">PAYER</span><p>The payer wins — funds return to the party that put them in (a refund, or a grant clawed back to the DAO).</p></div>
-          <div class="vcard"><span class="vlabel">PAYEE</span><p>The payee wins — funds are released to the counterparty (the seller is paid, the freelancer is paid, the claim is covered).</p></div>
-          <div class="vcard"><span class="vlabel">SPLIT</span><p>Partial fault, graded in coarse 25% buckets so the court can do justice rather than just pick a winner.</p><div class="splits"><span class="s">SPLIT25</span><span class="s">SPLIT50</span><span class="s">SPLIT75</span></div></div>
-          <div class="vcard"><span class="vlabel">UNDECIDABLE</span><p>On genuinely insufficient evidence the panel abstains and refunds the depositor, rather than guess. Validated live: clear cases stay decisive, contradictory ones abstain.</p></div>
+          <div class="vcard">
+            <span class="vlabel">PAYER</span>
+            <p>
+              The payer wins — funds return to the party that put them in (a
+              refund, or a grant clawed back to the DAO).
+            </p>
+          </div>
+          <div class="vcard">
+            <span class="vlabel">PAYEE</span>
+            <p>
+              The payee wins — funds are released to the counterparty (the
+              seller is paid, the freelancer is paid, the claim is covered).
+            </p>
+          </div>
+          <div class="vcard">
+            <span class="vlabel">SPLIT</span>
+            <p>
+              Partial fault, graded in coarse 25% buckets so the court can do
+              justice rather than just pick a winner.
+            </p>
+            <div class="splits">
+              <span class="s">SPLIT25</span><span class="s">SPLIT50</span
+              ><span class="s">SPLIT75</span>
+            </div>
+          </div>
+          <div class="vcard">
+            <span class="vlabel">UNDECIDABLE</span>
+            <p>
+              On genuinely insufficient evidence the panel abstains and refunds
+              the depositor, rather than guess. Validated live: clear cases stay
+              decisive, contradictory ones abstain.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -539,50 +2183,168 @@
       <div class="wrap rv">
         <span class="eyebrow">Live on Shannon · chain 50312</span>
         <h2>Not a diagram — deployed and exercised on-chain.</h2>
-        <p class="sub">The hardened v4 stack runs the injection-resistant governed prompt, graded verdicts, abstention, and the attestation registry. A real dispute settled where an attested fact overrode a false claim → SPLIT 75%.</p>
+        <p class="sub">
+          The premium stack runs model-pinned inference, two-sided evidence,
+          adaptive panels, abstention, and the attestation registry. A real
+          dispute settled where an attested delivery fact overrode a false
+          claim; ServiceSLA proves how a reference integration uses the same
+          court.
+        </p>
         <div class="live-grid">
           <div class="panel">
-            <h3>Core contracts (v4)</h3>
-            <div class="addr"><span class="k">VerdiktCourt</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x8f2a01D63D3fC0216321970510D0dDFFe9693199" target="_blank" rel="noopener">0x8f2a…3199 ↗</a></div>
-            <div class="addr"><span class="k">VerdiktEscrow</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x000c7dc06aD2664295F181EA2CE119F4c7F902e0" target="_blank" rel="noopener">0x000c…02e0 ↗</a></div>
-            <div class="addr"><span class="k">AttestationRegistry</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0x53e7632709648669249f18fd2Ce7Cdb5744A285A" target="_blank" rel="noopener">0x53e7…285A ↗</a></div>
-            <div class="addr"><span class="k">Precedent Registry</span><a class="mono" href="https://shannon-explorer.somnia.network/address/0xe368032D85004DefeB1a3d8C26e382761BE159a6" target="_blank" rel="noopener">0xe368…59a6 ↗</a></div>
+            <h3>Core contracts (premium)</h3>
+            <div class="addr">
+              <span class="k">VerdiktCourt</span
+              ><a
+                class="mono"
+                href="https://shannon-explorer.somnia.network/address/0xeBbA8b849343150e994BEE34778D4D8D38941eDE"
+                target="_blank"
+                rel="noopener"
+                >0xeBbA…1eDE ↗</a
+              >
+            </div>
+            <div class="addr">
+              <span class="k">VerdiktEscrow</span
+              ><a
+                class="mono"
+                href="https://shannon-explorer.somnia.network/address/0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d"
+                target="_blank"
+                rel="noopener"
+                >0x91Aa…099d ↗</a
+              >
+            </div>
+            <div class="addr">
+              <span class="k">AttestationRegistry</span
+              ><a
+                class="mono"
+                href="https://shannon-explorer.somnia.network/address/0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1"
+                target="_blank"
+                rel="noopener"
+                >0x9CC2…A5f1 ↗</a
+              >
+            </div>
+            <div class="addr">
+              <span class="k">Precedent Registry</span
+              ><a
+                class="mono"
+                href="https://shannon-explorer.somnia.network/address/0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"
+                target="_blank"
+                rel="noopener"
+                >0xd1e9…261E ↗</a
+              >
+            </div>
           </div>
-          <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div
+            class="panel"
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+            "
+          >
             <div>
               <h3>What the lifecycle has produced</h3>
-              <div class="big-stat">5/5 <span class="unit">byte-identical at the determinism gate</span></div>
-              <p class="sub" style="font-size: 15px; margin-top: 14px;">A live panel converged byte-identically; a degraded 3-validator agent-to-agent dispute settled with no human in the loop; the attestation registry let an attested fact override a false claim, ruling SPLIT 75%.</p>
+              <div class="big-stat">
+                5/5
+                <span class="unit">byte-identical at the determinism gate</span>
+              </div>
+              <p class="sub" style="font-size: 15px; margin-top: 14px">
+                A live panel converged byte-identically; a degraded 3-validator
+                agent-to-agent dispute settled with no human in the loop; the
+                attestation registry let an attested fact override a false
+                claim, ruling SPLIT 75%.
+              </p>
             </div>
             <div class="cta-row">
-              <a class="btn btn-primary" href="/app/courtroom.html"><svg class="i"><use href="#i-play"/></svg> Open the courtroom</a>
-              <a class="btn btn-ghost" href="/app/explorer.html">Browse precedent</a>
+              <a class="btn btn-primary" href="/app/courtroom.html"
+                ><svg class="i"><use href="#i-play" /></svg> Open the
+                courtroom</a
+              >
+              <a class="btn btn-ghost" href="/app/explorer.html"
+                >Browse precedent</a
+              >
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section style="background: rgba(0,0,0,0.18); border-top: 1px solid var(--border);">
-      <div class="wrap rv" style="max-width: 820px;">
+    <section
+      style="
+        background: rgba(0, 0, 0, 0.18);
+        border-top: 1px solid var(--border);
+      "
+    >
+      <div class="wrap rv" style="max-width: 820px">
         <span class="eyebrow">FAQ</span>
         <h2>Questions.</h2>
-        <div style="margin-top: 28px;">
-          <details open><summary>Who actually decides the verdict?</summary><p>A panel of Somnia validator LLM agents — convened by the consumer contract itself via <span class="mono">createAdvancedRequest</span>. Each validator runs the same inference independently, and the platform takes a Majority consensus over their labels. There is no admin and no off-chain relayer in the settlement path.</p></details>
-          <details><summary>What does "byte-identical consensus" mean?</summary><p>Every juror returns the exact same label. Because the Court fixes the allowed-values set, the outputs are directly comparable, and in practice the panels converge unanimously — the determinism gate proved it live with PAYEE 5/5. Consensus is convergence on one label, never an averaged or split tally.</p></details>
-          <details><summary>How does the verdict reach my contract?</summary><p>The platform calls the Court's response handler with the consensus result and a receipt id; after the appeal window the Court delivers it to your consumer via <span class="mono">onVerdict(escrowRef, verdict)</span>. Your consumer credits the winner in a <span class="mono">pending[]</span> ledger and they <span class="mono">withdraw()</span> — pull-payment, so a reverting recipient can't brick settlement.</p></details>
-          <details><summary>Can a losing party appeal?</summary><p>Yes — by staking, which escalates the case to a larger nine-validator panel that re-tries with new evidence, and slashes the stake if the original verdict holds. That path is implemented and unit-tested, but it cannot run live on Shannon today: the testnet validator subcommittee caps around six, so a nine-panel can't be convened.</p></details>
+        <div style="margin-top: 28px">
+          <details open>
+            <summary>Who actually decides the verdict?</summary>
+            <p>
+              A panel of Somnia validator LLM agents — convened by the consumer
+              contract itself via
+              <span class="mono">createAdvancedRequest</span>. Each validator
+              runs the same inference independently, and the platform takes a
+              Majority consensus over their labels. There is no admin and no
+              off-chain relayer in the settlement path.
+            </p>
+          </details>
+          <details>
+            <summary>What does "byte-identical consensus" mean?</summary>
+            <p>
+              Every juror returns the exact same label. Because the Court fixes
+              the allowed-values set, the outputs are directly comparable, and
+              in practice the panels converge unanimously — the determinism gate
+              proved it live with PAYEE 5/5. Consensus is convergence on one
+              label, never an averaged or split tally.
+            </p>
+          </details>
+          <details>
+            <summary>How does the verdict reach my contract?</summary>
+            <p>
+              The platform calls the Court's response handler with the consensus
+              result and a receipt id; after the appeal window the Court
+              delivers it to your consumer via
+              <span class="mono">onVerdict(escrowRef, verdict)</span>. Your
+              consumer credits the winner in a
+              <span class="mono">pending[]</span> ledger and they
+              <span class="mono">withdraw()</span> — pull-payment, so a
+              reverting recipient can't brick settlement.
+            </p>
+          </details>
+          <details>
+            <summary>Can a losing party appeal?</summary>
+            <p>
+              Yes — by staking, which escalates the case to a larger
+              nine-validator panel that re-tries with new evidence, and slashes
+              the stake if the original verdict holds. That path is implemented
+              and unit-tested, but it cannot run live on Shannon today: the
+              testnet validator subcommittee caps around six, so a nine-panel
+              can't be convened.
+            </p>
+          </details>
         </div>
       </div>
     </section>
 
-    <section style="padding-top: 0;">
+    <section style="padding-top: 0">
       <div class="wrap rv">
         <div class="band">
-          <h2 style="font-size: 38px;">See the lifecycle run, end to end.</h2>
-          <p class="sub" style="margin: 16px auto 0;">Watch a real dispute get opened, judged by the panel, and settled on-chain — evidence, verdict, and pull-payment, no human in the loop.</p>
-          <div class="cta-row" style="justify-content: center; margin-top: 30px;">
-            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"><svg class="i"><use href="#i-play"/></svg> Watch the courtroom</a>
+          <h2 style="font-size: 38px">See the lifecycle run, end to end.</h2>
+          <p class="sub" style="margin: 16px auto 0">
+            Watch a real dispute get opened, judged by the panel, and settled
+            on-chain — evidence, verdict, and pull-payment, no human in the
+            loop.
+          </p>
+          <div
+            class="cta-row"
+            style="justify-content: center; margin-top: 30px"
+          >
+            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"
+              ><svg class="i"><use href="#i-play" /></svg> Watch the
+              courtroom</a
+            >
             <a class="btn btn-ghost btn-lg" href="/app/">Launch the demo</a>
           </div>
         </div>
@@ -591,7 +2353,13 @@
 
     <footer>
       <div class="wrap foot-row">
-        <span class="brand"><span class="seal" style="width:26px;height:26px"><svg class="i" style="width:15px;height:15px"><use href="#i-scale"/></svg></span> <span class="brand-name" style="font-size:16px">Verdikt</span></span>
+        <span class="brand"
+          ><span class="seal" style="width: 26px; height: 26px"
+            ><svg class="i" style="width: 15px; height: 15px">
+              <use href="#i-scale" /></svg
+          ></span>
+          <span class="brand-name" style="font-size: 16px">Verdikt</span></span
+        >
         <div class="foot-links">
           <a href="/app/">Demo</a>
           <a href="/app/arena.html">Arena</a>
@@ -599,14 +2367,28 @@
           <a href="/app/explorer.html">Explorer</a>
           <a href="/app/analytics.html">Analytics</a>
           <a href="/deck.html">Deck</a>
-          <a href="https://github.com/Ridwannurudeen/verdikt" target="_blank" rel="noopener">GitHub</a>
+          <a
+            href="https://github.com/Ridwannurudeen/verdikt"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
         </div>
         <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
       </div>
     </footer>
 
     <script type="module">
-      const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12 });
+      const io = new IntersectionObserver(
+        (es) =>
+          es.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("in");
+              io.unobserve(e.target);
+            }
+          }),
+        { threshold: 0.12 },
+      );
       document.querySelectorAll(".rv").forEach((el) => io.observe(el));
     </script>
   </body>

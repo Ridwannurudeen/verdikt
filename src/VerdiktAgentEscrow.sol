@@ -52,6 +52,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToDeal;
     /// @notice pull-payment ledger: settled value waiting for its owner to withdraw.
     mapping(address => uint256) public pending;
+    bool private _entered;
 
     event DealCreated(uint256 indexed dealId, address indexed payer, address indexed payee, uint256 amount);
     event Delivered(uint256 indexed dealId);
@@ -67,6 +68,13 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
         _;
+    }
+
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
     }
 
     constructor(address court_, address treasury_) {
@@ -118,13 +126,13 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
 
     // --- dispute + appeal -----------------------------------------------------
 
-    function dispute(uint256 dealId, string calldata evidence) external payable {
+    function dispute(uint256 dealId, string calldata evidence) external payable nonReentrant {
         _dispute(dealId, evidence, court.quoteOpen(), 0);
     }
 
     /// @notice Dispute selecting the trial panel size, so an autonomous agent can degrade to the
     /// validators currently available (in [court.MIN_TRIAL_PANEL, 5]) rather than have its dispute revert.
-    function dispute(uint256 dealId, string calldata evidence, uint8 trialPanel) external payable {
+    function dispute(uint256 dealId, string calldata evidence, uint8 trialPanel) external payable nonReentrant {
         _dispute(dealId, evidence, court.quoteOpen(trialPanel), trialPanel);
     }
 
@@ -135,16 +143,16 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
         require(msg.value >= fee, "fee too low");
 
         d.status = DealStatus.Disputed;
+        _refundExcess(msg.value, fee);
         uint256 caseId = trialPanel == 0
             ? court.openCase{value: fee}(dealId, evidence)
             : court.openCase{value: fee}(dealId, evidence, trialPanel);
         d.caseId = caseId;
         caseToDeal[caseId] = dealId;
-        _refundExcess(msg.value, fee);
         emit Disputed(dealId, caseId, msg.sender);
     }
 
-    function appeal(uint256 dealId, string calldata newEvidence) external payable {
+    function appeal(uint256 dealId, string calldata newEvidence) external payable nonReentrant {
         Deal storage d = deals[dealId];
         require(d.status == DealStatus.Disputed, "not disputed");
         require(!appeals[dealId].active, "already appealed");
@@ -172,14 +180,14 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
             active: true
         });
 
-        court.appeal{value: agentDep}(d.caseId, newEvidence);
         _refundExcess(msg.value, stake + agentDep);
+        court.appeal{value: agentDep}(d.caseId, newEvidence);
         emit AppealFiled(dealId, msg.sender, stake, cv.verdict);
     }
 
     // --- court callback -------------------------------------------------------
 
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
+    function onVerdict(uint256 escrowRef, Verdict verdict) external override nonReentrant {
         require(msg.sender == address(court), "only court");
         Deal storage d = deals[escrowRef];
         require(d.status == DealStatus.Disputed, "not disputed");
@@ -215,7 +223,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
 
     /// @notice Withdraw everything credited to the caller. Safe for agent contracts: a party that
     /// reverts on receipt only blocks its own withdrawal, never the counterparty's or the court's.
-    function withdraw() external returns (uint256 amount) {
+    function withdraw() external nonReentrant returns (uint256 amount) {
         amount = pending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pending[msg.sender] = 0;
@@ -276,7 +284,7 @@ contract VerdiktAgentEscrow is IVerdiktConsumer {
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {
-        require(bps <= 2000, "cut too high"); // cap so a slashed stake can't be fully redirected to treasury
+        require(bps <= 2000, "cut too high"); // cap the treasury cut so a slash can't be fully redirected
         keeperCutBps = bps;
     }
 

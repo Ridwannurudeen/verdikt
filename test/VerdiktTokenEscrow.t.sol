@@ -76,6 +76,60 @@ contract FeeOnTransferERC20 {
     }
 }
 
+contract ReentrantERC20 {
+    VerdiktTokenEscrow public target;
+    address public reentryPayee;
+    uint64 public reentryDeliverBy;
+    bool public attack = true;
+
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function configureAttack(VerdiktTokenEscrow target_, address payee_, uint64 deliverBy_) external {
+        target = target_;
+        reentryPayee = payee_;
+        reentryDeliverBy = deliverBy_;
+    }
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        if (attack) {
+            attack = false;
+            try target.createDeal(reentryPayee, 1, reentryDeliverBy) returns (uint256) {
+                revert("reentry succeeded");
+            } catch Error(string memory reason) {
+                require(keccak256(bytes(reason)) == keccak256(bytes("reentrant")), "unexpected reentry failure");
+            }
+        }
+        uint256 allowed = allowance[from][msg.sender];
+        require(allowed >= amount, "insufficient allowance");
+        if (allowed != type(uint256).max) {
+            allowance[from][msg.sender] = allowed - amount;
+        }
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    function _transfer(address from, address to, uint256 amount) internal {
+        require(balanceOf[from] >= amount, "insufficient balance");
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+    }
+}
+
 contract VerdiktTokenEscrowTest is Test {
     MockAgentRequester platform;
     VerdiktCourt court;
@@ -158,6 +212,21 @@ contract VerdiktTokenEscrowTest is Test {
         vm.prank(payer);
         vm.expectRevert(bytes("fee token unsupported"));
         e.createDeal(payee, AMOUNT, uint64(block.timestamp + 1 days));
+    }
+
+    function test_createDeal_blocksReentrantTokenCallback() public {
+        ReentrantERC20 reentrantToken = new ReentrantERC20();
+        VerdiktTokenEscrow e = new VerdiktTokenEscrow(address(court), treasury, address(reentrantToken));
+        reentrantToken.configureAttack(e, payee, uint64(block.timestamp + 1 days));
+        reentrantToken.mint(payer, AMOUNT);
+        vm.prank(payer);
+        reentrantToken.approve(address(e), type(uint256).max);
+
+        vm.prank(payer);
+        uint256 dealId = e.createDeal(payee, AMOUNT, uint64(block.timestamp + 1 days));
+
+        assertEq(dealId, 1);
+        assertEq(e.nextDealId(), 2);
     }
 
     function test_dispute_payeeWins_creditsAndWithdraws() public {

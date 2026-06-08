@@ -16,6 +16,7 @@ abstract contract VerdiktConsumerBase is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToRef;
     mapping(uint256 => uint256) public refToCase;
     mapping(address => uint256) public pendingRefunds;
+    bool private _entered;
 
     event DisputeOpened(uint256 indexed ref, uint256 indexed caseId);
     event RefundCredited(address indexed to, uint256 amount);
@@ -31,37 +32,54 @@ abstract contract VerdiktConsumerBase is IVerdiktConsumer {
         _;
     }
 
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
+    }
+
     /// @notice The court calls this when a case finalizes; routes to your `_settle`.
-    function onVerdict(uint256 ref, Verdict verdict) external override onlyCourt {
+    function onVerdict(uint256 ref, Verdict verdict) external override onlyCourt nonReentrant {
         _settle(ref, verdict);
     }
 
     /// @dev Open a dispute for `ref` with `evidence`, paying the court fee from msg.value and refunding
     /// any excess to `refundTo`. Records the caseId <-> ref mapping. Call this from your own
     /// `dispute`-style function after marking your deal disputed.
-    function _openDispute(uint256 ref, string memory evidence, address refundTo) internal returns (uint256 caseId) {
+    function _openDispute(uint256 ref, string memory evidence, address refundTo)
+        internal
+        nonReentrant
+        returns (uint256 caseId)
+    {
         uint256 fee = court.quoteOpen();
         require(msg.value >= fee, "fee too low");
+        _recordRefund(refundTo, fee);
         caseId = court.openCase{value: fee}(ref, evidence);
-        _recordDispute(ref, caseId, fee, refundTo);
+        _recordDispute(ref, caseId);
     }
 
     /// @dev As `_openDispute`, but selects the trial panel size so the dispute degrades to the
     /// validator set currently available (in [court.MIN_TRIAL_PANEL, 5]) instead of reverting.
     function _openDispute(uint256 ref, string memory evidence, address refundTo, uint8 trialPanel)
         internal
+        nonReentrant
         returns (uint256 caseId)
     {
         uint256 fee = court.quoteOpen(trialPanel);
         require(msg.value >= fee, "fee too low");
+        _recordRefund(refundTo, fee);
         caseId = court.openCase{value: fee}(ref, evidence, trialPanel);
-        _recordDispute(ref, caseId, fee, refundTo);
+        _recordDispute(ref, caseId);
     }
 
-    function _recordDispute(uint256 ref, uint256 caseId, uint256 fee, address refundTo) private {
+    function _recordDispute(uint256 ref, uint256 caseId) private {
         caseToRef[caseId] = ref;
         refToCase[ref] = caseId;
         emit DisputeOpened(ref, caseId);
+    }
+
+    function _recordRefund(address refundTo, uint256 fee) private {
         if (msg.value > fee && refundTo != address(0)) {
             uint256 refund = msg.value - fee;
             pendingRefunds[refundTo] += refund;
@@ -69,7 +87,7 @@ abstract contract VerdiktConsumerBase is IVerdiktConsumer {
         }
     }
 
-    function withdrawRefund() external returns (uint256 amount) {
+    function withdrawRefund() external nonReentrant returns (uint256 amount) {
         amount = pendingRefunds[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pendingRefunds[msg.sender] = 0;

@@ -79,6 +79,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToClaim;
     /// @notice pull-payment balances credited at settlement.
     mapping(address => uint256) public pending;
+    bool private _entered;
 
     event PoolFunded(address indexed funder, uint256 amount, uint256 sharesMinted);
     event PolicyCreated(
@@ -93,10 +94,18 @@ contract VerdiktInsurance is IVerdiktConsumer {
     event PolicyExpired(uint256 indexed policyId);
     event Credited(address indexed to, uint256 amount);
     event Withdrawn(address indexed to, uint256 amount);
+    event PoolAppealMinSharesBpsSet(uint256 bps);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
         _;
+    }
+
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
     }
 
     constructor(address court_, address treasury_) {
@@ -128,7 +137,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
 
     /// @notice Burn `shareCount` shares and receive a pro-rata slice of the pool.
     /// Locked while any claim is Filed so payable losses can't be front-run by withdrawals.
-    function withdrawPool(uint256 shareCount) external {
+    function withdrawPool(uint256 shareCount) external nonReentrant {
         require(openClaimCount == 0, "claims open");
         require(shareCount > 0 && shareCount <= shares[msg.sender], "bad shares");
         uint256 payout = (shareCount * totalPool) / totalShares;
@@ -173,7 +182,12 @@ contract VerdiktInsurance is IVerdiktConsumer {
 
     // --- claim + appeal -------------------------------------------------------
 
-    function fileClaim(uint256 policyId, string calldata evidence) external payable returns (uint256 claimId) {
+    function fileClaim(uint256 policyId, string calldata evidence)
+        external
+        payable
+        nonReentrant
+        returns (uint256 claimId)
+    {
         Policy storage p = policies[policyId];
         require(msg.sender == p.insured, "only insured");
         require(p.status == PolicyStatus.Active, "policy inactive");
@@ -184,16 +198,17 @@ contract VerdiktInsurance is IVerdiktConsumer {
         require(msg.value >= fee, "fee too low");
 
         claimId = nextClaimId++;
-        uint256 caseId = court.openCase{value: fee}(claimId, evidence);
-        claims[claimId] = Claim({policyId: policyId, status: ClaimStatus.Filed, caseId: caseId});
+        claims[claimId] = Claim({policyId: policyId, status: ClaimStatus.Filed, caseId: 0});
         p.activeClaimId = claimId;
-        caseToClaim[caseId] = claimId;
         openClaimCount += 1;
         _refundExcess(msg.value, fee);
+        uint256 caseId = court.openCase{value: fee}(claimId, evidence);
+        claims[claimId].caseId = caseId;
+        caseToClaim[caseId] = claimId;
         emit ClaimFiled(claimId, policyId, caseId, msg.sender);
     }
 
-    function appealClaim(uint256 claimId, string calldata newEvidence) external payable {
+    function appealClaim(uint256 claimId, string calldata newEvidence) external payable nonReentrant {
         Claim storage c = claims[claimId];
         require(c.status == ClaimStatus.Filed, "not filed");
         require(!appeals[claimId].active, "already appealed");
@@ -236,14 +251,14 @@ contract VerdiktInsurance is IVerdiktConsumer {
             active: true
         });
 
-        court.appeal{value: agentDep}(c.caseId, newEvidence);
         _refundExcess(msg.value, stake + agentDep);
+        court.appeal{value: agentDep}(c.caseId, newEvidence);
         emit ClaimAppealed(claimId, msg.sender, stake, cv.verdict);
     }
 
     // --- court callback -------------------------------------------------------
 
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
+    function onVerdict(uint256 escrowRef, Verdict verdict) external override nonReentrant {
         require(msg.sender == address(court), "only court");
         Claim storage c = claims[escrowRef];
         require(c.status == ClaimStatus.Filed, "not filed");
@@ -292,7 +307,7 @@ contract VerdiktInsurance is IVerdiktConsumer {
 
     // --- pull payments --------------------------------------------------------
 
-    function withdraw() external returns (uint256 amount) {
+    function withdraw() external nonReentrant returns (uint256 amount) {
         amount = pending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pending[msg.sender] = 0;
@@ -356,13 +371,14 @@ contract VerdiktInsurance is IVerdiktConsumer {
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {
-        require(bps <= 2000, "cut too high"); // cap so a slashed stake can't be fully redirected to treasury
+        require(bps <= 2000, "cut too high"); // cap the treasury cut so a slash can't be fully redirected
         keeperCutBps = bps;
     }
 
     function setPoolAppealMinSharesBps(uint256 bps) external onlyOwner {
         require(bps <= 10000, "bps");
         poolAppealMinSharesBps = bps;
+        emit PoolAppealMinSharesBpsSet(bps);
     }
 
     function setTreasury(address t) external onlyOwner {
