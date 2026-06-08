@@ -36,7 +36,7 @@ network env (platform, RPC, agent id) plus the Somnia gas handling baked in belo
 
 - [ ] External third-party audit complete; all Critical/High findings remediated and re-tested.
 - [ ] Bug bounty run (or scheduled to open at launch) — see [`BUG-BOUNTY.md`](BUG-BOUNTY.md).
-- [ ] `forge test` green (documented 213/213) on the exact commit being deployed.
+- [ ] `forge test` green (documented 230/230) on the exact commit being deployed.
 - [ ] **Determinism re-gated on mainnet validators**, not just Shannon. Run the determinism +
       graded-determinism + abstention + injection gates against the mainnet platform and confirm
       byte-identical convergence on the production validator set (the appeal panel of 9 needs ≥ 9

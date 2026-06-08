@@ -36,6 +36,7 @@ contract VerdiktMilestone is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToMilestone;
     /// @notice pull-payment balances credited at settlement.
     mapping(address => uint256) public pending;
+    bool private _entered;
 
     event MilestoneCreated(
         uint256 indexed milestoneId, address indexed client, address indexed freelancer, uint256 amount
@@ -43,6 +44,13 @@ contract VerdiktMilestone is IVerdiktConsumer {
     event Disputed(uint256 indexed milestoneId, uint256 indexed caseId, address by);
     event MilestoneSettled(uint256 indexed milestoneId, Verdict verdict, uint256 toClient, uint256 toFreelancer);
     event Withdrawn(address indexed who, uint256 amount);
+
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
+    }
 
     constructor(address court_, address treasury_) {
         require(court_ != address(0), "zero court");
@@ -70,7 +78,7 @@ contract VerdiktMilestone is IVerdiktConsumer {
 
     // --- dispute --------------------------------------------------------------
 
-    function dispute(uint256 milestoneId, string calldata evidence) external payable {
+    function dispute(uint256 milestoneId, string calldata evidence) external payable nonReentrant {
         Milestone storage m = milestones[milestoneId];
         require(msg.sender == m.client || msg.sender == m.freelancer, "not a party");
         require(m.status == MilestoneStatus.Funded, "bad status");
@@ -78,16 +86,16 @@ contract VerdiktMilestone is IVerdiktConsumer {
         require(msg.value >= fee, "fee too low");
 
         m.status = MilestoneStatus.Disputed;
+        _refundExcess(msg.value, fee);
         uint256 caseId = court.openCase{value: fee}(milestoneId, evidence);
         m.caseId = caseId;
         caseToMilestone[caseId] = milestoneId;
-        _refundExcess(msg.value, fee);
         emit Disputed(milestoneId, caseId, msg.sender);
     }
 
     // --- court callback -------------------------------------------------------
 
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
+    function onVerdict(uint256 escrowRef, Verdict verdict) external override nonReentrant {
         require(msg.sender == address(court), "only court");
         Milestone storage m = milestones[escrowRef];
         require(m.status == MilestoneStatus.Disputed, "not disputed");
@@ -103,7 +111,7 @@ contract VerdiktMilestone is IVerdiktConsumer {
 
     // --- settlement -----------------------------------------------------------
 
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         uint256 amount = pending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pending[msg.sender] = 0;

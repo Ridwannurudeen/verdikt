@@ -60,6 +60,11 @@ contract ModelVersionTest is Test, IVerdiktConsumer {
         court.setAgentId(2);
     }
 
+    function test_setAgentId_rejectsZero() public {
+        vm.expectRevert(bytes("zero agent"));
+        court.setAgentId(0);
+    }
+
     function test_resolvesEndToEnd_withSnapshottedModel() public {
         court.setAgentId(7);
         uint256 caseId = _open("evidence");

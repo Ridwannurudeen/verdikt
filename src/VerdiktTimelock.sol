@@ -36,6 +36,7 @@ contract VerdiktTimelock {
         onlyAdmin
         returns (bytes32 txHash)
     {
+        require(target != address(0), "target zero");
         require(eta >= block.timestamp + delay, "eta too soon");
         txHash = keccak256(abi.encode(target, value, data, eta));
         queued[txHash] = true;
@@ -48,6 +49,7 @@ contract VerdiktTimelock {
         onlyAdmin
         returns (bytes memory)
     {
+        require(target != address(0), "target zero");
         bytes32 txHash = keccak256(abi.encode(target, value, data, eta));
         require(queued[txHash], "not queued");
         require(block.timestamp >= eta, "not ready");

@@ -36,11 +36,19 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
     mapping(uint256 => uint256) public caseToGrant;
     /// @notice pull-payment balances credited at settlement.
     mapping(address => uint256) public pending;
+    bool private _entered;
 
     event GrantCreated(uint256 indexed grantId, address indexed funder, address indexed grantee, uint256 amount);
     event Disputed(uint256 indexed grantId, uint256 indexed caseId, address by);
     event GrantSettled(uint256 indexed grantId, Verdict verdict, uint256 toFunder, uint256 toGrantee);
     event Withdrawn(address indexed who, uint256 amount);
+
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
+    }
 
     constructor(address court_, address treasury_) {
         require(court_ != address(0), "zero court");
@@ -68,7 +76,7 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
 
     // --- dispute --------------------------------------------------------------
 
-    function dispute(uint256 grantId, string calldata evidence) external payable {
+    function dispute(uint256 grantId, string calldata evidence) external payable nonReentrant {
         Grant storage g = grants[grantId];
         require(msg.sender == g.funder || msg.sender == g.grantee, "not a party");
         require(g.status == GrantStatus.Funded, "bad status");
@@ -76,16 +84,16 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
         require(msg.value >= fee, "fee too low");
 
         g.status = GrantStatus.Disputed;
+        _refundExcess(msg.value, fee);
         uint256 caseId = court.openCase{value: fee}(grantId, evidence);
         g.caseId = caseId;
         caseToGrant[caseId] = grantId;
-        _refundExcess(msg.value, fee);
         emit Disputed(grantId, caseId, msg.sender);
     }
 
     // --- court callback -------------------------------------------------------
 
-    function onVerdict(uint256 escrowRef, Verdict verdict) external override {
+    function onVerdict(uint256 escrowRef, Verdict verdict) external override nonReentrant {
         require(msg.sender == address(court), "only court");
         Grant storage g = grants[escrowRef];
         require(g.status == GrantStatus.Disputed, "not disputed");
@@ -101,7 +109,7 @@ contract VerdiktGrantClawback is IVerdiktConsumer {
 
     // --- settlement -----------------------------------------------------------
 
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         uint256 amount = pending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pending[msg.sender] = 0;

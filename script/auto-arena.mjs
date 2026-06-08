@@ -25,6 +25,14 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 
 const RPC = process.env.RPC || "https://api.infra.testnet.somnia.network/";
+// Both known Shannon endpoints — a fallback transport rides out intermittent RPC failures.
+const RPCS = [
+  ...new Set([
+    RPC,
+    "https://api.infra.testnet.somnia.network/",
+    "https://dream-rpc.somnia.network/",
+  ]),
+];
 const ESCROW =
   process.env.ESCROW || "0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d";
 const COURT = process.env.COURT || "0xeBbA8b849343150e994BEE34778D4D8D38941eDE";
@@ -79,11 +87,13 @@ if (!process.env.BUYER_PK) {
   process.exit(1);
 }
 const buyer = privateKeyToAccount(process.env.BUYER_PK);
-// Dual-RPC fallback rides out Somnia's intermittent endpoint failures.
-const RPCS = [...new Set([RPC, "https://api.infra.testnet.somnia.network/", "https://dream-rpc.somnia.network/"])];
 const transport = fallback(RPCS.map((u) => http(u)));
 const pub = createPublicClient({ chain: shannon, transport });
-const wallet = createWalletClient({ account: buyer, chain: shannon, transport });
+const wallet = createWalletClient({
+  account: buyer,
+  chain: shannon,
+  transport,
+});
 
 const read = (address, abi, functionName, args = []) =>
   pub.readContract({ address, abi, functionName, args });
@@ -104,7 +114,11 @@ async function send(address, abi, functionName, args = [], value = 0n) {
 function dealIdFromReceipt(receipt) {
   for (const lg of receipt.logs) {
     try {
-      const ev = decodeEventLog({ abi: ESCROW_ABI, data: lg.data, topics: lg.topics });
+      const ev = decodeEventLog({
+        abi: ESCROW_ABI,
+        data: lg.data,
+        topics: lg.topics,
+      });
       if (ev.eventName === "DealCreated") return ev.args.dealId;
     } catch {}
   }
@@ -136,7 +150,7 @@ async function round(n) {
   log(`\n──────── Round ${n} — no human in the loop ────────`);
   const deliverBy = BigInt(Math.floor(Date.now() / 1000) + 86400);
   log(`🤖 BuyerAgent → opening an escrow deal with SellerAgent (0.01 STT)…`);
-  // Read the real dealId from the DealCreated event (not a nextDealId guess that races other users).
+  // Read the real dealId from the DealCreated event (not a nextDealId guess, which races other users).
   const createReceipt = await send(
     ESCROW,
     ESCROW_ABI,
@@ -161,7 +175,10 @@ async function round(n) {
     c = await read(COURT, COURT_ABI, "getCase", [caseId]);
     const st = Number(c.status);
     if (st === 2 || st === 3) break; // Ruled or Final
-    if (st === 4) throw new Error("panel errored (insufficient validators / timeout) — re-run the round");
+    if (st === 4)
+      throw new Error(
+        "panel errored (insufficient validators / timeout) — re-run the round",
+      );
     await sleep(5000);
   }
   if (Number(c.status) !== 2 && Number(c.status) !== 3)
@@ -171,7 +188,9 @@ async function round(n) {
     `⚖️  Court → verdict: ${VERDICT[Number(c.verdict)]}  (byte-identical consensus; decided by model ${model})`,
   );
 
-  log(`⏳ Waiting out the appeal window (by chain time), then finalizing autonomously…`);
+  log(
+    `⏳ Waiting out the appeal window (by chain time), then finalizing autonomously…`,
+  );
   const deadline = Number(
     await read(COURT, COURT_ABI, "appealDeadlineOf", [caseId]),
   );

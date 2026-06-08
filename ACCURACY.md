@@ -80,7 +80,7 @@ These are implemented and traceable, not aspirational:
   confirms the graded set still converges byte-identically.
 - **Authoritative attested facts.** When an attestation registry is wired, `_verifiedFacts`
   folds in oracle-attested facts ranked above party claims, so verdicts can rest on attested
-  truth rather than assertions (live demo in `deployments/shannon.json` v4: an attested
+  truth rather than assertions (live demo in `deployments/shannon.json` `premiumStack`: an attested
   "3 of 4 delivered" fact overrode a false "nothing arrived" claim → `SPLIT75`).
 
 ---

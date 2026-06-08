@@ -74,6 +74,13 @@ contract VerdiktTimelockTest is Test {
         timelock.queue(address(court), 0, data, eta);
     }
 
+    function test_queue_revertsZeroTarget() public {
+        uint256 eta = block.timestamp + delay;
+        vm.prank(admin);
+        vm.expectRevert(bytes("target zero"));
+        timelock.queue(address(0), 0, "", eta);
+    }
+
     function test_cancel_preventsExecute() public {
         bytes memory data = abi.encodeWithSelector(VerdiktCourt.setAppealWindow.selector, uint64(2 hours));
         uint256 eta = block.timestamp + delay;

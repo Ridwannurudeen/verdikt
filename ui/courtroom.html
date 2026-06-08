@@ -4,141 +4,703 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Verdikt — the courtroom</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg: #0b0a09; --surface: #14110d; --surface-2: #1d1813;
-        --border: rgba(244,239,230,0.10); --border-2: rgba(244,239,230,0.20);
-        --text: #f4efe6; --muted: #c7bdac; --dim: #8d8270;
-        --violet: #7a1220; --amber: #c8951e; --green: #6fae7e; --cyan: #2dd4bf;
-        --grad: linear-gradient(110deg, #e8bd5c, #c8951e 55%, #9a6f12);
+        --bg: #0b0d10;
+        --surface: #10151b;
+        --surface-2: #151b23;
+        --border: rgba(242, 245, 247, 0.1);
+        --border-2: rgba(242, 245, 247, 0.2);
+        --text: #f2f5f7;
+        --muted: #aeb8c2;
+        --dim: #737f8c;
+        --violet: #222a35;
+        --amber: #c7a45a;
+        --green: #9aa6b2;
+        --cyan: #c7a45a;
+        --grad: #c7a45a;
         color-scheme: dark;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Switzer", system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; position: relative; }
-      h1, h2, .gauge-num, .brand { font-family: "Zodiak", Georgia, serif; }
-      body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(70% 50% at 50% -8%, rgba(122,18,32,0.30), transparent 60%), radial-gradient(50% 40% at 88% 6%, rgba(200,149,30,0.10), transparent 60%); }
-      a { color: #e8bd5c; text-decoration: none; } a:hover { text-decoration: underline; }
-      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
-      svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; display: block; }
-      .wrap { max-width: 780px; margin: 0 auto; padding: 0 22px; }
-      .muted { color: var(--muted); }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          "Switzer",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        position: relative;
+      }
+      h1,
+      h2,
+      .gauge-num,
+      .brand {
+        font-family: "Zodiak", Georgia, serif;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(242, 245, 247, 0.035),
+            transparent 240px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(242, 245, 247, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
+        background-size:
+          auto,
+          44px 44px,
+          44px 44px;
+        opacity: 0.7;
+      }
+      a {
+        color: #d8c48a;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      svg.i {
+        width: 1em;
+        height: 1em;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.85;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        display: block;
+      }
+      .wrap {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 0 22px;
+      }
+      .muted {
+        color: var(--muted);
+      }
 
-      nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px); background: rgba(11,10,9,0.72); border-bottom: 1px solid var(--border); }
-      .nav-in { max-width: 1160px; margin: 0 auto; padding: 0 22px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-      .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; }
-      .brand .logo { width: 27px; height: 27px; border-radius: 8px; background: var(--surface-2); border: 1px solid rgba(200,149,30,0.4); display: grid; place-items: center; color: #e8bd5c; font-size: 15px; box-shadow: inset 0 0 0 1px rgba(200,149,30,0.12); }
-      .nav-links { display: flex; gap: 20px; align-items: center; font-size: 14px; }
-      .nav-links a { color: var(--muted); }
-      .nav-links a.active { color: var(--text); }
-      .nav-links a:hover { color: var(--text); text-decoration: none; }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(16px);
+        background: rgba(11, 10, 9, 0.72);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-in {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 22px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 800;
+        font-size: 17px;
+      }
+      .brand .logo {
+        width: 27px;
+        height: 27px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        border: 1px solid rgba(199, 164, 90, 0.4);
+        display: grid;
+        place-items: center;
+        color: #d8c48a;
+        font-size: 15px;
+        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
+      }
+      .nav-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        font-size: 14px;
+      }
+      .nav-links a {
+        color: var(--muted);
+      }
+      .nav-links a.active {
+        color: var(--text);
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        text-decoration: none;
+      }
+      @media (max-width: 760px) {
+        .nav-in {
+          gap: 16px;
+        }
+        .brand {
+          flex: 0 0 auto;
+        }
+        .nav-links {
+          min-width: 0;
+          max-width: calc(100vw - 146px);
+          overflow-x: auto;
+          gap: 14px;
+          white-space: nowrap;
+          scrollbar-width: none;
+        }
+        .nav-links::-webkit-scrollbar {
+          display: none;
+        }
+      }
 
-      .head { position: relative; padding: 42px 0 8px; }
-      h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.035em; margin: 0; }
-      .head p { color: var(--muted); margin: 9px 0 0; }
-      .kicker { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e58a8f; margin: 0 0 10px; }
+      .head {
+        position: relative;
+        padding: 42px 0 8px;
+      }
+      h1 {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        margin: 0;
+      }
+      .head p {
+        color: var(--muted);
+        margin: 9px 0 0;
+      }
+      .kicker {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #aeb8c2;
+        margin: 0 0 10px;
+      }
 
       /* case selector + status line */
-      .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 20px 0 4px; }
-      .caseselect { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-      input { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 9px; font: inherit; font-size: 13px; }
-      input:focus { border-color: rgba(200,149,30,0.5); }
-      .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13.5px; border-radius: 9px; padding: 8px 14px; border: 0; cursor: pointer; background: var(--grad); color: #241704; box-shadow: 0 8px 26px -12px rgba(200,149,30,0.7); }
-      .btn:hover { transform: translateY(-1px); }
-      .live-line { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--dim); margin-left: auto; }
-      .live-line .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(111,174,126,0.55); } 70% { box-shadow: 0 0 0 6px rgba(111,174,126,0); } 100% { box-shadow: 0 0 0 0 rgba(111,174,126,0); } }
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 20px 0 4px;
+      }
+      .caseselect {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      input {
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 7px 9px;
+        font: inherit;
+        font-size: 13px;
+      }
+      input:focus {
+        border-color: rgba(199, 164, 90, 0.5);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+        font-size: 13.5px;
+        border-radius: 9px;
+        padding: 8px 14px;
+        border: 0;
+        cursor: pointer;
+        background: #c7a45a;
+        color: #0b0d10;
+        box-shadow: none;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      .live-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        color: var(--dim);
+        margin-left: auto;
+      }
+      .live-line .dot-live {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: none;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.55);
+        }
+        70% {
+          box-shadow: 0 0 0 6px rgba(154, 166, 178, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
+        }
+      }
 
       /* verdict result hero — the signature moment */
-      .result { background: linear-gradient(180deg, rgba(20,17,13,0.92), rgba(11,10,9,0.92)); border: 1px solid var(--border-2); border-radius: 14px; padding: 22px; margin: 16px 0 26px; box-shadow: 0 10px 30px -18px rgba(0,0,0,0.7); }
-      .result .top { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
-      .result .vsum { min-width: 0; flex: 1; }
-      .result .vsum .lead { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
-      .result .vsum .vline { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-      .result .vsum .vbig { font-family: "Zodiak", serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
-      .result .vsum .favor { color: var(--muted); margin-top: 8px; font-size: 14px; }
-      .result .vsum .favor b { color: var(--text); }
-      .meta-grid { display: flex; flex-wrap: wrap; gap: 18px 30px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
-      .meta-cell .k { font-size: 10.5px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
-      .meta-cell .v { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 3px; }
-      .meta-cell .v.mono { font-weight: 600; }
+      .result {
+        background: linear-gradient(
+          180deg,
+          rgba(20, 17, 13, 0.92),
+          rgba(11, 10, 9, 0.92)
+        );
+        border: 1px solid var(--border-2);
+        border-radius: 14px;
+        padding: 22px;
+        margin: 16px 0 26px;
+        box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.7);
+      }
+      .result .top {
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .result .vsum {
+        min-width: 0;
+        flex: 1;
+      }
+      .result .vsum .lead {
+        font-size: 12px;
+        color: var(--dim);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+      }
+      .result .vsum .vline {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .result .vsum .vbig {
+        font-family: "Zodiak", serif;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .result .vsum .favor {
+        color: var(--muted);
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .result .vsum .favor b {
+        color: var(--text);
+      }
+      .meta-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px 30px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+      }
+      .meta-cell .k {
+        font-size: 10.5px;
+        color: var(--dim);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+      }
+      .meta-cell .v {
+        font-size: 14px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        margin-top: 3px;
+      }
+      .meta-cell .v.mono {
+        font-weight: 600;
+      }
 
       /* consensus gauge (ported from arena) */
-      .gauge { position: relative; width: 132px; height: 132px; flex: 0 0 auto; }
-      .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
-      .gauge-track { fill: none; stroke: #271f18; stroke-width: 11; }
-      .gauge-arc { fill: none; stroke: url(#sealGrad); stroke-width: 11; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(200,149,30,0.35)); }
-      .gauge-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 0 14px; }
-      .gauge-num { font-size: 15px; font-weight: 800; line-height: 1.1; }
-      .gauge-sub { font-size: 10px; color: var(--muted); margin-top: 6px; }
+      .gauge {
+        position: relative;
+        width: 132px;
+        height: 132px;
+        flex: 0 0 auto;
+      }
+      .gauge svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+        display: block;
+      }
+      .gauge-track {
+        fill: none;
+        stroke: #1b232d;
+        stroke-width: 11;
+      }
+      .gauge-arc {
+        fill: none;
+        stroke: url(#sealGrad);
+        stroke-width: 11;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 6px rgba(199, 164, 90, 0.35));
+      }
+      .gauge-center {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 0 14px;
+      }
+      .gauge-num {
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.1;
+      }
+      .gauge-sub {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
 
       /* jury panel rows (ported from arena) */
-      .jurors { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-      .juror-row { display: flex; align-items: center; gap: 11px; padding: 9px 11px; background: rgba(0,0,0,0.26); border: 1px solid var(--border); border-radius: 10px; }
-      .juror-row .av { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 8px; background: #271f18; border: 1px solid rgba(200,149,30,0.32); display: grid; place-items: center; color: #e8bd5c; }
-      .juror-row .av svg.i { width: 15px; height: 15px; }
-      .juror-row .jmeta { display: flex; flex-direction: column; min-width: 0; }
-      .juror-row .jl { font-size: 13px; font-weight: 600; }
-      .juror-row .jrole { font-size: 10px; color: var(--dim); margin-top: 1px; }
-      .juror-row .vpill { margin-left: auto; }
-      .converge { font-size: 12px; color: var(--muted); margin-top: 11px; display: flex; align-items: center; gap: 6px; }
-      .converge svg.i { width: 14px; height: 14px; color: var(--green); }
+      .jurors {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .juror-row {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 9px 11px;
+        background: rgba(0, 0, 0, 0.26);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .juror-row .av {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+        border-radius: 8px;
+        background: #1b232d;
+        border: 1px solid rgba(199, 164, 90, 0.32);
+        display: grid;
+        place-items: center;
+        color: #d8c48a;
+      }
+      .juror-row .av svg.i {
+        width: 15px;
+        height: 15px;
+      }
+      .juror-row .jmeta {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .juror-row .jl {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .juror-row .jrole {
+        font-size: 10px;
+        color: var(--dim);
+        margin-top: 1px;
+      }
+      .juror-row .vpill {
+        margin-left: auto;
+      }
+      .converge {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 11px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .converge svg.i {
+        width: 14px;
+        height: 14px;
+        color: var(--green);
+      }
 
       /* timeline */
-      #stage { margin-bottom: 60px; }
-      .step { display: flex; gap: 16px; }
-      .rail { display: flex; flex-direction: column; align-items: center; }
-      .dot { width: 38px; height: 38px; border-radius: 11px; background: #271f18; border: 1px solid var(--border); display: grid; place-items: center; color: var(--dim); flex: 0 0 auto; transition: all 0.3s; }
-      .dot svg.i { width: 18px; height: 18px; }
-      .dot.on { background: rgba(200,149,30,0.12); border-color: rgba(200,149,30,0.4); color: #e8bd5c; }
-      .line { width: 2px; flex: 1; background: linear-gradient(var(--border), var(--border)); margin: 4px 0; min-height: 20px; }
-      .body { padding-bottom: 26px; flex: 1; padding-top: 7px; }
-      .body h3 { margin: 0 0 8px; font-size: 15.5px; font-weight: 700; }
-      .quote { background: var(--surface); border-left: 3px solid var(--green); border-radius: 0 10px 10px 0; padding: 11px 14px; color: #d9d0c0; white-space: pre-wrap; font-size: 13.5px; }
-      .verified { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
-      .verified svg.i { width: 14px; height: 14px; }
-      .law { background: var(--surface); border: 1px dashed var(--border-2); border-radius: 10px; padding: 11px 14px; color: var(--muted); font-size: 12.5px; font-family: "JetBrains Mono", monospace; line-height: 1.65; }
+      #stage {
+        margin-bottom: 60px;
+      }
+      .step {
+        display: flex;
+        gap: 16px;
+      }
+      .rail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .dot {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: #1b232d;
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        color: var(--dim);
+        flex: 0 0 auto;
+        transition: all 0.3s;
+      }
+      .dot svg.i {
+        width: 18px;
+        height: 18px;
+      }
+      .dot.on {
+        background: rgba(199, 164, 90, 0.12);
+        border-color: rgba(199, 164, 90, 0.4);
+        color: #d8c48a;
+      }
+      .line {
+        width: 2px;
+        flex: 1;
+        background: linear-gradient(var(--border), var(--border));
+        margin: 4px 0;
+        min-height: 20px;
+      }
+      .body {
+        padding-bottom: 26px;
+        flex: 1;
+        padding-top: 7px;
+      }
+      .body h3 {
+        margin: 0 0 8px;
+        font-size: 15.5px;
+        font-weight: 700;
+      }
+      .quote {
+        background: var(--surface);
+        border-left: 3px solid var(--green);
+        border-radius: 0 10px 10px 0;
+        padding: 11px 14px;
+        color: #d9d0c0;
+        white-space: pre-wrap;
+        font-size: 13.5px;
+      }
+      .verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--green);
+        margin-bottom: 8px;
+      }
+      .verified svg.i {
+        width: 14px;
+        height: 14px;
+      }
+      .law {
+        background: var(--surface);
+        border: 1px dashed var(--border-2);
+        border-radius: 10px;
+        padding: 11px 14px;
+        color: var(--muted);
+        font-size: 12.5px;
+        font-family: "JetBrains Mono", monospace;
+        line-height: 1.65;
+      }
 
       /* verdict pills */
-      .vpill { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.02em; padding: 4px 11px; border-radius: 100px; border: 1px solid var(--border); background: #271f18; color: var(--muted); }
-      .vpill.lg { font-size: 13px; padding: 5px 13px; }
-      .vpill-PAYEE, .vpill-PAYER, .vpill-SPLIT, .vpill-UNDECIDABLE { background: rgba(200,149,30,0.14); color: #e8bd5c; border-color: rgba(200,149,30,0.4); }
-      .vpill-final { background: rgba(111,174,126,0.12); color: var(--green); border-color: rgba(111,174,126,0.34); }
-      .vpill-pending { background: rgba(122,18,32,0.18); color: #e58a8f; border-color: rgba(122,18,32,0.5); }
+      .vpill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        padding: 4px 11px;
+        border-radius: 100px;
+        border: 1px solid var(--border);
+        background: #1b232d;
+        color: var(--muted);
+      }
+      .vpill.lg {
+        font-size: 13px;
+        padding: 5px 13px;
+      }
+      .vpill-PAYEE,
+      .vpill-PAYER,
+      .vpill-SPLIT,
+      .vpill-UNDECIDABLE {
+        background: rgba(199, 164, 90, 0.14);
+        color: #d8c48a;
+        border-color: rgba(199, 164, 90, 0.4);
+      }
+      .vpill-final {
+        background: rgba(154, 166, 178, 0.12);
+        color: var(--green);
+        border-color: rgba(154, 166, 178, 0.34);
+      }
+      .vpill-pending {
+        background: rgba(115, 127, 140, 0.18);
+        color: #aeb8c2;
+        border-color: rgba(115, 127, 140, 0.5);
+      }
 
       /* advanced config (demoted) */
-      details.cfg { margin: 8px 0 0; font-size: 12.5px; color: var(--dim); }
-      details.cfg summary { cursor: pointer; list-style: none; font-weight: 600; color: var(--dim); padding: 4px 0; }
-      details.cfg summary::-webkit-details-marker { display: none; }
-      details.cfg summary::before { content: "▸ "; }
-      details.cfg[open] summary::before { content: "▾ "; }
-      details.cfg .row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; padding: 10px 0 2px; }
-      details.cfg input { width: 360px; max-width: 100%; }
-      :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px #c8951e; border-radius: 6px; }
-      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+      details.cfg {
+        margin: 8px 0 0;
+        font-size: 12.5px;
+        color: var(--dim);
+      }
+      details.cfg summary {
+        cursor: pointer;
+        list-style: none;
+        font-weight: 600;
+        color: var(--dim);
+        padding: 4px 0;
+      }
+      details.cfg summary::-webkit-details-marker {
+        display: none;
+      }
+      details.cfg summary::before {
+        content: "▸ ";
+      }
+      details.cfg[open] summary::before {
+        content: "▾ ";
+      }
+      details.cfg .row {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 10px 0 2px;
+      }
+      details.cfg input {
+        width: 360px;
+        max-width: 100%;
+      }
+      :focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px var(--bg),
+          0 0 0 4px #c7a45a;
+        border-radius: 6px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-      <linearGradient id="sealGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8bd5c"/><stop offset="0.55" stop-color="#c8951e"/><stop offset="1" stop-color="#9a6f12"/></linearGradient>
-      <symbol id="i-scale" viewBox="0 0 24 24"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
-      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
-      <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/></symbol>
-      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-      <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></symbol>
-      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
-      <symbol id="i-circlecheck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
-      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
-      <symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></symbol>
-    </defs></svg>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="sealGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#d8c48a" />
+          <stop offset="0.55" stop-color="#c7a45a" />
+          <stop offset="1" stop-color="#a88742" />
+        </linearGradient>
+        <symbol id="i-scale" viewBox="0 0 24 24">
+          <path
+            d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
+          />
+        </symbol>
+        <symbol id="i-link" viewBox="0 0 24 24">
+          <path
+            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+          />
+          <path
+            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+          />
+        </symbol>
+        <symbol id="i-scroll" viewBox="0 0 24 24">
+          <path
+            d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"
+          />
+          <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+        </symbol>
+        <symbol id="i-users" viewBox="0 0 24 24">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </symbol>
+        <symbol id="i-cpu" viewBox="0 0 24 24">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path
+            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+          />
+          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+        </symbol>
+        <symbol id="i-circlecheck" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </symbol>
+        <symbol id="i-play" viewBox="0 0 24 24">
+          <polygon
+            points="6 4 20 12 6 20 6 4"
+            fill="currentColor"
+            stroke="none"
+          />
+        </symbol>
+      </defs>
+    </svg>
 
     <nav>
       <div class="nav-in">
-        <a class="brand" href="/"><span class="logo"><svg class="i"><use href="#i-scale"/></svg></span> Verdikt</a>
+        <a class="brand" href="/"
+          ><span class="logo"
+            ><svg class="i"><use href="#i-scale" /></svg
+          ></span>
+          Verdikt</a
+        >
         <div class="nav-links">
           <a href="arena.html">Arena</a>
           <a href="./">Demo</a>
@@ -155,13 +717,27 @@
       <div class="head">
         <span class="kicker">Cinematic replay · every step, every reason</span>
         <h1>The Verdikt courtroom</h1>
-        <p>Watch a dispute decided by the on-chain AI jury — replayed live from Somnia Shannon, verdict first, then the full record of how it got there.</p>
+        <p>
+          Watch a dispute decided by the on-chain AI jury — replayed live from
+          Somnia Shannon, verdict first, then the full record of how it got
+          there.
+        </p>
       </div>
 
       <div class="controls">
-        <span class="caseselect">Replay case <input id="case" style="width:62px" value="1" /></span>
-        <button class="btn" id="go"><svg class="i" style="width:14px;height:14px"><use href="#i-play"/></svg> replay</button>
-        <span class="live-line"><span class="dot-live"></span><span id="status">reading the record…</span></span>
+        <span class="caseselect"
+          >Replay case <input id="case" style="width: 62px" value="1"
+        /></span>
+        <button class="btn" id="go">
+          <svg class="i" style="width: 14px; height: 14px">
+            <use href="#i-play" />
+          </svg>
+          replay
+        </button>
+        <span class="live-line"
+          ><span class="dot-live"></span
+          ><span id="status">reading the record…</span></span
+        >
       </div>
       <details class="cfg">
         <summary>Advanced — point at a different court</summary>
@@ -173,14 +749,23 @@
     </div>
 
     <script type="module">
-      import { createPublicClient, http, parseAbi } from "https://esm.sh/viem@2.21.0";
+      import {
+        createPublicClient,
+        http,
+        parseAbi,
+      } from "https://esm.sh/viem@2.21.0";
 
       const RPC = "https://api.infra.testnet.somnia.network/";
-      const DEFAULT_COURT = "0xeBbA8b849343150e994BEE34778D4D8D38941eDE"; // v4
+      const DEFAULT_COURT = "0xeBbA8b849343150e994BEE34778D4D8D38941eDE"; // premium stack
       const EXP = "https://shannon-explorer.somnia.network/address/";
       const VERDICT = ["NONE", "PAYEE", "PAYER", "SPLIT", "UNDECIDABLE"];
       const STATUS = ["None", "Pending", "Ruled", "Final", "Errored"];
-      const WIN = { PAYEE: "the payee / seller", PAYER: "the payer / buyer", SPLIT: "a split", UNDECIDABLE: "no one (abstained)" };
+      const WIN = {
+        PAYEE: "the payee / seller",
+        PAYER: "the payer / buyer",
+        SPLIT: "a split",
+        UNDECIDABLE: "no one (abstained)",
+      };
 
       const COURT_ABI = parseAbi([
         "function getCase(uint256) view returns ((address consumer,uint256 escrowRef,uint8 round,uint8 status,uint8 verdict,uint256 receiptId,uint64 rulingTime))",
@@ -199,16 +784,32 @@
       const client = createPublicClient({ transport: http(RPC) });
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const court = () => $("court").value.trim();
-      const read = (fn, args = []) => client.readContract({ address: court(), abi: COURT_ABI, functionName: fn, args });
-      const rel = (ts) => { const s = Math.max(0, Math.floor(Date.now() / 1000) - ts); if (s < 60) return s + "s ago"; if (s < 3600) return Math.floor(s / 60) + "m ago"; if (s < 86400) return Math.floor(s / 3600) + "h ago"; return Math.floor(s / 86400) + "d ago"; };
+      const read = (fn, args = []) =>
+        client.readContract({
+          address: court(),
+          abi: COURT_ABI,
+          functionName: fn,
+          args,
+        });
+      const rel = (ts) => {
+        const s = Math.max(0, Math.floor(Date.now() / 1000) - ts);
+        if (s < 60) return s + "s ago";
+        if (s < 3600) return Math.floor(s / 60) + "m ago";
+        if (s < 86400) return Math.floor(s / 3600) + "h ago";
+        return Math.floor(s / 86400) + "d ago";
+      };
       const esc = (s) =>
-        String(s ?? "").replace(/[&<>"']/g, (c) => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c]);
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
 
       function step(iconId, on, title, html, last) {
         return `<div class="step">
@@ -222,8 +823,16 @@
         $("result").innerHTML = "";
         $("stage").innerHTML = "";
         let c;
-        try { c = await read("getCase", [id]); } catch (e) { $("status").textContent = "error: " + (e.shortMessage ?? e.message); return; }
-        if (c.consumer === "0x0000000000000000000000000000000000000000") { $("status").textContent = "no such case"; return; }
+        try {
+          c = await read("getCase", [id]);
+        } catch (e) {
+          $("status").textContent = "error: " + (e.shortMessage ?? e.message);
+          return;
+        }
+        if (c.consumer === "0x0000000000000000000000000000000000000000") {
+          $("status").textContent = "no such case";
+          return;
+        }
 
         const verdict = VERDICT[c.verdict] ?? "NONE";
         const status = STATUS[c.status] ?? "?";
@@ -235,8 +844,18 @@
         try {
           const reg = await read("attestationRegistry");
           if (reg !== "0x0000000000000000000000000000000000000000") {
-            const subject = await client.readContract({ address: reg, abi: ATT_ABI, functionName: "subjectFor", args: [c.consumer, c.escrowRef] });
-            facts = await client.readContract({ address: reg, abi: ATT_ABI, functionName: "factsFor", args: [subject] });
+            const subject = await client.readContract({
+              address: reg,
+              abi: ATT_ABI,
+              functionName: "subjectFor",
+              args: [c.consumer, c.escrowRef],
+            });
+            facts = await client.readContract({
+              address: reg,
+              abi: ATT_ABI,
+              functionName: "factsFor",
+              args: [subject],
+            });
           }
         } catch {}
 
@@ -248,19 +867,27 @@
         } catch {}
 
         let pct = "";
-        if (ruled && verdict === "SPLIT") { try { const bps = await read("splitBps", [id]); pct = `${Number(bps) / 100}% to the payee`; } catch {} }
+        if (ruled && verdict === "SPLIT") {
+          try {
+            const bps = await read("splitBps", [id]);
+            pct = `${Number(bps) / 100}% to the payee`;
+          } catch {}
+        }
 
         // ---- verdict result hero (the signature moment) ----
-        const ruledTime = Number(c.rulingTime) > 0 ? rel(Number(c.rulingTime)) : "—";
-        const statusPill = final ? `<span class="vpill vpill-final">Final &amp; settled</span>`
-          : ruled ? `<span class="vpill vpill-pending">Ruled · appeal window</span>`
-          : `<span class="vpill vpill-pending">${status}</span>`;
+        const ruledTime =
+          Number(c.rulingTime) > 0 ? rel(Number(c.rulingTime)) : "—";
+        const statusPill = final
+          ? `<span class="vpill vpill-final">Final &amp; settled</span>`
+          : ruled
+            ? `<span class="vpill vpill-pending">Ruled · appeal window</span>`
+            : `<span class="vpill vpill-pending">${status}</span>`;
         if (ruled) {
           $("result").innerHTML = `<div class="result">
             <div class="top">
               <div class="gauge">
                 <svg viewBox="0 0 150 150">
-                  <defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818cf8"/><stop offset="0.55" stop-color="#a78bfa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>
+                  <defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c7a45a"/><stop offset="0.55" stop-color="#d8c48a"/><stop offset="1" stop-color="#d8c48a"/></linearGradient></defs>
                   <circle class="gauge-track" cx="75" cy="75" r="64"/>
                   <circle class="gauge-arc" cx="75" cy="75" r="64" stroke-dasharray="402" stroke-dashoffset="0"/>
                 </svg>
@@ -282,7 +909,8 @@
             </div>
           </div>`;
         } else {
-          $("result").innerHTML = `<div class="result"><div class="top"><div class="vsum">
+          $("result").innerHTML =
+            `<div class="result"><div class="top"><div class="vsum">
             <span class="lead">The verdict</span>
             <div class="vline"><span class="vpill lg vpill-pending">${status}</span></div>
             <div class="favor">Case <b>#${id}</b> is before the panel — the ruling will appear here once the Somnia validators converge.</div>
@@ -291,29 +919,57 @@
 
         // ---- jury panel rows (unanimous convergence) ----
         const juryHtml = ruled
-          ? `<div class="jurors">${Array.from({ length: panel }).map((_, i) =>
-              `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jmeta"><div class="jl">Validator ${i + 1}</div><div class="jrole">Somnia LLM inference agent</div></div><span class="vpill vpill-${verdict}">${verdict}</span></div>`
-            ).join("")}</div>
+          ? `<div class="jurors">${Array.from({ length: panel })
+              .map(
+                (_, i) =>
+                  `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jmeta"><div class="jl">Validator ${i + 1}</div><div class="jrole">Somnia LLM inference agent</div></div><span class="vpill vpill-${verdict}">${verdict}</span></div>`,
+              )
+              .join("")}</div>
             <div class="converge"><svg class="i"><use href="#i-circlecheck"/></svg> All <b>&nbsp;${panel}&nbsp;</b> jurors returned <b>&nbsp;${verdict}&nbsp;</b> byte-identically — the consensus the verdict requires.</div>`
           : `<span class="muted">The panel is convening — ${panel} validator agents will each judge the evidence and must converge byte-identically.</span>`;
 
-        const receipt = c.receiptId > 0n
-          ? `<a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank" rel="noopener">receipt #${c.receiptId} — the jurors' reasoning ↗</a>`
-          : `<span class="muted">on-chain receipt attaches when the panel returns</span>`;
+        const receipt =
+          c.receiptId > 0n
+            ? `<a href="https://agents.somnia.network/receipts/${c.receiptId}" target="_blank" rel="noopener">receipt #${c.receiptId} — the jurors' reasoning ↗</a>`
+            : `<span class="muted">on-chain receipt attaches when the panel returns</span>`;
 
         $("stage").innerHTML = [
-          step("i-scale", true, "A dispute is opened",
-            `Case <b>#${id}</b> · consumer <a href="${EXP}${c.consumer}" target="_blank" rel="noopener">${short(c.consumer)}</a> · reference ${c.escrowRef}`),
-          step("i-link", facts.length > 0, "Evidence entered into the record",
-            facts.length > 0 ? `<div class="verified"><svg class="i"><use href="#i-circlecheck"/></svg> Verified by an attestor</div><div class="quote">${esc(facts)}</div>`
-              : `<span class="muted">No attested facts on file — decided on the parties' submitted evidence (see the receipt).</span>`),
-          step("i-scroll", true, "Tried under the court's law",
-            `<div class="law">${esc(sys || "(prompt unavailable)")}</div>`),
+          step(
+            "i-scale",
+            true,
+            "A dispute is opened",
+            `Case <b>#${id}</b> · consumer <a href="${EXP}${c.consumer}" target="_blank" rel="noopener">${short(c.consumer)}</a> · reference ${c.escrowRef}`,
+          ),
+          step(
+            "i-link",
+            facts.length > 0,
+            "Evidence entered into the record",
+            facts.length > 0
+              ? `<div class="verified"><svg class="i"><use href="#i-circlecheck"/></svg> Verified by an attestor</div><div class="quote">${esc(facts)}</div>`
+              : `<span class="muted">No attested facts on file — decided on the parties' submitted evidence (see the receipt).</span>`,
+          ),
+          step(
+            "i-scroll",
+            true,
+            "Tried under the court's law",
+            `<div class="law">${esc(sys || "(prompt unavailable)")}</div>`,
+          ),
           step("i-users", ruled, "The panel rules", juryHtml),
-          step("i-file", c.receiptId > 0n, "The reasoning is recorded", receipt),
-          step(final ? "i-circlecheck" : "i-clock", true, final ? "Final & settled" : `Status: ${status}`,
-            final ? `<span class="muted">The verdict was delivered to the consumer and the funds settled — no human in the loop.</span>`
-                  : `<span class="muted">${status}${ruled && !final ? " · appeal window open" : ""}</span>`, true),
+          step(
+            "i-file",
+            c.receiptId > 0n,
+            "The reasoning is recorded",
+            receipt,
+          ),
+          step(
+            final ? "i-circlecheck" : "i-clock",
+            true,
+            final ? "Final & settled" : `Status: ${status}`,
+            final
+              ? `<span class="muted">The verdict was delivered to the consumer and the funds settled — no human in the loop.</span>`
+              : `<span class="muted">${status}${ruled && !final ? " · appeal window open" : ""}</span>`,
+            true,
+          ),
         ].join("");
         $("status").textContent = "replayed live";
       }

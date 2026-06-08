@@ -17,7 +17,7 @@ Solidity contracts before an external audit and mainnet deploy.
 
 In-scope = the production Solidity in `src/` (and the shared evidence library). Source of
 truth for live addresses is [`deployments/shannon.json`](deployments/shannon.json); the
-current live stack is **v4** plus the `resilientArena` / `adaptiveDemo` Courts noted there.
+current live stack is **premiumStack** plus the `resilientArena` / `serviceSLA` proofs noted there.
 
 ### In-scope contracts
 

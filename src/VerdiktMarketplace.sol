@@ -39,6 +39,7 @@ contract VerdiktMarketplace {
     mapping(address => Challenge) public challenges; // court => current challenge
     mapping(address => uint256) public pending; // pull-payment ledger
     address[] public backedCourts;
+    bool private _entered;
 
     event CourtBacked(address indexed court, address indexed operator, uint256 stake, string label);
     event StakeAdded(address indexed court, uint256 amount, uint256 total);
@@ -47,6 +48,7 @@ contract VerdiktMarketplace {
     event Challenged(address indexed court, address indexed challenger, uint256 caseId, uint256 bond);
     event ChallengeResolved(address indexed court, bool upheld, uint256 slashed);
     event Withdrawn(address indexed to, uint256 amount);
+    event ParamsSet(uint256 minStake, uint256 challengeBond, uint256 slashBps, uint64 withdrawDelay);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     modifier onlyOwner() {
@@ -59,6 +61,13 @@ contract VerdiktMarketplace {
         _;
     }
 
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
+    }
+
     constructor(address treasury_) {
         require(treasury_ != address(0), "zero treasury");
         owner = msg.sender;
@@ -68,11 +77,12 @@ contract VerdiktMarketplace {
     // --- operator: back / top up / exit ---------------------------------------
 
     /// @notice Stake to back a court you operate. Reverts if the court isn't a working VerdiktCourt.
-    function backCourt(address court, string calldata label) external payable {
+    function backCourt(address court, string calldata label) external payable nonReentrant {
         require(court != address(0), "zero court");
         require(backing[court].operator == address(0), "already backed");
         require(msg.value >= minStake, "stake too low");
-        IVerdiktCourt(court).quoteOpen(); // validates the court responds
+        uint256 quote = IVerdiktCourt(court).quoteOpen(); // validates the court responds
+        require(quote > 0, "bad court");
         backing[court] = Backing(msg.sender, msg.value, label, true, 0, 0, 0);
         backedCourts.push(court);
         emit CourtBacked(court, msg.sender, msg.value, label);
@@ -141,7 +151,7 @@ contract VerdiktMarketplace {
 
     // --- pull payments --------------------------------------------------------
 
-    function withdraw() external returns (uint256 amount) {
+    function withdraw() external nonReentrant returns (uint256 amount) {
         amount = pending[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pending[msg.sender] = 0;
@@ -161,15 +171,16 @@ contract VerdiktMarketplace {
     /// @notice Route to the best active court: highest score, then cheapest live quote, breaking ties
     /// toward the larger stake. Skin-in-the-game and a clean record win the flow.
     function bestCourt() external view returns (address court, uint256 fee) {
-        bool found;
-        int256 bestScore;
-        uint256 bestFee;
-        uint256 bestStake;
-        for (uint256 i = 0; i < backedCourts.length; i++) {
+        bool found = false;
+        int256 bestScore = 0;
+        uint256 bestFee = 0;
+        uint256 bestStake = 0;
+        uint256 n = backedCourts.length;
+        for (uint256 i = 0; i < n; i++) {
             address c = backedCourts[i];
             Backing storage b = backing[c];
             if (!b.active || b.operator == address(0)) continue;
-            uint256 q;
+            uint256 q = 0;
             try IVerdiktCourt(c).quoteOpen() returns (uint256 quote) {
                 q = quote;
             } catch {
@@ -205,6 +216,7 @@ contract VerdiktMarketplace {
         challengeBond = challengeBond_;
         slashBps = slashBps_;
         withdrawDelay = withdrawDelay_;
+        emit ParamsSet(minStake_, challengeBond_, slashBps_, withdrawDelay_);
     }
 
     function setTreasury(address t) external onlyOwner {

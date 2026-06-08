@@ -99,8 +99,8 @@ single largest dependency in the system, and it is **outside Verdikt's control**
   `setAllowAbstention`, `setGradedSplit`, `setPerAgentPrice`, `setAppealWindow`,
   `setRequestTimeout`, `sweep`. A `VerdiktTimelock` exists to take over ownership and make
   governance delayed/transparent — **but per `deployments/shannon.json` the live Court
-  ownership is NOT migrated to the timelock** (v1 is pre-ownership-transfer; v2/v4 owner is
-  still the deployer EOA). So today owner trust is single-key in practice.
+  ownership is NOT migrated to the timelock** (v1 is pre-ownership-transfer; v2/v4/premium owner
+  is still the deployer EOA). So today owner trust is single-key in practice.
 - **Registered attestors** (if an attestation registry is wired). `_verifiedFacts` folds
   their facts in as *authoritative*, above party claims. Per `SECURITY.md`, attested facts
   are **not** sanitized (trusted source), so a compromised-but-registered attestor could post

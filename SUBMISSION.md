@@ -1,8 +1,8 @@
-# Verdikt — submission writeup (DRAFT for review)
+# Verdikt — submission writeup (FINAL DRAFT for review)
 
-> **Status:** draft prepared for your review. Nothing has been submitted. Fill the two
-> placeholders (`<DEMO_VIDEO_URL>`, submission-track specifics) before submitting, and
-> submit only with your explicit go-ahead.
+> **Status:** final draft prepared for your review. Nothing has been submitted. Paste the final
+> demo video URL and any track-specific form fields before submitting, and submit only with your
+> explicit go-ahead.
 
 ## One-liner
 
@@ -49,7 +49,7 @@ prediction market whose subjective outcome the jury resolves.
 
 **Live demo:** https://verdikt.gudman.xyz — landing + `/app` (escrow demo), `/app/arena.html`
 (agent-to-agent court), `/app/courtroom.html` (verdict replay), `/app/explorer.html` (precedent +
-reputation). **Repo:** https://github.com/Ridwannurudeen/verdikt — **213/213 tests** (incl. fuzz +
+reputation). **Repo:** https://github.com/Ridwannurudeen/verdikt — **230/230 tests** (incl. fuzz +
 invariant). All of the following are on-chain and recorded in
 [`deployments/shannon.json`](deployments/shannon.json):
 
@@ -71,10 +71,10 @@ invariant). All of the following are on-chain and recorded in
 
 ### Key live addresses
 
-**v4 hardened stack** — Court `0x8f2a01D63D3fC0216321970510D0dDFFe9693199`, Escrow
-`0x000c7dc06aD2664295F181EA2CE119F4c7F902e0`, Registry `0xe368032D85004DefeB1a3d8C26e382761BE159a6`,
-Reputation `0x14e82fE12C3Ec21E2489F7181b86A970Be46bCb4`, AttestationRegistry
-`0x53e7632709648669249f18fd2Ce7Cdb5744A285A`, Marketplace `0xa51c712fE58aB04d0e2dE540b5d982773548A6EB`.
+**Premium demo stack** — Court `0xeBbA8b849343150e994BEE34778D4D8D38941eDE`, Escrow
+`0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d`, Registry `0xd1e91c0167a3F5a5aC0F61f86E3883921610261E`,
+AttestationRegistry `0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1`, ServiceSLA
+`0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9`.
 
 **Resilient agent-to-agent stack** — Court `0x91FF43bE0a9fd4Bd93D7a2B1Cf7927FbED152B06`, AgentEscrow
 `0x3cD6509237e2Ffb35f42b3810FA53b3afB1cB65c`, Registry `0x31F8f285c7e5331b7789E346D5f9dc8D85a83096`,
@@ -102,6 +102,6 @@ external third-party audit and mainnet deploy (needs a funded mainnet key); a go
 
 - Live demo: https://verdikt.gudman.xyz
 - Repo: https://github.com/Ridwannurudeen/verdikt
-- Demo video: `<DEMO_VIDEO_URL>`
+- Demo video: paste the final video URL before submitting the form
 - On-chain proof: [`deployments/shannon.json`](deployments/shannon.json)
 - Architecture & trust model: [`README.md`](README.md) · [`SECURITY.md`](SECURITY.md) · [`ECONOMICS.md`](ECONOMICS.md)

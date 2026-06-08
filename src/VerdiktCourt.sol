@@ -54,6 +54,8 @@ contract VerdiktCourt is IVerdiktCourt {
         uint64 appealDeadline;
         uint256 promptVersion;
         uint256 modelId;
+        bool useGradedSplit;
+        bool useAbstention;
         string evidence;
     }
 
@@ -64,6 +66,7 @@ contract VerdiktCourt is IVerdiktCourt {
     /// @notice Direct caller overpayments credited for pull withdrawal.
     mapping(address => uint256) public pendingRefunds;
     uint256 public totalRefunds;
+    bool private _entered;
 
     /// @notice Governed, versioned prompt text — the court's "legal code". Each version is
     /// immutable once published (append-only); governance (owner / timelock) sets the active
@@ -98,12 +101,21 @@ contract VerdiktCourt is IVerdiktCourt {
     event PromptVersionPublished(uint256 indexed version);
     event ActivePromptVersionSet(uint256 indexed version);
     event AgentIdChanged(uint256 indexed oldId, uint256 indexed newId);
+    event PerAgentPriceSet(uint256 price);
+    event RequestTimeoutSet(uint256 timeout);
     event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "not owner");
         _;
+    }
+
+    modifier nonReentrant() {
+        require(!_entered, "reentrant");
+        _entered = true;
+        _;
+        _entered = false;
     }
 
     constructor(address platform_, uint256 agentId_) {
@@ -123,7 +135,13 @@ contract VerdiktCourt is IVerdiktCourt {
 
     // --- consumer entrypoints -------------------------------------------------
 
-    function openCase(uint256 escrowRef, string calldata evidence) external payable override returns (uint256 caseId) {
+    function openCase(uint256 escrowRef, string calldata evidence)
+        external
+        payable
+        override
+        nonReentrant
+        returns (uint256 caseId)
+    {
         return _openCase(escrowRef, evidence, MAX_TRIAL_PANEL);
     }
 
@@ -131,6 +149,7 @@ contract VerdiktCourt is IVerdiktCourt {
         external
         payable
         override
+        nonReentrant
         returns (uint256 caseId)
     {
         return _openCase(escrowRef, evidence, trialPanel);
@@ -151,12 +170,14 @@ contract VerdiktCourt is IVerdiktCourt {
         c.evidence = evidence;
         c.promptVersion = activePromptVersion;
         c.modelId = agentId;
+        c.useGradedSplit = gradedSplit;
+        c.useAbstention = allowAbstention;
         emit CaseOpened(caseId, msg.sender, escrowRef);
-        _dispatch(caseId);
         _refundExcess(msg.value, deposit);
+        _dispatch(caseId);
     }
 
-    function appeal(uint256 caseId, string calldata newEvidence) external payable override {
+    function appeal(uint256 caseId, string calldata newEvidence) external payable override nonReentrant {
         Case storage c = cases[caseId];
         require(msg.sender == c.consumer, "only consumer");
         require(c.status == CaseStatus.Ruled, "not appealable");
@@ -168,24 +189,24 @@ contract VerdiktCourt is IVerdiktCourt {
         c.round += 1;
         c.evidence = string.concat(c.evidence, "\n\n[NEW EVIDENCE ON APPEAL]\n", newEvidence);
         emit Appealed(caseId, c.round);
-        _dispatch(caseId);
         _refundExcess(msg.value, deposit);
+        _dispatch(caseId);
     }
 
     /// @notice Re-run a panel for a case whose request failed or timed out.
-    function retry(uint256 caseId) external payable override {
+    function retry(uint256 caseId) external payable override nonReentrant {
         Case storage c = cases[caseId];
         require(msg.sender == c.consumer, "only consumer");
         require(c.status == CaseStatus.Errored, "not errored");
         uint256 deposit = _depositFor(_panelFor(c));
         require(msg.value >= deposit, "deposit too low");
-        _dispatch(caseId);
         _refundExcess(msg.value, deposit);
+        _dispatch(caseId);
     }
 
     /// @notice Settle a case once the appeal window has passed (or the final round is in).
     /// Permissionless so a keeper can drive it autonomously.
-    function finalize(uint256 caseId) external override {
+    function finalize(uint256 caseId) external override nonReentrant {
         Case storage c = cases[caseId];
         require(c.status == CaseStatus.Ruled, "not ruled");
         require(c.round == MAX_ROUND || block.timestamp > c.appealDeadline, "appeal window open");
@@ -203,6 +224,7 @@ contract VerdiktCourt is IVerdiktCourt {
         Request memory /*details*/
     )
         external
+        nonReentrant
     {
         require(msg.sender == address(platform), "only platform");
         uint256 caseId = requestToCase[requestId];
@@ -240,6 +262,7 @@ contract VerdiktCourt is IVerdiktCourt {
         uint256 threshold = panel / 2 + 1;
         uint256 deposit = _depositFor(panel);
         require(_availableBalance() >= deposit, "insufficient balance");
+        c.status = CaseStatus.Pending;
 
         uint256 requestId = platform.createAdvancedRequest{value: deposit}(
             c.modelId,
@@ -253,7 +276,6 @@ contract VerdiktCourt is IVerdiktCourt {
         );
 
         c.platformRequestId = requestId;
-        c.status = CaseStatus.Pending;
         requestToCase[requestId] = caseId;
         emit VerdictRequested(caseId, requestId, c.round, panel, threshold);
     }
@@ -263,10 +285,10 @@ contract VerdiktCourt is IVerdiktCourt {
     /// fence to break out and issue instructions to the panel.
     function _buildPayload(Case storage c) internal view returns (bytes memory) {
         PromptVersion storage pv = _promptVersions[c.promptVersion];
-        uint256 extra = allowAbstention ? 1 : 0;
+        uint256 extra = c.useAbstention ? 1 : 0;
         string[] memory allowed;
         string memory instruction;
-        if (gradedSplit) {
+        if (c.useGradedSplit) {
             allowed = new string[](5 + extra);
             allowed[0] = "PAYER";
             allowed[1] = "SPLIT25";
@@ -281,7 +303,7 @@ contract VerdiktCourt is IVerdiktCourt {
             allowed[2] = "SPLIT";
             instruction = pv.instructionNonGraded;
         }
-        if (allowAbstention) {
+        if (c.useAbstention) {
             allowed[allowed.length - 1] = "UNDECIDABLE";
             instruction = string.concat(
                 instruction, " If the evidence is genuinely insufficient to determine the outcome, respond UNDECIDABLE."
@@ -299,8 +321,9 @@ contract VerdiktCourt is IVerdiktCourt {
         if (address(reg) == address(0)) return "";
         string memory facts = reg.factsFor(reg.subjectFor(c.consumer, c.escrowRef));
         if (bytes(facts).length == 0) return "";
-        // Sanitize attested facts like party evidence so a registered attestor cannot forge the
-        // <evidence> fence / break prompt structure (audit: facts must not bypass injection-hardening).
+        // Sanitize attested facts the same way as party evidence so a registered attestor cannot forge
+        // the <evidence> fence / break the prompt structure (audit: facts must not bypass the
+        // injection-hardening the rest of the prompt enforces).
         return string.concat(
             "AUTHORITATIVE VERIFIED FACTS (attested on-chain by court-registered oracles; these outrank any conflicting party claim below):\n",
             _sanitizeEvidence(facts),
@@ -424,12 +447,14 @@ contract VerdiktCourt is IVerdiktCourt {
     // --- admin ----------------------------------------------------------------
 
     function setAgentId(uint256 id) external onlyOwner {
+        require(id != 0, "zero agent");
         emit AgentIdChanged(agentId, id);
         agentId = id;
     }
 
     function setPerAgentPrice(uint256 price) external onlyOwner {
         perAgentPrice = price;
+        emit PerAgentPriceSet(price);
     }
 
     function setAppealWindow(uint64 w) external onlyOwner {
@@ -438,6 +463,7 @@ contract VerdiktCourt is IVerdiktCourt {
 
     function setRequestTimeout(uint256 t) external onlyOwner {
         requestTimeout = t;
+        emit RequestTimeoutSet(t);
     }
 
     /// @notice Toggle graded split verdicts (PAYER/SPLIT25/SPLIT50/SPLIT75/PAYEE). Off by default
@@ -492,7 +518,7 @@ contract VerdiktCourt is IVerdiktCourt {
         gradedSplit = on;
     }
 
-    function withdrawRefund() external returns (uint256 amount) {
+    function withdrawRefund() external nonReentrant returns (uint256 amount) {
         amount = pendingRefunds[msg.sender];
         require(amount > 0, "nothing to withdraw");
         pendingRefunds[msg.sender] = 0;
@@ -503,7 +529,7 @@ contract VerdiktCourt is IVerdiktCourt {
     }
 
     /// @notice Withdraw accumulated agent-fee rebates (dust returned by the platform).
-    function sweep(address to) external onlyOwner {
+    function sweep(address to) external onlyOwner nonReentrant {
         require(to != address(0), "zero address");
         uint256 amount = _availableBalance();
         (bool ok,) = to.call{value: amount}("");

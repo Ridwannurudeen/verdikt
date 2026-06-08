@@ -42,4 +42,4 @@ may fail to inject `window.ethereum` on some browsers.
 - No event indexer — direct contract reads only.
 - No historical list of deals/cases — you supply the IDs.
 - No offline cache; reads run against the configured RPC on every load.
-- Somnia testnet block explorer URL is unconfirmed, so tx links are tx hashes only.
+- Contract and receipt links use the Shannon explorer / Somnia agent receipts where available.
