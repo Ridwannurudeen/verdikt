@@ -14,11 +14,13 @@ import {
   createPublicClient,
   createWalletClient,
   http,
+  fallback,
   parseAbi,
   parseEther,
   formatEther,
   keccak256,
   stringToHex,
+  decodeEventLog,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -47,6 +49,7 @@ const ESCROW_ABI = parseAbi([
   "function pending(address) view returns (uint256)",
   "function nextDealId() view returns (uint256)",
   "function withdraw() returns (uint256)",
+  "event DealCreated(uint256 indexed dealId, address indexed payer, address indexed payee, uint256 amount)",
 ]);
 const COURT_ABI = parseAbi([
   "function quoteOpen(uint8 trialPanel) view returns (uint256)",
@@ -76,12 +79,11 @@ if (!process.env.BUYER_PK) {
   process.exit(1);
 }
 const buyer = privateKeyToAccount(process.env.BUYER_PK);
-const pub = createPublicClient({ chain: shannon, transport: http(RPC) });
-const wallet = createWalletClient({
-  account: buyer,
-  chain: shannon,
-  transport: http(RPC),
-});
+// Dual-RPC fallback rides out Somnia's intermittent endpoint failures.
+const RPCS = [...new Set([RPC, "https://api.infra.testnet.somnia.network/", "https://dream-rpc.somnia.network/"])];
+const transport = fallback(RPCS.map((u) => http(u)));
+const pub = createPublicClient({ chain: shannon, transport });
+const wallet = createWalletClient({ account: buyer, chain: shannon, transport });
 
 const read = (address, abi, functionName, args = []) =>
   pub.readContract({ address, abi, functionName, args });
@@ -97,6 +99,16 @@ async function send(address, abi, functionName, args = [], value = 0n) {
   if (receipt.status !== "success")
     throw new Error(`${functionName} reverted (${hash})`);
   return receipt;
+}
+
+function dealIdFromReceipt(receipt) {
+  for (const lg of receipt.logs) {
+    try {
+      const ev = decodeEventLog({ abi: ESCROW_ABI, data: lg.data, topics: lg.topics });
+      if (ev.eventName === "DealCreated") return ev.args.dealId;
+    } catch {}
+  }
+  throw new Error("DealCreated event not found in createDeal receipt");
 }
 
 async function pickPanel(dealId, evidence) {
@@ -122,19 +134,18 @@ async function pickPanel(dealId, evidence) {
 
 async function round(n) {
   log(`\n──────── Round ${n} — no human in the loop ────────`);
-  const dealId = await read(ESCROW, ESCROW_ABI, "nextDealId");
   const deliverBy = BigInt(Math.floor(Date.now() / 1000) + 86400);
-  log(
-    `🤖 BuyerAgent → opening escrow deal #${dealId} with SellerAgent (0.01 STT)…`,
-  );
-  await send(
+  log(`🤖 BuyerAgent → opening an escrow deal with SellerAgent (0.01 STT)…`);
+  // Read the real dealId from the DealCreated event (not a nextDealId guess that races other users).
+  const createReceipt = await send(
     ESCROW,
     ESCROW_ABI,
     "createDeal",
     [SELLER, deliverBy],
     parseEther("0.01"),
   );
-  log(`🤖 SellerAgent → did NOT deliver by the deadline.`);
+  const dealId = dealIdFromReceipt(createReceipt);
+  log(`🤖 SellerAgent → did NOT deliver by the deadline (deal #${dealId}).`);
 
   const evidence = `Autonomous BuyerAgent: SellerAgent accepted payment for deal ${dealId} but provided no delivery confirmation and did not respond by the deadline. Requesting a refund.`;
   log(`🤖 BuyerAgent → filing a dispute with machine-generated evidence…`);
@@ -148,21 +159,33 @@ async function round(n) {
   let c;
   for (let i = 0; i < 24; i++) {
     c = await read(COURT, COURT_ABI, "getCase", [caseId]);
-    if (Number(c.status) >= 2) break;
+    const st = Number(c.status);
+    if (st === 2 || st === 3) break; // Ruled or Final
+    if (st === 4) throw new Error("panel errored (insufficient validators / timeout) — re-run the round");
     await sleep(5000);
   }
-  if (Number(c.status) < 2) throw new Error("panel did not return in time");
+  if (Number(c.status) !== 2 && Number(c.status) !== 3)
+    throw new Error("panel did not return in time");
   const model = await read(COURT, COURT_ABI, "modelOf", [caseId]);
   log(
     `⚖️  Court → verdict: ${VERDICT[Number(c.verdict)]}  (byte-identical consensus; decided by model ${model})`,
   );
 
-  log(`⏳ Waiting out the appeal window, then finalizing autonomously…`);
+  log(`⏳ Waiting out the appeal window (by chain time), then finalizing autonomously…`);
   const deadline = Number(
     await read(COURT, COURT_ABI, "appealDeadlineOf", [caseId]),
   );
-  while (Math.floor(Date.now() / 1000) <= deadline) await sleep(5000);
-  await send(COURT, COURT_ABI, "finalize", [caseId]);
+  // Gate on the chain's block timestamp, not the local wall clock (which can run ahead and revert).
+  let blockTime = Number((await pub.getBlock()).timestamp);
+  while (blockTime <= deadline) {
+    await sleep(5000);
+    blockTime = Number((await pub.getBlock()).timestamp);
+  }
+  try {
+    await send(COURT, COURT_ABI, "finalize", [caseId]);
+  } catch (e) {
+    if (!String(e).includes("not ruled")) throw e; // already finalized (e.g. by a keeper) — fine
+  }
   try {
     await send(REGISTRY, REGISTRY_ABI, "record", [caseId, TOPIC]);
     log(`📚 Verdict recorded as on-chain precedent (case #${caseId}).`);

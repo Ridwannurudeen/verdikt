@@ -81,6 +81,19 @@ The hardened stack is deployed live as **v4** (see `deployments/shannon.json`).
   error risk, and the appeal / abstention / human-escalation mitigations), and
   [`TRUST-MODEL.md`](TRUST-MODEL.md) for the determinism dependency on Somnia's validator LLM.
 
+## Internal pre-submission audit (2026-06-08)
+
+Multi-area review (core court, consumers, infra, frontend, off-chain) + `forge lint` + the full test suite. **No critical/high fund-loss, access-control, or reentrancy bugs** — money math, `onVerdict` access control, pull-payment CEI, and the new features (model-pinning, two-sided evidence, attestation, abstention, adaptive panel) verified sound. Frontend verified clean on DOM-XSS (`esc()`/`textContent` on every on-chain string).
+
+Fixed in this pass:
+- *(Medium)* Attested facts were folded into the panel prompt **unsanitized**; now run through `_sanitizeEvidence` like party evidence so a registered attestor can't forge the evidence fence (`VerdiktCourt._verifiedFacts`).
+- *(Medium)* The two-sided escrow's combined statement let a party forge the counterparty's section header; statements are now cleaned of newlines/angle-brackets (`VerdiktEscrow._combinedStatement` / `_clean`).
+- *(Low)* `setKeeperCutBps` capped at 100% → now 20% across Escrow/AgentEscrow/TokenEscrow/Insurance, so a slashed stake can't be fully redirected to treasury.
+- *(Low)* Added a `!settled` guard to `SimpleEscrow.dispute`.
+- *(Off-chain)* `script/auto-arena.mjs`: reads `dealId` from the `DealCreated` event, gates `finalize` on chain time, handles `Errored` cases, and uses a dual-RPC fallback transport.
+
+Accepted / documented (design-level or risk-vs-reward before deadline): caller-asserted `VerdiktReputation.record` (advisory; see Remaining Work), free `openDispute` griefing (mitigated by the response-window timeout), permissionless `VerdiktRegistry.record` topic, and frontend viem-from-CDN without SRI/CSP. Injection-hardening is defense-in-depth on an LLM, and attestors are governance-gated.
+
 ## Remaining Production Work
 
 - Run an external audit + a bug bounty before mainnet.

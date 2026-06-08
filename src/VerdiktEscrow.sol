@@ -204,7 +204,20 @@ contract VerdiktEscrow is IVerdiktConsumer {
         string memory ye = statementOf[dealId][d.payee];
         if (bytes(pe).length == 0) pe = "(no statement submitted)";
         if (bytes(ye).length == 0) ye = "(no statement submitted)";
-        return string.concat("BUYER (payer) states:\n", pe, "\n\nSELLER (payee) states:\n", ye);
+        // Clean each statement so it can't forge the section headers and spoof the counterparty
+        // (audit: label injection in the two-sided combined statement).
+        return string.concat("BUYER (payer) states:\n", _clean(pe), "\n\nSELLER (payee) states:\n", _clean(ye));
+    }
+
+    /// @dev Neutralize newlines and angle brackets so a statement can't inject a fake
+    /// "BUYER/SELLER states:" header (or the court's evidence fence). Deterministic.
+    function _clean(string memory s) internal pure returns (string memory) {
+        bytes memory b = bytes(s);
+        for (uint256 i; i < b.length; i++) {
+            bytes1 ch = b[i];
+            if (ch == 0x0a || ch == 0x0d || ch == 0x3c || ch == 0x3e) b[i] = 0x20; // \n \r < > -> space
+        }
+        return string(b);
     }
 
     function appeal(uint256 dealId, string calldata newEvidence) external payable {
@@ -341,7 +354,7 @@ contract VerdiktEscrow is IVerdiktConsumer {
     }
 
     function setKeeperCutBps(uint256 bps) external onlyOwner {
-        require(bps <= 10000, "bps");
+        require(bps <= 2000, "cut too high"); // cap so a slashed stake can't be fully redirected to treasury
         keeperCutBps = bps;
     }
 

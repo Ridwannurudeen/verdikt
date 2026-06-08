@@ -32,6 +32,7 @@ contract SimpleEscrow is VerdiktConsumerBase {
     function dispute(uint256 id, string calldata evidence) external payable {
         Deal storage d = deals[id];
         require(msg.sender == d.payer || msg.sender == d.payee, "not a party");
+        require(!d.settled, "settled");
         _openDispute(id, evidence, msg.sender);
     }
 
