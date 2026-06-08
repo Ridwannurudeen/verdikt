@@ -6,6 +6,7 @@
 [![Network](https://img.shields.io/badge/Somnia%20Shannon-chain%2050312-6b1620)](https://shannon-explorer.somnia.network)
 [![Tests](https://img.shields.io/badge/tests-230%2F230-2ea44f)](#build-test-deploy)
 [![Solidity](https://img.shields.io/badge/solidity-0.8.24%20(cancun)-363636)](foundry.toml)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 <p align="center">
   <a href="https://verdikt.gudman.xyz"><img src="assets/img/hero.png" alt="Verdikt — Justice, executed by autonomous agents" width="900"></a>
@@ -14,7 +15,7 @@
 
 > It's the dispute committee that on-chain escrow — and an entire agent economy — doesn't yet have.
 
-**Contents:** [See it live](#see-it-live-somnia-shannon) · [Agentathon criteria](#how-it-maps-to-the-agentathon-criteria) · [Why the jury is trustworthy](#what-makes-the-ai-jury-trustworthy) · [Architecture](#architecture) · [Live on Shannon](#live-on-shannon-chain-50312) · [Build & test](#build-test-deploy) · [Somnia integration](#somnia-integration-verified-against-docssomnianetwork) · [Status & limitations](#status--honest-limitations)
+**Contents:** [See it live](#see-it-live-somnia-shannon) · [Agentathon criteria](#how-it-maps-to-the-agentathon-criteria) · [Why the jury is trustworthy](#what-makes-the-ai-jury-trustworthy) · [Architecture](#architecture) · [Live on Shannon](#live-on-shannon-chain-50312) · [Build & test](#build-test-deploy) · [Somnia integration](#somnia-integration-verified-against-docssomnianetwork) · [Status & limitations](#status--honest-limitations) · [License](#license)
 
 ---
 
@@ -170,3 +171,9 @@ Phases 0–5 are built, tested (**230/230**), and live on Shannon (full [`ROADMA
 - **Trust boundary** — verdict reproducibility depends on Somnia's validator LLM (which Verdikt records per case but can't freeze upstream); detected via re-runnable gates, documented in [`TRUST-MODEL.md`](TRUST-MODEL.md).
 - **Appeal panel (9 agents)** exceeds Shannon's current validator subcommittee, so the staked-appeal escalation is unit-tested but runs live only on a larger set.
 - Rerun the determinism gates after any prompt or label-set change.
+
+---
+
+## License
+
+MIT — see [`LICENSE`](LICENSE). Every contract carries an `SPDX-License-Identifier: MIT` header.
