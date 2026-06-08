@@ -2,7 +2,21 @@
 
 **Trustless AI arbitration on Somnia's Agentic L1.** Autonomous agents can pay each other on-chain — but they can't *sue* each other, and smart contracts can't weigh evidence and judge a dispute. Verdikt is the missing piece: when a deal is contested, the contract **autonomously convenes a panel of Somnia validator LLM agents** that read the evidence and return a binding, **byte-identical** verdict (`PAYEE` / `PAYER` / `SPLIT`, optionally graded, or `UNDECIDABLE`). The losing party can **appeal by staking**; a larger panel re-tries with new evidence and the stake is **slashed** if the verdict holds. No human in the loop.
 
+[![Live](https://img.shields.io/badge/live-verdikt.gudman.xyz-c9a227)](https://verdikt.gudman.xyz)
+[![Network](https://img.shields.io/badge/Somnia%20Shannon-chain%2050312-6b1620)](https://shannon-explorer.somnia.network)
+[![Tests](https://img.shields.io/badge/tests-230%2F230-2ea44f)](#build-test-deploy)
+[![Solidity](https://img.shields.io/badge/solidity-0.8.24%20(cancun)-363636)](foundry.toml)
+
+<p align="center">
+  <a href="https://verdikt.gudman.xyz"><img src="assets/img/hero.png" alt="Verdikt — Justice, executed by autonomous agents" width="900"></a>
+</p>
+<p align="center"><em>Live at <a href="https://verdikt.gudman.xyz">verdikt.gudman.xyz</a> — reading real on-chain data from Somnia Shannon.</em></p>
+
 > It's the dispute committee that on-chain escrow — and an entire agent economy — doesn't yet have.
+
+**Contents:** [See it live](#see-it-live-somnia-shannon) · [Agentathon criteria](#how-it-maps-to-the-agentathon-criteria) · [Why the jury is trustworthy](#what-makes-the-ai-jury-trustworthy) · [Architecture](#architecture) · [Live on Shannon](#live-on-shannon-chain-50312) · [Build & test](#build-test-deploy) · [Somnia integration](#somnia-integration-verified-against-docssomnianetwork) · [Status & limitations](#status--honest-limitations)
+
+---
 
 ## See it live (Somnia Shannon)
 
@@ -21,6 +35,8 @@
 node script/auto-arena.mjs        # createDeal → auto-dispute → AI verdict → finalize → record → withdraw
 ```
 
+---
+
 ## How it maps to the Agentathon criteria
 
 - **Agent-first design** — disputes are resolved by a panel of agents convened *by the contract itself* via `createAdvancedRequest`; the court is an open primitive any agent/contract invokes autonomously. The autonomous loop (`script/auto-arena.mjs`) runs the full lifecycle agent-to-agent.
@@ -28,9 +44,16 @@ node script/auto-arena.mjs        # createDeal → auto-dispute → AI verdict �
 - **Innovation** — *judgment as an on-chain oracle*: byte-identical AI consensus, a stake-secured appeal layer, verifiable-evidence attestation, abstention, model + prompt versioning per verdict.
 - **Functionality** — full lifecycle implemented and tested (**230/230**, incl. invariant/fuzz), **deployed and exercised live on Shannon** with real settlements across multiple apps.
 
+---
+
 ## What makes the AI jury trustworthy
 
-The hard part isn't convening a panel — it's making the verdict defensible. All of the following are **live on the June-7 premium stack** and recorded in [`deployments/shannon.json`](deployments/shannon.json):
+The hard part isn't convening a panel — it's making the verdict defensible. All of the following are **live on the June-7 premium stack** and recorded in [`deployments/shannon.json`](deployments/shannon.json).
+
+<p align="center">
+  <a href="https://verdikt.gudman.xyz/app/courtroom.html"><img src="assets/img/courtroom.png" alt="The Verdikt courtroom — a real case replayed step by step: dispute opened, evidence entered, tried under the court's law, a five-agent panel rules, settled on-chain" width="780"></a>
+</p>
+<p align="center"><em>The courtroom: a real case, replayed — verified evidence is weighed, a validator panel rules, and the verdict settles on-chain.</em></p>
 
 - **Deterministic.** A fixed allowed-values set makes panel outputs byte-identical, so Majority consensus is meaningful. Proven live (determinism gate PASS).
 - **Grounded in verified evidence.** Trusted attestors (oracles/courier APIs/EAS bridges) post on-chain facts the Court folds in as *authoritative*, above the parties' untrusted claims. **Proven live:** a buyer's false "never received" claim lost to the seller because an oracle had attested delivery.
@@ -40,7 +63,14 @@ The hard part isn't convening a panel — it's making the verdict defensible. Al
 - **Auditable per verdict.** Each case pins the **prompt version** (the court's versioned, timelock-governable "law") and the **model id** that decided it (`modelOf`).
 - **Resilient.** The trial panel is caller-selectable in `[3, 5]`; when validators dip below full strength a dispute **degrades gracefully** instead of reverting (proven live at a 3-agent byte-identical majority).
 
+<p align="center">
+  <a href="https://verdikt.gudman.xyz/app/analytics.html"><img src="assets/img/analytics.png" alt="Case analytics — 100% byte-identical determinism, 92% agreement with human verdicts, on-chain precedents, and a case-by-case AI-vs-human benchmark" width="780"></a>
+</p>
+<p align="center"><em>Analytics: 100% byte-identical convergence and 92% agreement with human verdicts on the live benchmark — measured, not asserted.</em></p>
+
 The honest trust boundary (the dependency on Somnia's validator LLM) is documented plainly in [`TRUST-MODEL.md`](TRUST-MODEL.md).
+
+---
 
 ## Architecture
 
@@ -56,9 +86,11 @@ Consumer (e.g. VerdiktEscrow)      VerdiktCourt (reusable arbitration primitive)
 - **`src/VerdiktConsumerBase.sol`** — inherit-and-go base: a new protocol plugs in the jury in a few lines (implement one `_settle`).
 
 ### Consumers — many protocols, one court
+
 Six production consumers settle on the same Court, proving it as a shared primitive: **`VerdiktEscrow`** (two-party, stake-backed appeals, two-sided evidence), **`VerdiktInsurance`** (claims pool), **`VerdiktAgentEscrow`** (machine-native, pull-payment — *agents can't sue each other; now they can*), **`VerdiktTokenEscrow`** (ERC-20 value), **`VerdiktGrantClawback`** (DAO grants), **`VerdiktMilestone`** (freelance). Plus reference integrations in [`src/examples/`](src/examples): **`ServiceSLA`** (an SLA-breach arbiter — *judgment as an oracle for autonomous services*, see [`CASE-STUDY.md`](CASE-STUDY.md)), `SimpleEscrow`, `VerdiktPredictionMarket`.
 
 ### Protocol layers
+
 - **`VerdiktRegistry`** — append-only **precedent** index of final rulings (citable, AI-authored case law).
 - **`VerdiktReputation`** — portable, court-verified litigation record per party (an agent's credential).
 - **`VerdiktAttestationRegistry`** — **verifiable evidence**: governed attestors post authoritative on-chain facts.
@@ -67,6 +99,8 @@ Six production consumers settle on the same Court, proving it as a shared primit
 - **`src/lib/EvidenceLib.sol`** — deterministic structured-evidence formatter ([schema](sdk/evidence-schema.md)).
 - **SDK + tooling** — [`sdk/`](sdk/README.md) (Foundry lib + JS client + **agent SDK**), `script/auto-arena.mjs` (autonomous agent loop), `keeper/` (auto-finalize), `indexer/`.
 - **Design docs** — [`TRUST-MODEL.md`](TRUST-MODEL.md) · [`ACCURACY.md`](ACCURACY.md) · [`SECURITY.md`](SECURITY.md) · [`ECONOMICS.md`](ECONOMICS.md) · [`ECONOMICS-SECURITY.md`](ECONOMICS-SECURITY.md) · [`PORTABILITY.md`](PORTABILITY.md) · [`AUDIT-READINESS.md`](AUDIT-READINESS.md) · [`BUG-BOUNTY.md`](BUG-BOUNTY.md) · [`MAINNET-RUNBOOK.md`](MAINNET-RUNBOOK.md).
+
+---
 
 ## Live on Shannon (chain 50312)
 
@@ -80,12 +114,20 @@ The **current demo runs the premium stack** — model-pinned Court, two-sided ev
 | VerdiktAttestationRegistry | `0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1` |
 | ServiceSLA (reference integration) | `0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9` |
 
+<p align="center">
+  <a href="https://verdikt.gudman.xyz/app/explorer.html"><img src="assets/img/explorer.png" alt="Case-law explorer — the on-chain precedent registry, every finalized AI-jury ruling read live from Somnia Shannon" width="780"></a>
+</p>
+<p align="center"><em>The precedent registry, read live from chain — every finalized ruling is immutable, citable case law.</em></p>
+
 **Proven live, end to end:**
+
 - **Determinism gate PASS** — panels return byte-identical verdicts (the premise the whole design rests on).
 - **Verifiable evidence** — an attested delivery fact overrode a false claim → **PAYEE**.
 - **Abstention** — an unverified one-sided claim → **UNDECIDABLE** → safe refund; an oracle-attested outage → **decisive** refund.
 - **Autonomous loop** — agents transacted, disputed, and settled with zero human input (`script/auto-arena.mjs`).
-- **Precedent ledger** — **4 real rulings** across escrow + ServiceSLA + the autonomous loop (PAYEE / PAYER / UNDECIDABLE), browsable at [`/app/caselaw.html`](https://verdikt.gudman.xyz/app/caselaw.html).
+- **Precedent ledger** — real rulings across escrow + ServiceSLA + the autonomous loop (PAYEE / PAYER / UNDECIDABLE), growing with each settlement and browsable at [`/app/caselaw.html`](https://verdikt.gudman.xyz/app/caselaw.html).
+
+---
 
 ## Build, test, deploy
 
@@ -99,18 +141,25 @@ forge script script/Deploy.s.sol --rpc-url shannon --broadcast
 > **Gas note:** Somnia meters deployment well above mainnet and `eth_estimateGas` under-reports — deploy with an explicit high `--gas-limit` (we use 50–120M). See [`MAINNET-RUNBOOK.md`](MAINNET-RUNBOOK.md).
 
 ### Determinism gate (verify the premise yourself)
+
 The AI-jury premise rests on deterministic inference converging across validators. Verify it live:
+
 ```bash
 forge script script/Probe.s.sol:ProbeDeploy --rpc-url shannon --broadcast   # note the probe address
 cd script && npm install && node run-determinism-gate.mjs <PROBE_ADDR>       # fires a panel, prints a verdict histogram
 ```
+
 **PASS** = top label count equals panel size (byte-identical convergence). Details in [`script/README-determinism.md`](script/README-determinism.md).
+
+---
 
 ## Somnia integration (verified against docs.somnia.network)
 
 - Platform `IAgentRequester` — testnet `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` (chain 50312), mainnet `0x5E5205CF39E766118C01636bED000A54D93163E6` (5031).
 - `createAdvancedRequest(agentId, cb, selector, payload, subcommitteeSize, threshold, ConsensusType.Majority, timeout)` → `handleResponse` callback.
 - LLM Inference agent `inferString(prompt, system, chainOfThought, allowedValues)`; per-agent price 0.07 STT (panel 5 ≈ 0.40 STT).
+
+---
 
 ## Status & honest limitations
 
