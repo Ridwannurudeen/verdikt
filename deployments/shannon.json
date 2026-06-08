@@ -176,6 +176,12 @@
       "ledger": "registry rulingsCount=3 across 2 consumer apps (escrow case1 PAYEE + SLA case2 UNDECIDABLE + SLA case3 PAYER), spanning verifiable-evidence, abstention, and model-pinning."
     }
   },
+  "autonomousArena": {
+    "label": "Autonomous agent loop (agent-first / autonomous-performance): script/auto-arena.mjs",
+    "ranAt": "2026-06-07",
+    "note": "Off-chain BuyerAgent + SellerAgent transact, dispute, and settle through the premium stack with ZERO human input, on a loop. Driver: script/auto-arena.mjs (viem; BUYER_PK env). Live proof round: BuyerAgent opened deal #3 with SellerAgent (0.01 STT) -> seller silent -> BuyerAgent auto-filed a dispute with machine-generated evidence -> court convened a 4-agent panel (case #5) -> ruled PAYER byte-identical (model 12847293847561029384 pinned) -> finalized -> recorded as precedent (rulingsCount 3 -> 4) -> BuyerAgent withdrew 0.01 STT. No human in the loop. Grows the same caselaw ledger judges browse.",
+    "driver": "script/auto-arena.mjs"
+  },
   "abstentionGate": {
     "probe": "0x7959C74608941cB02A0af3A63af79fBB68B09011",
     "result": "PASS",
