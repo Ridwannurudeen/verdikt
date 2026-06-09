@@ -780,8 +780,56 @@
         "function factsFor(bytes32) view returns (string)",
       ]);
 
+      // The real trial-panel size lives only in the VerdictRequested event, not a court view.
+      // Resolve it honestly: an appeal round is the fixed 9-panel; otherwise the convene-time
+      // cache the demo writes, then a bounded recent-window event scan, then a verified value
+      // for old cases no longer in range, else null (render the consensus without a count).
+      const VERDICT_REQUESTED_EVENT = {
+        type: "event",
+        name: "VerdictRequested",
+        inputs: [
+          { name: "caseId", type: "uint256", indexed: true },
+          { name: "requestId", type: "uint256", indexed: true },
+          { name: "round", type: "uint8", indexed: false },
+          { name: "panelSize", type: "uint256", indexed: false },
+          { name: "threshold", type: "uint256", indexed: false },
+        ],
+      };
+      // Verified historical panels for showcase cases too old for a live getLogs scan
+      // (Somnia caps getLogs at 1000 blocks). Source: deployments/shannon.json.
+      const KNOWN_PANELS = {
+        "0xebba8b849343150e994bee34778d4d8d38941ede:1": 4, // premiumStack case 1
+      };
+
       const $ = (id) => document.getElementById(id);
       const client = createPublicClient({ transport: http(RPC) });
+      async function getRealPanel(id, round) {
+        if (round > 0) return 9; // appeal rounds use the fixed larger panel
+        const addr = $("court").value.trim().toLowerCase();
+        const known = KNOWN_PANELS[`${addr}:${id}`];
+        if (known) return known;
+        try {
+          const v = localStorage.getItem(`verdikt.panel.${addr}.${id}`);
+          if (v) return Number(v);
+        } catch {}
+        try {
+          const latest = await client.getBlockNumber();
+          for (let i = 0n; i < 8n; i++) {
+            const to = latest - i * 1000n;
+            if (to < 0n) break;
+            const from = to - 999n < 0n ? 0n : to - 999n;
+            const logs = await client.getLogs({
+              address: $("court").value.trim(),
+              event: VERDICT_REQUESTED_EVENT,
+              args: { caseId: id },
+              fromBlock: from,
+              toBlock: to,
+            });
+            if (logs.length) return Number(logs[logs.length - 1].args.panelSize);
+          }
+        } catch {}
+        return null;
+      }
       const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
       const court = () => $("court").value.trim();
       const read = (fn, args = []) =>
@@ -838,7 +886,14 @@
         const status = STATUS[c.status] ?? "?";
         const ruled = c.status >= 2;
         const final = c.status === 3;
-        const panel = c.round == 0 ? 5 : 9;
+        const panel = await getRealPanel(id, Number(c.round));
+        const gaugeSub = panel
+          ? `${panel}-agent panel · unanimous`
+          : "unanimous · byte-identical";
+        const favorPanel = panel
+          ? `a ${c.round == 0 ? "trial" : "appeal"} panel of <b>${panel}</b> Somnia validator agents`
+          : `a ${c.round == 0 ? "trial" : "appeal"} panel of Somnia validator agents`;
+        const roundCell = `${c.round == 0 ? "Trial" : "Appeal"}${panel ? ` · ${panel} jurors` : ""}`;
 
         let facts = "";
         try {
@@ -891,18 +946,18 @@
                   <circle class="gauge-track" cx="75" cy="75" r="64"/>
                   <circle class="gauge-arc" cx="75" cy="75" r="64" stroke-dasharray="402" stroke-dashoffset="0"/>
                 </svg>
-                <div class="gauge-center"><div class="gauge-num"><span class="vpill vpill-${verdict}">${verdict}</span></div><div class="gauge-sub">${panel}-agent panel · unanimous</div></div>
+                <div class="gauge-center"><div class="gauge-num"><span class="vpill vpill-${verdict}">${verdict}</span></div><div class="gauge-sub">${gaugeSub}</div></div>
               </div>
               <div class="vsum">
                 <span class="lead">The verdict</span>
                 <div class="vline"><span class="vpill lg vpill-${verdict}">${verdict}</span>${pct ? `<span class="muted">${pct}</span>` : ""}</div>
-                <div class="favor">In favor of <b>${WIN[verdict] ?? "?"}</b> — decided by a ${c.round == 0 ? "trial" : "appeal"} panel of <b>${panel}</b> Somnia validator agents, byte-identical.</div>
+                <div class="favor">In favor of <b>${WIN[verdict] ?? "?"}</b> — decided by ${favorPanel}, byte-identical.</div>
               </div>
             </div>
             <div class="meta-grid">
               <div class="meta-cell"><div class="k">Case</div><div class="v mono">#${id}</div></div>
               <div class="meta-cell"><div class="k">Status</div><div class="v">${statusPill}</div></div>
-              <div class="meta-cell"><div class="k">Round</div><div class="v">${c.round == 0 ? "Trial" : "Appeal"} · ${panel} jurors</div></div>
+              <div class="meta-cell"><div class="k">Round</div><div class="v">${roundCell}</div></div>
               <div class="meta-cell"><div class="k">Ruled</div><div class="v">${ruledTime}</div></div>
               <div class="meta-cell"><div class="k">Consumer</div><div class="v mono"><a href="${EXP}${c.consumer}" target="_blank" rel="noopener">${short(c.consumer)}</a></div></div>
               <div class="meta-cell"><div class="k">Reference</div><div class="v mono">${c.escrowRef}</div></div>
@@ -918,15 +973,17 @@
         }
 
         // ---- jury panel rows (unanimous convergence) ----
-        const juryHtml = ruled
-          ? `<div class="jurors">${Array.from({ length: panel })
-              .map(
-                (_, i) =>
-                  `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jmeta"><div class="jl">Validator ${i + 1}</div><div class="jrole">Somnia LLM inference agent</div></div><span class="vpill vpill-${verdict}">${verdict}</span></div>`,
-              )
-              .join("")}</div>
+        const juryHtml = !ruled
+          ? `<span class="muted">The panel is convening — ${panel ? panel + " " : ""}validator agents will each judge the evidence and must converge byte-identically.</span>`
+          : panel
+            ? `<div class="jurors">${Array.from({ length: panel })
+                .map(
+                  (_, i) =>
+                    `<div class="juror-row"><div class="av"><svg class="i"><use href="#i-cpu"/></svg></div><div class="jmeta"><div class="jl">Validator ${i + 1}</div><div class="jrole">Somnia LLM inference agent</div></div><span class="vpill vpill-${verdict}">${verdict}</span></div>`,
+                )
+                .join("")}</div>
             <div class="converge"><svg class="i"><use href="#i-circlecheck"/></svg> All <b>&nbsp;${panel}&nbsp;</b> jurors returned <b>&nbsp;${verdict}&nbsp;</b> byte-identically — the consensus the verdict requires.</div>`
-          : `<span class="muted">The panel is convening — ${panel} validator agents will each judge the evidence and must converge byte-identically.</span>`;
+            : `<div class="converge"><svg class="i"><use href="#i-circlecheck"/></svg> The panel of Somnia validator agents returned <b>&nbsp;${verdict}&nbsp;</b> byte-identically — the consensus the verdict requires.</div>`;
 
         const receipt =
           c.receiptId > 0n
@@ -974,8 +1031,13 @@
         $("status").textContent = "replayed live";
       }
 
-      $("court").value = DEFAULT_COURT;
-      $("case").value = "1";
+      const params = new URLSearchParams(location.search);
+      const qCourt = params.get("court");
+      const qCase = params.get("case");
+      $("court").value = /^0x[0-9a-fA-F]{40}$/.test(qCourt || "")
+        ? qCourt
+        : DEFAULT_COURT;
+      $("case").value = /^\d+$/.test(qCase || "") ? qCase : "1";
       $("go").onclick = replay;
       replay();
     </script>
