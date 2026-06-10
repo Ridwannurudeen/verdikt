@@ -6,10 +6,20 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1"
     />
-    <title>Verdikt — trustless AI arbitration on Somnia</title>
+    <title>Verdikt — the settlement court for the agent economy</title>
     <meta
       name="description"
-      content="Verdikt: a reusable AI-jury primitive for on-chain escrow disputes on Somnia's Agentic L1."
+      content="Verdikt: a reusable on-chain AI-jury primitive that settles disputes for the agent economy on Somnia's Agentic L1."
+    />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&f[]=switzer@400,500,600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
     />
     <link
       rel="stylesheet"
@@ -25,14 +35,14 @@
     />
     <style>
       :root {
-        --bg: #0e1116;
-        --fg: #e6edf3;
-        --panel: #161b22;
-        --border: #30363d;
-        --blue: #79c0ff;
-        --orange: #ffa657;
-        --purple: #d2a8ff;
-        --muted: #7d8590;
+        --bg: #0a0b0d;
+        --surface: #121316;
+        --border: rgba(233, 229, 220, 0.1);
+        --ink: #e9e5dc;
+        --muted: #9b988f;
+        --faint: #6b6962;
+        --amber: #e8b931;
+        --amber-ink: #f0cd66;
       }
       .reveal-viewport,
       body,
@@ -40,88 +50,112 @@
         background: var(--bg);
       }
       .reveal {
-        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-        color: var(--fg);
+        font-family: "Switzer", system-ui, sans-serif;
+        color: var(--ink);
+        font-weight: 400;
       }
       .reveal .slides {
         text-align: left;
       }
       .reveal .slides > section {
-        padding: 32px 56px;
+        padding: 28px 60px;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        font-family: "Cabinet Grotesk", "Switzer", sans-serif;
+        text-transform: none;
+        letter-spacing: -0.02em;
+        color: var(--ink);
       }
       .reveal h1 {
-        color: var(--blue);
-        font-size: 2.2em;
-        text-transform: none;
-        margin-bottom: 0.4em;
+        font-size: 2.4em;
+        font-weight: 800;
+        margin-bottom: 0.3em;
+        line-height: 1.04;
       }
       .reveal h2 {
-        color: var(--blue);
-        font-size: 1.4em;
-        text-transform: none;
-        margin-bottom: 0.45em;
+        font-size: 1.45em;
+        font-weight: 800;
+        margin-bottom: 0.5em;
+        line-height: 1.08;
+        padding-bottom: 0.3em;
+        border-bottom: 1px solid var(--border);
       }
       .reveal h3 {
-        color: var(--fg);
         font-size: 1.05em;
-        text-transform: none;
+        font-weight: 700;
         margin-top: 0.7em;
+        color: var(--muted);
       }
       .reveal p,
       .reveal li {
-        color: var(--fg);
+        color: var(--ink);
         font-size: 0.72em;
-        line-height: 1.4;
+        line-height: 1.5;
+      }
+      .reveal em {
+        color: var(--muted);
+        font-style: italic;
       }
       .reveal strong {
-        color: var(--orange);
+        color: var(--amber-ink);
+        font-weight: 600;
       }
       .reveal code {
-        background: var(--panel);
-        color: var(--purple);
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 0.9em;
-      }
-      .reveal pre code {
-        background: var(--panel);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        background: var(--surface);
+        color: var(--ink);
+        padding: 2px 7px;
+        border-radius: 5px;
+        font-size: 0.86em;
         border: 1px solid var(--border);
-        padding: 16px;
-        display: block;
       }
       .reveal ul {
-        margin-left: 1.2em;
+        margin-left: 1.1em;
       }
-      .reveal li + li {
-        margin-top: 0.3em;
+      .reveal li {
+        margin-bottom: 0.35em;
+      }
+      .reveal li::marker {
+        color: var(--amber);
       }
       .reveal a {
-        color: var(--blue);
+        color: var(--amber-ink);
         text-decoration: none;
-        border-bottom: 1px dotted var(--blue);
+        border-bottom: 1px solid rgba(232, 185, 49, 0.4);
       }
       .reveal hr {
         border: none;
         border-top: 1px solid var(--border);
-        margin: 1.2em 0;
+        margin: 1.1em 0;
       }
       .reveal .controls {
-        color: var(--muted);
+        color: var(--faint);
       }
       .reveal .progress {
-        color: var(--blue);
+        color: var(--amber);
       }
       .reveal .slide-number {
-        color: var(--muted);
-        font-family: inherit;
+        color: var(--faint);
+        font-family: "JetBrains Mono", monospace;
         background: transparent;
+      }
+      .reveal section.dense h2 {
+        font-size: 1.3em;
+      }
+      .reveal section.dense li {
+        font-size: 0.62em;
+        margin-bottom: 0.25em;
       }
       .footer {
         position: fixed;
         bottom: 12px;
-        left: 24px;
-        color: var(--muted);
-        font-size: 0.7em;
+        left: 26px;
+        color: var(--faint);
+        font-size: 0.62em;
+        font-family: "JetBrains Mono", monospace;
+        letter-spacing: 0.04em;
         z-index: 5;
       }
     </style>
@@ -133,100 +167,121 @@
           <textarea data-template>
 # Verdikt
 
-**Trustless AI arbitration for on-chain escrow**
+**The settlement court for the agent economy**
 
-Built on Somnia's Agentic L1 · Shannon testnet
+Trustless AI arbitration on Somnia's Agentic L1 · Shannon testnet
 
-**[Live demo → /app](/app/)** · **[Case law → /app/caselaw.html](/app/caselaw.html)**
-
-`github.com/Ridwannurudeen/verdikt`
+**[Live → verdikt.gudman.xyz](https://verdikt.gudman.xyz)** · `github.com/Ridwannurudeen/verdikt`
 
 ---
 
-## On-chain escrow can't handle subjective disputes
+## Smart contracts move money. They can't judge.
 
-- Price feeds and parametric rules can't decide *"was the service delivered as described?"*
-- A single off-chain bot is a trust hole the size of the operator
-- Human juries (Kleros-style) are slow and uneconomical for small claims
-- Most teams ship a 2-of-3 multisig and call it done
+On-chain escrow works — until two parties disagree.
 
-The dispute committee that on-chain escrow needs **doesn't exist yet**.
+- *"You didn't deliver." "Yes I did."* — a contract can't weigh evidence
+- A single off-chain arbitrator bot is a trust hole the size of its operator
+- Human juries are slow and uneconomical for small or machine-speed claims
+- **Autonomous agents can pay each other — but they can't sue each other**
+
+The dispute court the agent economy needs **doesn't exist yet.**
 
 ---
 
 ## Somnia's Agentic L1 makes AI judgment trust-minimized
 
-A subcommittee of validators each runs the same LLM inference.
+A subcommittee of validators each runs the **same** LLM inference and must agree on a **byte-identical** result.
 
-Consensus is reached on a **byte-identical** result via `allowedValues`.
+That is a juror committee, native to the network — **no external API, no operator key.**
 
-That is a juror committee.
-
-We turn it into a **settlement layer**.
+Verdikt turns it into a **settlement layer.**
 
 ---
 
 ## VerdiktCourt — a reusable AI-jury primitive
 
-`openCase(evidence)` → panel of **5** LLM agents → Majority verdict (`PAYEE` / `PAYER` / `SPLIT`) → 1-hour appeal window → permissionless `finalize`.
+`openCase(evidence)` → panel of Somnia validator LLM agents → majority verdict (`PAYER` / `PAYEE` / `SPLIT`) → appeal window → permissionless `finalize`.
 
-- Per-juror chain-of-thought stored off-chain in the agent **receipt**
-- Consumer contracts implement `IVerdiktConsumer.onVerdict`
-- No admin signer · no fallback path · no human in the settlement loop
-
----
-
-## The novel layer: stake-backed appeals
-
-The losing party can post a stake and force a re-trial with a **9-agent panel and new evidence**.
-
-- Appeal **upheld** → stake slashed to the counterparty (minus configurable treasury cut)
-- Appeal **overturned** → stake returned
-
-New evidence is the honest design.
-
-Deterministic inference doesn't randomly change its mind — **only better facts should**.
+- Any contract plugs in via `IVerdiktConsumer.onVerdict` — the court doesn't know what the deal means
+- Losing party can **appeal by staking** → a larger panel re-tries with new evidence → stake **slashed** if the verdict holds
+- **No admin signer. No fallback path. No human in the settlement loop.**
 
 ---
 
-## N protocols, one court
+## Agent-first, end-to-end
 
-Six consumers settle on the same court — it doesn't know what any of them mean:
+In the **Agent Arena**, two autonomous agents transact, dispute, and settle with **no human and no EOA in the settlement path.**
 
-- `VerdiktEscrow` · `VerdiktInsurance` — two-party deal, parametric claims pool
-- **`VerdiktAgentEscrow`** — pull-payment: *agents can't sue each other — now they can*
-- **`VerdiktTokenEscrow`** — ERC-20 (agents settle real stablecoin value)
-- `VerdiktGrantClawback` · `VerdiktMilestone` — DAO grants, freelance milestones
+- The buyer agent files · the court convenes the jury · the verdict settles the funds · a keeper finalizes it
+- The same court powers a two-party escrow (two-sided evidence) and a **ServiceSLA** arbiter in ~60 lines
 
-Reusability is the point: a settlement court any protocol or agent can call.
+**Judgment-as-an-oracle** for the machine economy.
+
+---
+
+<!-- .slide: class="dense" -->
+
+## Why an LLM verdict is safe to settle money on
+
+- **Determinism** — proven live: 5-agent panels agree byte-for-byte
+- **Verifiable evidence** — attested oracle facts outrank unverified claims
+- **Injection-resistant** — proven live; embedded instructions are ignored
+- **Model + prompt pinning** — every verdict is auditable to what decided it
+- **Abstention** — thin evidence → `UNDECIDABLE` + a safe-default refund
+- **Resilient panels** — degrade to the largest jury available; never stall
+
+---
+
+## Proven live on Shannon
+
+- **Determinism gate: PASS** — byte-identical panel consensus, the premise the whole design rests on
+- **92% agreement** with human-expected verdicts · **100% byte-identical** convergence — 12-case benchmark
+- **Real settlements on-chain** — disputes filed, judged, and finalized with no human; a precedent ledger of real rulings
+- **0 successful prompt injections**
+
+Everything is live and reading real on-chain data at **verdikt.gudman.xyz**.
+
+---
+
+## One court, many protocols
+
+Consumers settle on the same shared court:
+
+- `VerdiktEscrow` — two-party deal, two-sided evidence
+- **`VerdiktAgentEscrow`** — pull-payment, agent-to-agent
+- **`VerdiktTokenEscrow`** — ERC-20 (agents settle real token value)
+- **`ServiceSLA`** — SLA-breach arbiter · `VerdiktGrantClawback` · `VerdiktMilestone`
+
+Plus an on-chain **precedent ledger**, reputation, a marketplace, and timelock governance.
 
 ---
 
 ## What ships today
 
-- **11 contracts** — `VerdiktCourt` + **6 consumers** on one shared court
-- **168/168 tests** — solc 0.8.24, evm_version cancun, incl. invariant + fuzz
-- **Agent-to-agent court** — both parties can be contracts; pull-payment; **ERC-20** too
-- **Precedent layer** — on-chain, AI-authored, citable case law
-- **Marketplace** · **reputation** · **timelock** governance · keeper · dashboard
+- `VerdiktCourt` + a family of consumers on **one shared court**
+- **230 passing tests** — Solidity 0.8.24 (cancun), Foundry, incl. invariant + fuzz
+- **Auto-finalize keeper** running in production (systemd) — nothing waits on a human
+- **Full live product** — Agent Arena, Courtroom replay, Explorer, Case-law ledger, Analytics, interactive demo
+- Live premium stack on Shannon (chain 50312) · addresses in `deployments/shannon.json`
 
 ---
 
-## Live on Shannon
+## Status & roadmap
 
-- **Determinism gate: PASS** — a panel of 5 returned **PAYEE 5/5, byte-identical**. The premise holds.
-- **Deployed + exercised** — disputes settled by real AI panels, **no human in the loop**; **4 rulings in the precedent index**; reputation on-chain.
-- Appeal panel (9 agents) needs ≥9 validators; Shannon caps ~6 → staked-appeal path is unit-tested.
-- Unaudited hackathon code · addresses in `deployments/shannon.json`.
+**Live on testnet** as a reference deployment — real on-chain activity, honest about what's next:
 
-`github.com/Ridwannurudeen/verdikt`
+- No third-party audit yet — audit-readiness + bug-bounty scaffolding are in the repo
+- ~92% accuracy on a small benchmark — escalating stake-backed appeals + a human-escalation path for high-value disputes
+- **Next:** external audit → mainnet → real integrators
+
+**[verdikt.gudman.xyz](https://verdikt.gudman.xyz)** · `github.com/Ridwannurudeen/verdikt`
         </textarea
           >
         </section>
       </div>
     </div>
     <div class="footer">
-      verdikt · Somnia Agora hackathon · github.com/Ridwannurudeen/verdikt
+      verdikt · Somnia Agentathon · verdikt.gudman.xyz
     </div>
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
