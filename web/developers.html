@@ -3,52 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>
-      Verdikt for Developers — integrate the AI court in a few lines
-    </title>
+    <title>Verdikt for Developers — integrate the on-chain AI court</title>
     <meta
       name="description"
-      content="Build on Verdikt: inherit VerdiktConsumerBase and implement one function to plug any contract or agent into the on-chain AI jury. A complete escrow in under 50 lines, a viem JS/agent SDK, and the live premium contract addresses on Somnia Shannon."
+      content="Inherit VerdiktConsumerBase, implement one function, and your contract or agent can route any dispute to the on-chain AI court. A complete escrow in under 50 lines, a viem JS/agent SDK, and the live contract addresses on Somnia Shannon."
     />
-    <meta name="author" content="Verdikt" />
-    <link rel="canonical" href="https://verdikt.gudman.xyz/developers.html" />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content="https://verdikt.gudman.xyz/developers.html"
-    />
-    <meta
-      property="og:title"
-      content="Verdikt for Developers — integrate the AI court in a few lines"
-    />
+    <meta property="og:title" content="Verdikt for Developers — integrate the on-chain AI court" />
     <meta
       property="og:description"
       content="Inherit VerdiktConsumerBase, implement _settle, open a dispute. A complete consumer in under 50 lines — plus a viem JS/agent SDK. Live on Somnia Shannon."
     />
-    <meta property="og:site_name" content="Verdikt" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Verdikt for Developers — integrate the AI court in a few lines"
-    />
-    <meta
-      name="twitter:description"
-      content="Inherit VerdiktConsumerBase, implement _settle, open a dispute. A complete consumer in under 50 lines. Live on Shannon."
-    />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://verdikt.gudman.xyz/developers.html" />
+    <link rel="canonical" href="https://verdikt.gudman.xyz/developers.html" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800"
     />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
     />
     <script type="application/ld+json">
       {
@@ -62,23 +42,21 @@
       }
     </script>
     <style>
-      /* ============ THE BENCH — design tokens ============ */
+      /* ============ MARBLE & INK — design tokens ============ */
       :root {
-        --ink: #0b0d10; /* warm near-black base */
-        --ink-2: #10151b; /* raised surface */
-        --ink-3: #151b23; /* card */
-        --ink-4: #1b232d; /* hover / inset */
-        --ivory: #f2f5f7; /* primary text */
-        --ivory-dim: #aeb8c2; /* secondary text */
-        --dim: #737f8c; /* tertiary / labels */
-        --oxblood: #222a35; /* neutral fill alias */
-        --oxblood-ink: #aeb8c2; /* muted label alias */
-        --gold: #c7a45a; /* primary brass accent */
-        --gold-ink: #d8c48a; /* readable accent text */
-        --green: #9aa6b2; /* neutral status tone */
-        --border: rgba(242, 245, 247, 0.1);
-        --border-2: rgba(242, 245, 247, 0.2);
-        --seal: #c7a45a;
+        --bg: #0a0b0d;
+        --bg-2: #0e0f12;
+        --surface: #121316;
+        --surface-2: #17181c;
+        --border: rgba(233, 229, 220, 0.08);
+        --border-2: rgba(233, 229, 220, 0.16);
+        --ink: #e9e5dc;
+        --muted: #9b988f;
+        --faint: #6b6962;
+        --amber: #e8b931;
+        --amber-ink: #f0cd66;
+        --amber-dim: rgba(232, 185, 49, 0.12);
+        --live: #4ade80;
         color-scheme: dark;
       }
       * {
@@ -89,29 +67,22 @@
       }
       body {
         margin: 0;
-        background: var(--ink);
-        color: var(--ivory);
-        font-family:
-          "Switzer",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Switzer", system-ui, -apple-system, sans-serif;
         font-size: 16px;
-        line-height: 1.62;
+        line-height: 1.6;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         position: relative;
       }
-      /* editorial serif reserved for display; grotesque for everything else */
       h1,
       h2,
       h3,
-      .display,
-      .brand-name,
-      .stat-n,
-      .big-stat {
-        font-family: "Zodiak", Georgia, serif;
-        font-weight: 700;
+      .display {
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
+        font-weight: 800;
+        margin: 0;
       }
       a {
         color: inherit;
@@ -123,862 +94,190 @@
         overflow-wrap: anywhere;
       }
       .wrap {
-        max-width: 1140px;
+        max-width: 1180px;
         margin: 0 auto;
         padding: 0 24px;
-      }
-      @media (max-width: 520px) {
-        .wrap {
-          padding: 0 20px;
-        }
-      }
-      svg.i {
-        width: 1em;
-        height: 1em;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        display: block;
       }
       :focus-visible {
         outline: none;
         box-shadow:
-          0 0 0 2px var(--ink),
-          0 0 0 4px var(--gold);
+          0 0 0 2px var(--bg),
+          0 0 0 3.5px var(--amber);
         border-radius: 6px;
+        transition: box-shadow 120ms ease-out;
       }
       ::selection {
-        background: rgba(199, 164, 90, 0.28);
+        background: var(--amber-dim);
       }
 
-      /* one restrained signature light source — not a dot-grid/glow cliché */
-      body::before {
-        content: "";
-        position: fixed;
+      /* atmosphere: one warm radial, nothing else */
+      .aura {
+        position: absolute;
         inset: 0;
-        z-index: -1;
         pointer-events: none;
-        background:
-          linear-gradient(
-            180deg,
-            rgba(242, 245, 247, 0.035),
-            transparent 260px
-          ),
-          linear-gradient(
-            90deg,
-            rgba(242, 245, 247, 0.035) 1px,
-            transparent 1px
-          ),
-          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
-        background-size:
-          auto,
-          48px 48px,
-          48px 48px;
-        opacity: 0.72;
+        z-index: 0;
+        background: radial-gradient(
+          ellipse 70% 45% at 30% 0%,
+          rgba(233, 229, 220, 0.045),
+          transparent 70%
+        );
       }
 
-      /* ---- nav ---- */
+      /* ============ nav ============ */
       nav {
         position: sticky;
         top: 0;
-        z-index: 60;
+        z-index: 50;
+        background: rgba(10, 11, 13, 0.82);
         backdrop-filter: blur(14px);
-        background: rgba(11, 13, 16, 0.72);
+        -webkit-backdrop-filter: blur(14px);
         border-bottom: 1px solid var(--border);
       }
       .nav-in {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        height: 68px;
-        gap: 18px;
+        gap: 28px;
+        height: 64px;
       }
       .brand {
         display: flex;
         align-items: center;
-        gap: 11px;
-      }
-      .brand .seal {
-        width: 32px;
-        height: 32px;
-        border-radius: 9px;
-        background: var(--ink-3);
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
-      }
-      .brand .seal svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .brand-name {
-        font-size: 20px;
-        letter-spacing: -0.01em;
+        gap: 10px;
+        font-family: "Cabinet Grotesk", sans-serif;
         font-weight: 800;
+        font-size: 19px;
+        letter-spacing: 0.01em;
+      }
+      .brand svg {
+        flex: none;
       }
       .nav-links {
         display: flex;
-        gap: 26px;
-        align-items: center;
-      }
-      .nav-links a {
-        color: var(--ivory-dim);
+        gap: 24px;
+        margin-left: 12px;
         font-size: 14.5px;
+        color: var(--muted);
         font-weight: 500;
-        transition: color 0.15s;
       }
       .nav-links a:hover {
-        color: var(--ivory);
+        color: var(--ink);
       }
-      .nav-links a.active {
-        color: var(--ivory);
+      .nav-links a[aria-current="page"] {
+        color: var(--ink);
       }
-      @media (max-width: 920px) {
-        .nav-links .hide-sm {
+      .nav-cta {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      @media (max-width: 900px) {
+        .nav-links {
           display: none;
         }
       }
 
+      /* ============ buttons ============ */
       .btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 600;
-        font-size: 14.5px;
+        height: 42px;
+        padding: 0 20px;
         border-radius: 8px;
-        padding: 10px 17px;
+        font-size: 14.5px;
+        font-weight: 600;
         border: 1px solid transparent;
-        cursor: pointer;
         transition:
-          transform 0.16s ease,
-          background 0.16s ease,
-          border-color 0.16s ease,
-          box-shadow 0.16s ease;
-      }
-      .btn svg.i {
-        width: 16px;
-        height: 16px;
+          transform 140ms ease,
+          box-shadow 140ms ease,
+          background 140ms ease,
+          border-color 140ms ease;
+        cursor: pointer;
       }
       .btn-primary {
-        background: #c7a45a;
-        color: #0b0d10;
-        font-weight: 700;
-        box-shadow: none;
+        background: var(--ink);
+        color: #101113;
       }
       .btn-primary:hover {
         transform: translateY(-1px);
-        box-shadow: none;
+        box-shadow: 0 6px 20px rgba(233, 229, 220, 0.14);
       }
       .btn-ghost {
-        background: transparent;
+        background: rgba(233, 229, 220, 0.03);
         border-color: var(--border-2);
-        color: var(--ivory);
+        color: var(--ink);
       }
       .btn-ghost:hover {
-        background: rgba(242, 245, 247, 0.05);
-        border-color: rgba(242, 245, 247, 0.32);
+        border-color: rgba(233, 229, 220, 0.3);
+        background: rgba(233, 229, 220, 0.06);
       }
       .btn-lg {
-        padding: 14px 24px;
+        height: 48px;
+        padding: 0 26px;
         font-size: 15.5px;
-        border-radius: 9px;
       }
 
+      /* ============ shared atoms ============ */
+      .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+      }
+      .eyebrow b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .lede {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.65;
+        max-width: 56ch;
+      }
+      .dot-live {
+        position: relative;
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--live);
+        flex: none;
+      }
+      .dot-live::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 999px;
+        border: 1px solid var(--live);
+        opacity: 0.6;
+        animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+      @keyframes ping {
+        0% {
+          transform: scale(0.6);
+          opacity: 0.7;
+        }
+        80%,
+        100% {
+          transform: scale(1.9);
+          opacity: 0;
+        }
+      }
+
+      /* reveal */
       .rv {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(14px);
         transition:
-          opacity 0.6s ease,
-          transform 0.6s ease;
+          opacity 600ms ease,
+          transform 600ms ease;
       }
       .rv.in {
         opacity: 1;
         transform: none;
-      }
-
-      /* ---- hero ---- */
-      .hero {
-        position: relative;
-        padding: 96px 0 78px;
-      }
-      .hero-grid {
-        display: grid;
-        grid-template-columns: 1.08fr 0.92fr;
-        gap: 56px;
-        align-items: center;
-      }
-      .hero-grid > * {
-        min-width: 0;
-      }
-      @media (max-width: 960px) {
-        .hero-grid {
-          grid-template-columns: 1fr;
-          gap: 46px;
-        }
-      }
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.1);
-        border: 1px solid rgba(199, 164, 90, 0.3);
-        padding: 6px 13px;
-        border-radius: 100px;
-      }
-      .dot-live {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green);
-        animation: none;
-      }
-      @keyframes pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.6);
-        }
-        70% {
-          box-shadow: 0 0 0 7px rgba(154, 166, 178, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
-        }
-      }
-      .kicker {
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--oxblood-ink);
-        margin: 20px 0 0;
-        font-family: "Switzer", sans-serif;
-      }
-      h1 {
-        font-size: 70px;
-        line-height: 1.02;
-        letter-spacing: -0.02em;
-        font-weight: 800;
-        margin: 14px 0 0;
-        text-wrap: balance;
-      }
-      @media (max-width: 960px) {
-        h1 {
-          font-size: 52px;
-        }
-      }
-      @media (max-width: 480px) {
-        h1 {
-          font-size: 38px;
-        }
-      }
-      /* subtle emphasis without decorative gradients */
-      .seal-word {
-        position: relative;
-        white-space: normal;
-        color: inherit;
-      }
-      .seal-word::after {
-        display: none;
-      }
-      .lede {
-        font-size: 18.5px;
-        color: var(--ivory-dim);
-        margin: 24px 0 0;
-        max-width: 540px;
-      }
-      .cta-row {
-        display: flex;
-        gap: 13px;
-        margin-top: 32px;
-        flex-wrap: wrap;
-      }
-      .hero-meta {
-        margin-top: 28px;
-        display: flex;
-        gap: 26px;
-        flex-wrap: wrap;
-      }
-      .hero-meta .m {
-        font-size: 13px;
-        color: var(--dim);
-      }
-      .hero-meta .m b {
-        display: block;
-        font-family: "Zodiak", serif;
-        font-size: 25px;
-        color: var(--ivory);
-        font-weight: 700;
-        letter-spacing: -0.01em;
-      }
-
-      /* ---- the docket card (signature motif) ---- */
-      .docket {
-        position: relative;
-        background: var(--ink-2);
-        border: 1px solid var(--border-2);
-        border-radius: 12px;
-        padding: 22px;
-        box-shadow: 0 40px 80px -50px #000;
-      }
-      .docket .hd {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 11px;
-        color: var(--dim);
-        text-transform: uppercase;
-        letter-spacing: 0.13em;
-        font-weight: 700;
-      }
-      .docket .hd .no {
-        color: var(--gold-ink);
-      }
-      .case-card {
-        margin-top: 13px;
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px;
-      }
-      .case-card .q {
-        font-weight: 600;
-        font-size: 14.5px;
-      }
-      .case-card .ev {
-        color: var(--ivory-dim);
-        font-size: 12.5px;
-        margin-top: 8px;
-        display: flex;
-        gap: 8px;
-        align-items: flex-start;
-      }
-      .case-card .ev svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--green);
-        flex: 0 0 auto;
-        margin-top: 3px;
-      }
-      .jurors {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-        margin: 15px 0;
-      }
-      .juror {
-        background: var(--ink-3);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 11px 4px 9px;
-        text-align: center;
-        animation: none;
-      }
-      .juror:nth-child(2) {
-        animation-delay: 0.07s;
-      }
-      .juror:nth-child(3) {
-        animation-delay: 0.14s;
-      }
-      .juror:nth-child(4) {
-        animation-delay: 0.21s;
-      }
-      .juror:nth-child(5) {
-        animation-delay: 0.28s;
-      }
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-      }
-      .juror .av {
-        width: 25px;
-        height: 25px;
-        margin: 0 auto;
-        border-radius: 7px;
-        background: var(--ink-4);
-        border: 1px solid rgba(199, 164, 90, 0.32);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-      }
-      .juror .av svg.i {
-        width: 13px;
-        height: 13px;
-      }
-      .juror .v {
-        display: inline-block;
-        margin-top: 8px;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.12);
-        border: 1px solid rgba(199, 164, 90, 0.3);
-        border-radius: 100px;
-        padding: 2px 6px;
-      }
-      .consensus {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        background: rgba(199, 164, 90, 0.08);
-        border: 1px solid rgba(199, 164, 90, 0.28);
-        border-radius: 10px;
-        padding: 12px 15px;
-      }
-      .consensus .lbl {
-        font-size: 11.5px;
-        color: var(--ivory-dim);
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-      .consensus .lbl svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--gold-ink);
-      }
-      .verdict-pill {
-        display: inline-flex;
-        align-items: center;
-        font-weight: 800;
-        font-size: 12px;
-        letter-spacing: 0.02em;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.14);
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        border-radius: 100px;
-        padding: 4px 11px;
-      }
-      .settle {
-        margin-top: 13px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--green);
-        font-size: 12.5px;
-        font-weight: 600;
-      }
-      .settle svg.i {
-        width: 15px;
-        height: 15px;
-      }
-
-      /* ---- proof strip ---- */
-      .proof {
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.18);
-      }
-      .proof-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-      }
-      @media (max-width: 760px) {
-        .proof-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .stat:nth-child(2) {
-          border-right: 0;
-        }
-      }
-      .stat {
-        padding: 34px 24px;
-        border-right: 1px solid var(--border);
-      }
-      .stat:last-child {
-        border-right: 0;
-      }
-      .stat-n {
-        font-size: clamp(34px, 4vw, 44px);
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        font-variant-numeric: tabular-nums;
-      }
-      .stat-n.gold {
-        color: var(--ivory);
-      }
-      .stat .l {
-        color: var(--ivory-dim);
-        font-size: 13.5px;
-        margin-top: 5px;
-      }
-
-      /* ---- sections ---- */
-      section {
-        position: relative;
-        padding: 96px 0;
-      }
-      .eyebrow {
-        color: var(--oxblood-ink);
-        font-weight: 700;
-        font-size: 12.5px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        font-family: "Switzer", sans-serif;
-      }
-      h2 {
-        font-size: 44px;
-        line-height: 1.08;
-        letter-spacing: -0.02em;
-        margin: 14px 0 0;
-        text-wrap: balance;
-      }
-      @media (max-width: 480px) {
-        h2 {
-          font-size: 32px;
-        }
-      }
-      .sub {
-        color: var(--ivory-dim);
-        font-size: 17.5px;
-        margin: 16px 0 0;
-        max-width: 660px;
-      }
-      .sec-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 24px;
-        flex-wrap: wrap;
-      }
-      .sec-head .more {
-        color: var(--gold-ink);
-        font-weight: 600;
-        font-size: 14.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        white-space: nowrap;
-      }
-      .sec-head .more svg.i {
-        width: 16px;
-        height: 16px;
-      }
-
-      /* docket flow (how it works) */
-      .flow {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0;
-        margin-top: 50px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        overflow: hidden;
-        background: var(--ink-2);
-      }
-      @media (max-width: 880px) {
-        .flow {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-      @media (max-width: 520px) {
-        .flow {
-          grid-template-columns: 1fr;
-        }
-      }
-      .node {
-        padding: 24px 20px;
-        border-right: 1px solid var(--border);
-      }
-      .node:last-child {
-        border-right: 0;
-      }
-      @media (max-width: 880px) {
-        .node {
-          border-bottom: 1px solid var(--border);
-        }
-      }
-      .node .step {
-        font-family: "Zodiak", serif;
-        font-size: 13px;
-        color: var(--gold-ink);
-        font-weight: 700;
-        letter-spacing: 0.06em;
-      }
-      .node .ic {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
-        background: var(--ink-4);
-        border: 1px solid var(--border-2);
-        display: grid;
-        place-items: center;
-        color: var(--oxblood-ink);
-        margin-top: 14px;
-      }
-      .node .ic svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .node h4 {
-        margin: 14px 0 6px;
-        font-size: 15.5px;
-        font-weight: 700;
-        font-family: "Switzer", sans-serif;
-      }
-      .node p {
-        color: var(--ivory-dim);
-        font-size: 13px;
-        margin: 0;
-      }
-
-      /* trust cards */
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 50px;
-      }
-      @media (max-width: 880px) {
-        .cards {
-          grid-template-columns: 1fr;
-        }
-      }
-      .card {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-        transition:
-          transform 0.18s,
-          border-color 0.18s;
-      }
-      .card:hover {
-        transform: translateY(-2px);
-        border-color: var(--border-2);
-      }
-      .card .ic {
-        width: 42px;
-        height: 42px;
-        border-radius: 9px;
-        background: rgba(115, 127, 140, 0.16);
-        border: 1px solid rgba(115, 127, 140, 0.4);
-        display: grid;
-        place-items: center;
-        color: var(--oxblood-ink);
-      }
-      .card .ic svg.i {
-        width: 21px;
-        height: 21px;
-      }
-      .card h3 {
-        font-size: 18px;
-        font-weight: 700;
-        margin: 17px 0 8px;
-      }
-      .card p {
-        color: var(--ivory-dim);
-        font-size: 14px;
-        margin: 0;
-      }
-      .tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 15px;
-        font-size: 11.5px;
-        font-weight: 700;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.1);
-        border: 1px solid rgba(199, 164, 90, 0.28);
-        border-radius: 100px;
-        padding: 4px 11px;
-      }
-      .tag svg.i {
-        width: 12px;
-        height: 12px;
-      }
-
-      /* solutions */
-      .grid6 {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-        margin-top: 46px;
-      }
-      @media (max-width: 760px) {
-        .grid6 {
-          grid-template-columns: 1fr;
-        }
-      }
-      .mini {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px 20px;
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-        transition: border-color 0.18s;
-      }
-      .mini:hover {
-        border-color: var(--border-2);
-      }
-      .mini .ic {
-        width: 38px;
-        height: 38px;
-        flex: 0 0 auto;
-        border-radius: 8px;
-        background: var(--ink-4);
-        border: 1px solid var(--border-2);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-      }
-      .mini .ic svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .mini b {
-        font-weight: 700;
-        font-size: 15px;
-        font-family: "Switzer", sans-serif;
-      }
-      .mini span {
-        display: block;
-        color: var(--ivory-dim);
-        font-size: 13px;
-        margin-top: 3px;
-      }
-
-      /* live */
-      .live {
-        background: rgba(0, 0, 0, 0.18);
-        border-top: 1px solid var(--border);
-      }
-      .live-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin-top: 50px;
-      }
-      @media (max-width: 880px) {
-        .live-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .panel {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-      }
-      .live-grid > *,
-      .panel,
-      .docket {
-        min-width: 0;
-      }
-      .panel h3 {
-        margin: 0 0 16px;
-        font-size: 16px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 700;
-      }
-      .addr {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-        font-size: 13.5px;
-      }
-      .addr:last-child {
-        border-bottom: 0;
-      }
-      .addr .k {
-        color: var(--ivory-dim);
-      }
-      .addr a {
-        color: var(--gold-ink);
-        overflow-wrap: anywhere;
-      }
-      .big-stat {
-        font-size: 56px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        line-height: 1;
-        color: var(--gold-ink);
-      }
-      .big-stat .unit {
-        font-size: 16px;
-        color: var(--ivory-dim);
-        font-weight: 500;
-        font-family: "Switzer", sans-serif;
-      }
-
-      /* faq */
-      details {
-        border-bottom: 1px solid var(--border);
-        padding: 18px 0;
-      }
-      summary {
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 16.5px;
-        list-style: none;
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-      }
-      summary::-webkit-details-marker {
-        display: none;
-      }
-      summary::after {
-        content: "+";
-        color: var(--gold-ink);
-        font-size: 22px;
-        line-height: 1;
-      }
-      details[open] summary::after {
-        content: "−";
-      }
-      details p {
-        color: var(--ivory-dim);
-        margin: 12px 0 0;
-        font-size: 15px;
-      }
-
-      /* band + footer */
-      .band {
-        position: relative;
-        border: 1px solid var(--border-2);
-        border-radius: 14px;
-        padding: 64px 28px;
-        text-align: center;
-        overflow: hidden;
-        background: var(--ink-2);
-      }
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 40px 0;
-        color: var(--dim);
-        font-size: 13.5px;
-      }
-      .foot-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .foot-links {
-        display: flex;
-        gap: 22px;
-        flex-wrap: wrap;
-      }
-      .foot-links a:hover {
-        color: var(--ivory);
       }
       @media (prefers-reduced-motion: reduce) {
         *,
@@ -987,83 +286,302 @@
           animation-duration: 0.01ms !important;
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+        .rv {
+          opacity: 1;
+          transform: none;
         }
       }
-    </style>
 
-    <!-- page-specific: code blocks (Bench palette) -->
-    <style>
+      /* ============ hero ============ */
+      .hero {
+        position: relative;
+        padding: 96px 0 80px;
+      }
+      .hero-in {
+        position: relative;
+        z-index: 1;
+        max-width: 820px;
+      }
+      .hero h1 {
+        font-size: clamp(44px, 6vw, 76px);
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+        margin: 18px 0 22px;
+      }
+      .hero h1 .amber {
+        color: var(--amber-ink);
+      }
+      .hero-ctas {
+        display: flex;
+        gap: 12px;
+        margin: 30px 0 0;
+        flex-wrap: wrap;
+      }
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        gap: 56px;
+        margin-top: 64px;
+        position: relative;
+        z-index: 1;
+      }
+      .hero-stats .s b {
+        display: block;
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: clamp(34px, 4vw, 56px);
+        line-height: 1;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
+      }
+      .hero-stats .s span {
+        display: block;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 24ch;
+      }
+      @media (max-width: 760px) {
+        .hero-stats {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+        .hero {
+          padding-top: 64px;
+        }
+      }
+
+      /* ============ sections ============ */
+      section.block {
+        padding: 112px 0 0;
+      }
+      .sec-head {
+        max-width: 720px;
+        margin-bottom: 48px;
+      }
+      .sec-head h2 {
+        font-size: clamp(30px, 3.6vw, 44px);
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+        margin: 14px 0 16px;
+      }
+      .sec-head p {
+        color: var(--muted);
+        font-size: 16.5px;
+        margin: 0;
+      }
+
+      /* ============ code (landing treatment) ============ */
       .code {
-        margin-top: 26px;
-        background: var(--ink-3);
+        background: #0c0d10;
         border: 1px solid var(--border);
         border-radius: 12px;
         overflow: hidden;
         min-width: 0;
-        max-width: 100%;
       }
-      .code .code-hd {
+      .code-head {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        padding: 11px 16px;
-        border-bottom: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.22);
-      }
-      .code .code-hd .fn {
-        font-family: "JetBrains Mono", ui-monospace, monospace;
-        font-size: 12.5px;
-        color: var(--ivory-dim);
-        display: flex;
         align-items: center;
-        gap: 8px;
-      }
-      .code .code-hd .fn svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--gold-ink);
-      }
-      .code .code-hd .src {
-        font-size: 11px;
-        color: var(--dim);
-        font-family: "JetBrains Mono", ui-monospace, monospace;
+        gap: 12px;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--faint);
       }
       .code pre {
         margin: 0;
-        padding: 20px 22px;
+        padding: 18px 20px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.8px;
+        line-height: 1.65;
+        color: var(--muted);
         overflow-x: auto;
-        max-width: 100%;
-        font-family: "JetBrains Mono", ui-monospace, monospace;
-        font-size: 13px;
-        line-height: 1.72;
-        color: var(--ivory-dim);
-        tab-size: 4;
       }
-      @media (max-width: 560px) {
-        .code pre {
-          white-space: pre-wrap;
-          overflow-wrap: anywhere;
+      .code .kw {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .code .fn {
+        color: var(--amber-ink);
+      }
+      .code .cm {
+        color: var(--faint);
+      }
+      .code .st {
+        color: var(--muted);
+      }
+
+      /* setup row: install + imports side by side */
+      .setup {
+        display: grid;
+        grid-template-columns: 0.8fr 1.2fr;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .setup > * {
+        min-width: 0;
+      }
+      @media (max-width: 880px) {
+        .setup {
+          grid-template-columns: 1fr;
         }
       }
-      .code pre .k {
-        color: var(--oxblood-ink);
-      } /* keywords */
-      .code pre .t {
-        color: var(--gold-ink);
-      } /* types / identifiers of interest */
-      .code pre .c {
-        color: var(--dim);
-        font-style: italic;
-      } /* comments */
-      .code pre .s {
-        color: var(--green);
-      } /* strings */
+
+      /* ============ walkthrough (asymmetric feature) ============ */
+      .walk {
+        display: grid;
+        grid-template-columns: 0.88fr 1.12fr;
+        gap: 56px;
+        align-items: start;
+      }
+      .walk > * {
+        min-width: 0;
+      }
+      .steps {
+        display: grid;
+        gap: 0;
+        margin-top: 8px;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 16px;
+        padding: 20px 0;
+      }
+      .step + .step {
+        border-top: 1px solid var(--border);
+      }
+      .step .n {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--faint);
+        letter-spacing: 0.1em;
+        padding-top: 3px;
+      }
+      .step h3 {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 6px;
+      }
+      .step p {
+        margin: 0;
+        font-size: 14.5px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .step .mono {
+        font-size: 13px;
+        color: var(--ink);
+      }
+      @media (max-width: 980px) {
+        .walk {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+      }
+
+      /* ============ base surface rows ============ */
+      .surface-list {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .sr {
+        display: grid;
+        grid-template-columns: 420px 1fr;
+        gap: 20px;
+        padding: 18px 20px;
+        align-items: baseline;
+        transition: background 120ms ease;
+      }
+      .sr:hover {
+        background: var(--surface);
+      }
+      .sr + .sr {
+        border-top: 1px solid var(--border);
+      }
+      .sr .sig {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--ink);
+        overflow-wrap: anywhere;
+      }
+      .sr .sig i {
+        font-style: normal;
+        color: var(--faint);
+      }
+      .sr .what {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      @media (max-width: 880px) {
+        .sr {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+      }
+
+      /* ============ lifecycle band ============ */
+      .life {
+        background: var(--bg-2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 112px 0;
+        margin-top: 112px;
+      }
+      section.block.in-band {
+        padding-top: 0;
+      }
+      .life-rows {
+        display: grid;
+        gap: 0;
+        max-width: 880px;
+      }
+      .life-row {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        gap: 24px;
+        padding: 22px 0;
+        align-items: baseline;
+      }
+      .life-row + .life-row {
+        border-top: 1px solid var(--border);
+      }
+      .life-row .k {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .life-row p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+      .life-row p .mono {
+        font-size: 13.5px;
+        color: var(--ink);
+      }
+      @media (max-width: 760px) {
+        .life-row {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+      }
+
+      /* ============ SDK two-col ============ */
       .twocol {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-top: 26px;
+        gap: 12px;
         align-items: start;
       }
       .twocol > * {
@@ -1074,170 +592,236 @@
           grid-template-columns: 1fr;
         }
       }
-      .twocol .code {
-        margin-top: 0;
+      .sdk-note {
+        margin-top: 20px;
+        font-size: 14px;
+        color: var(--faint);
+        max-width: 80ch;
+      }
+      .sdk-note .mono {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+
+      /* ============ contracts table ============ */
+      .contracts {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .ct-row {
+        display: grid;
+        grid-template-columns: 220px 1fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 15px 20px;
+        font-size: 14px;
+        transition: background 120ms ease;
+      }
+      .ct-row:hover {
+        background: var(--surface);
+      }
+      .ct-row + .ct-row {
+        border-top: 1px solid var(--border);
+      }
+      .ct-row .name {
+        font-weight: 600;
+      }
+      .ct-row .addr {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .ct-row .view {
+        font-size: 13px;
+        color: var(--faint);
+        white-space: nowrap;
+      }
+      .ct-row:hover .view {
+        color: var(--ink);
+      }
+      @media (max-width: 760px) {
+        .ct-row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        .ct-row .view {
+          display: none;
+        }
+      }
+      .chain-note {
+        margin-top: 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--faint);
+      }
+      .chain-note b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      /* ============ final CTA ============ */
+      .fin {
+        margin: 128px 0 0;
+        border-top: 1px solid var(--border);
+        background: var(--bg-2);
+        padding: 104px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .fin::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 50% 70% at 50% 100%,
+          rgba(232, 185, 49, 0.06),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+      .fin h2 {
+        font-size: clamp(34px, 4.4vw, 56px);
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin: 16px 0 14px;
+        position: relative;
+      }
+      .fin p {
+        color: var(--muted);
+        max-width: 52ch;
+        margin: 0 auto;
+        position: relative;
+      }
+      .fin .hero-ctas {
+        justify-content: center;
+        position: relative;
+      }
+
+      /* footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 64px 0 40px;
+        font-size: 14px;
+      }
+      .foot-grid {
+        display: grid;
+        grid-template-columns: 1.4fr repeat(4, 1fr);
+        gap: 32px;
+      }
+      .foot-col h4 {
+        margin: 0 0 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+      }
+      .foot-col a {
+        display: block;
+        color: var(--muted);
+        padding: 4px 0;
+      }
+      .foot-col a:hover {
+        color: var(--ink);
+      }
+      .foot-brand p {
+        color: var(--faint);
+        font-size: 13.5px;
+        max-width: 30ch;
+        margin: 12px 0 0;
+        line-height: 1.6;
+      }
+      .foot-bottom {
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--faint);
+        font-size: 13px;
+      }
+      .foot-bottom .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      @media (max-width: 980px) {
+        .foot-grid {
+          grid-template-columns: 1fr 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
-      <defs>
-        <symbol id="i-scale" viewBox="0 0 24 24">
-          <path
-            d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
-          />
-        </symbol>
-        <symbol id="i-play" viewBox="0 0 24 24">
-          <polygon
-            points="6 4 20 12 6 20 6 4"
-            fill="currentColor"
-            stroke="none"
-          />
-        </symbol>
-        <symbol id="i-cpu" viewBox="0 0 24 24">
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <rect x="9" y="9" width="6" height="6" />
-          <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
-        </symbol>
-        <symbol id="i-link" viewBox="0 0 24 24">
-          <path
-            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-          />
-          <path
-            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-          />
-        </symbol>
-        <symbol id="i-check" viewBox="0 0 24 24">
-          <path d="M20 6 9 17l-5-5" />
-        </symbol>
-        <symbol id="i-check2" viewBox="0 0 24 24">
-          <path d="M18 6 7 17l-5-5M22 10l-7.5 7.5L13 16" />
-        </symbol>
-        <symbol id="i-folder" viewBox="0 0 24 24">
-          <path
-            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-          />
-          <path d="M12 11v6M9 14h6" />
-        </symbol>
-        <symbol id="i-users" viewBox="0 0 24 24">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </symbol>
-        <symbol id="i-file" viewBox="0 0 24 24">
-          <path
-            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-          />
-          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-        </symbol>
-        <symbol id="i-circlecheck" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <path d="m9 12 2 2 4-4" />
-        </symbol>
-        <symbol id="i-shield" viewBox="0 0 24 24">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="m9 12 2 2 4-4" />
-        </symbol>
-        <symbol id="i-bars" viewBox="0 0 24 24">
-          <path d="M12 20V10M18 20V4M6 20v-4" />
-        </symbol>
-        <symbol id="i-help" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
-        </symbol>
-        <symbol id="i-scroll" viewBox="0 0 24 24">
-          <path
-            d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"
-          />
-          <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-        </symbol>
-        <symbol id="i-handshake" viewBox="0 0 24 24">
-          <path d="m11 17 2 2a1 1 0 0 0 1.4 0l3.6-3.6" />
-          <path
-            d="m16 16 2-2a1 1 0 0 0 0-1.4L13 7.5 8 12l-2-2a1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 0 1.4l5 5"
-          />
-          <path d="m21 14-7-7-2 2" />
-        </symbol>
-        <symbol id="i-umbrella" viewBox="0 0 24 24">
-          <path d="M22 12a10.06 10.06 0 0 0-20 0Z" />
-          <path d="M12 12v8a2 2 0 0 0 4 0M12 2v1" />
-        </symbol>
-        <symbol id="i-trend" viewBox="0 0 24 24">
-          <path d="M22 7 13.5 15.5l-5-5L2 17" />
-          <path d="M16 7h6v6" />
-        </symbol>
-        <symbol id="i-bank" viewBox="0 0 24 24">
-          <path
-            d="M3 22h18M4 10h16M5 6l7-4 7 4M6 10v8M10 10v8M14 10v8M18 10v8"
-          />
-        </symbol>
-        <symbol id="i-flag" viewBox="0 0 24 24">
-          <path
-            d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"
-          />
-        </symbol>
-        <symbol id="i-arrow" viewBox="0 0 24 24">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </symbol>
-        <symbol id="i-code" viewBox="0 0 24 24">
-          <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
-        </symbol>
-        <symbol id="i-search" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </symbol>
-      </defs>
-    </svg>
-
     <nav>
       <div class="wrap nav-in">
-        <a class="brand" href="/"
-          ><span class="seal"
-            ><svg class="i"><use href="#i-scale" /></svg
-          ></span>
-          <span class="brand-name">Verdikt</span></a
-        >
+        <a class="brand" href="/" aria-label="Verdikt home">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3v18" />
+            <path d="M5 7h14" />
+            <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+            <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+            <path d="M9 21h6" />
+          </svg>
+          VERDIKT
+        </a>
         <div class="nav-links">
-          <a class="hide-sm" href="how-it-works.html">How it works</a>
-          <a class="hide-sm" href="solutions.html">Solutions</a>
-          <a class="hide-sm active" href="developers.html">Developers</a>
-          <a class="hide-sm" href="security.html">Security</a>
-          <a class="hide-sm" href="/app/courtroom.html">Courtroom</a>
+          <a href="/how-it-works.html">Protocol</a>
+          <a href="/solutions.html">Solutions</a>
+          <a href="/developers.html" aria-current="page">Developers</a>
+          <a href="/security.html">Security</a>
+          <a href="/app/explorer.html">Explorer</a>
+        </div>
+        <div class="nav-cta">
           <a
-            class="hide-sm"
+            class="btn btn-ghost"
             href="https://github.com/Ridwannurudeen/verdikt"
             target="_blank"
             rel="noopener"
             >GitHub</a
           >
-          <a class="btn btn-primary" href="/app/">Launch app</a>
+          <a class="btn btn-primary" href="/app/arena.html">Launch app</a>
         </div>
       </div>
     </nav>
 
+    <!-- ============ HERO ============ -->
     <header class="hero">
-      <div class="wrap hero-grid">
-        <div class="rv in">
-          <span class="pill"
-            ><span class="dot-live"></span> Live on Somnia Shannon · Agentic
-            L1</span
+      <div class="aura"></div>
+      <div class="wrap">
+        <div class="hero-in">
+          <span class="eyebrow"
+            ><b>developers · build a consumer</b> · live on Somnia Shannon</span
           >
-          <span class="kicker">Developers · build a consumer</span>
           <h1>
-            Integrate the court in a <span class="seal-word">few lines</span>.
+            Inherit the base. Implement
+            <span class="amber">one&nbsp;function.</span>
           </h1>
           <p class="lede">
             VerdiktCourt is a reusable on-chain arbitration primitive. Inherit
-            <span class="mono">VerdiktConsumerBase</span>, implement one
-            function, and your contract or agent can open a dispute, get a
-            byte-identical AI verdict, and settle it programmatically — no
-            admin, no human in the loop.
+            <span class="mono">VerdiktConsumerBase</span>, implement
+            <span class="mono">_settle</span>, and your contract or agent can
+            open a dispute, get a byte-identical AI verdict, and settle it
+            programmatically — no admin, no human in the loop.
           </p>
-          <div class="cta-row">
-            <a class="btn btn-primary btn-lg" href="#solidity"
-              ><svg class="i"><use href="#i-code" /></svg> Solidity
-              quickstart</a
+          <div class="hero-ctas">
+            <a class="btn btn-primary btn-lg" href="#quickstart"
+              >Solidity quickstart</a
             >
             <a
               class="btn btn-ghost btn-lg"
@@ -1247,539 +831,593 @@
               >Read the SDK</a
             >
           </div>
-          <div class="hero-meta">
-            <span class="m"><b>&lt;50</b> lines for a full consumer</span>
-            <span class="m"><b>1</b> function to implement</span>
-            <span class="m"><b>0</b> EOAs in the settlement path</span>
-          </div>
         </div>
-
-        <div class="docket rv in">
-          <div class="hd">
-            <span>Consumer · integration</span
-            ><span class="no">VerdiktConsumerBase</span>
+        <div class="hero-stats">
+          <div class="s rv">
+            <b>&lt;50 lines</b>
+            <span>for a complete consumer contract</span>
           </div>
-          <div class="case-card">
-            <div class="q">What the base does for you.</div>
-            <div class="ev">
-              <svg class="i"><use href="#i-link" /></svg> Court wiring, the
-              <span class="mono">onlyCourt</span> callback guard, opening a
-              dispute (quote + fee + pull-refund), the caseId↔ref mapping, and
-              decoding a graded, UNDECIDABLE-aware verdict into a payee
-              basis-point share.
-            </div>
+          <div class="s rv">
+            <b>1 function</b>
+            <span>to implement: <span class="mono" style="color: var(--ink)">_settle(ref, verdict)</span></span>
           </div>
-          <div class="consensus">
-            <span class="lbl"
-              ><svg class="i"><use href="#i-check2" /></svg> You implement
-              <span class="mono">_settle(ref, verdict)</span></span
-            >
-            <span class="verdict-pill">inherit &amp; go</span>
-          </div>
-          <div class="settle">
-            <svg class="i"><use href="#i-circlecheck" /></svg> Six consumers
-            already share one court — same pattern, &lt;50 lines each
+          <div class="s rv">
+            <b>0 EOAs</b>
+            <span>required in the settlement path</span>
           </div>
         </div>
       </div>
     </header>
 
-    <div class="proof">
-      <div class="wrap proof-grid">
-        <div class="stat">
-          <div class="stat-n gold">&lt;50</div>
-          <div class="l">lines for a full consumer</div>
+    <!-- ============ SETUP ============ -->
+    <section class="block" id="setup" aria-label="Setup">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">setup · foundry</span>
+          <h2>Install once. Import two names.</h2>
+          <p>
+            The Solidity side is a Foundry library:
+            <span class="mono">VerdiktConsumerBase</span> plus the
+            <span class="mono">IVerdiktCourt</span> interfaces. Install the
+            repo, import the base and the
+            <span class="mono">Verdict</span> enum, and you are wired to the
+            court.
+          </p>
         </div>
-        <div class="stat">
-          <div class="stat-n">1</div>
-          <div class="l">function you implement (_settle)</div>
+        <div class="setup rv">
+          <div class="code">
+            <div class="code-head">
+              <span>install</span>
+              <span>bash</span>
+            </div>
+            <pre><span class="cm">$</span> forge install Ridwannurudeen/verdikt</pre>
+          </div>
+          <div class="code">
+            <div class="code-head">
+              <span>imports</span>
+              <span>solidity ^0.8.20</span>
+            </div>
+            <pre><span class="kw">import</span> {<span class="fn">VerdiktConsumerBase</span>} <span class="kw">from</span> <span class="st">"verdikt/VerdiktConsumerBase.sol"</span>;
+<span class="kw">import</span> {<span class="fn">Verdict</span>} <span class="kw">from</span> <span class="st">"verdikt/interfaces/IVerdiktCourt.sol"</span>;</pre>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-n">7</div>
-          <div class="l">live premium contracts on Shannon</div>
+      </div>
+    </section>
+
+    <!-- ============ SIGNATURE: SIMPLEESCROW WALKTHROUGH ============ -->
+    <section class="block" id="quickstart" aria-label="SimpleEscrow walkthrough">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">quickstart · the reference consumer</span>
+          <h2>SimpleEscrow, line by line.</h2>
+          <p>
+            The complete reference integration — a working two-party escrow on
+            the AI jury, shown verbatim from the repo and validated end-to-end
+            in <span class="mono">test/SimpleEscrow.t.sol</span>. Graded SPLIT
+            and UNDECIDABLE verdicts are handled for free by the base.
+          </p>
         </div>
-        <div class="stat">
-          <div class="stat-n">2</div>
-          <div class="l">SDK clients (read · agent)</div>
+        <div class="walk">
+          <div class="rv">
+            <div class="steps">
+              <div class="step">
+                <span class="n">01</span>
+                <div>
+                  <h3>Inherit the base</h3>
+                  <p>
+                    <span class="mono">VerdiktConsumerBase(court_)</span> wires
+                    your contract to the shared court: the
+                    <span class="mono">onlyCourt</span> callback guard, the
+                    caseId&#8596;ref mapping, and fee handling all come with it.
+                  </p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="n">02</span>
+                <div>
+                  <h3>Hold the funds</h3>
+                  <p>
+                    <span class="mono">createDeal(payee)</span> escrows
+                    <span class="mono">msg.value</span> against a deal id —
+                    plain contract state, nothing court-specific yet.
+                  </p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="n">03</span>
+                <div>
+                  <h3>Open the dispute</h3>
+                  <p>
+                    Either party calls
+                    <span class="mono">dispute(id, evidence)</span>. The base's
+                    <span class="mono">_openDispute</span> quotes the court
+                    fee, opens the case, maps caseId&#8596;id, and credits any
+                    overpayment as a pull-refund.
+                  </p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="n">04</span>
+                <div>
+                  <h3>Map the verdict to money</h3>
+                  <p>
+                    The court finalizes and calls back into
+                    <span class="mono">_settle(ref, verdict)</span> — the one
+                    function you implement.
+                    <span class="mono">_payeeShareBps</span> turns the label
+                    into a basis-point share: PAYEE 10000, SPLIT graded,
+                    PAYER and UNDECIDABLE 0.
+                  </p>
+                </div>
+              </div>
+              <div class="step">
+                <span class="n">05</span>
+                <div>
+                  <h3>Settle by pull, not push</h3>
+                  <p>
+                    Funds are credited to a
+                    <span class="mono">pending[]</span> ledger and each party
+                    calls <span class="mono">withdraw()</span> — so a reverting
+                    recipient can never brick
+                    <span class="mono">finalize()</span>.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="hero-ctas">
+              <a
+                class="btn btn-ghost"
+                href="https://github.com/Ridwannurudeen/verdikt/blob/master/src/examples/SimpleEscrow.sol"
+                target="_blank"
+                rel="noopener"
+                >SimpleEscrow.sol on GitHub</a
+              >
+            </div>
+          </div>
+          <div class="code rv">
+            <div class="code-head">
+              <span>src/examples/SimpleEscrow.sol</span>
+              <span>solidity ^0.8.20</span>
+            </div>
+            <pre><span class="cm">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> ^0.8.20;
+
+<span class="kw">import</span> {<span class="fn">VerdiktConsumerBase</span>} <span class="kw">from</span> <span class="st">"../VerdiktConsumerBase.sol"</span>;
+<span class="kw">import</span> {<span class="fn">Verdict</span>} <span class="kw">from</span> <span class="st">"../interfaces/IVerdiktCourt.sol"</span>;
+
+<span class="kw">contract</span> SimpleEscrow <span class="kw">is</span> <span class="fn">VerdiktConsumerBase</span> {
+    <span class="kw">struct</span> Deal {
+        <span class="kw">address</span> payer;
+        <span class="kw">address</span> payee;
+        <span class="kw">uint256</span> amount;
+        <span class="kw">bool</span> settled;
+    }
+
+    <span class="kw">mapping</span>(<span class="kw">uint256</span> =&gt; Deal) <span class="kw">public</span> deals;
+    <span class="kw">mapping</span>(<span class="kw">address</span> =&gt; <span class="kw">uint256</span>) <span class="kw">public</span> pending;
+    <span class="kw">uint256 public</span> nextId = 1;
+
+    <span class="kw">constructor</span>(<span class="kw">address</span> court_) <span class="fn">VerdiktConsumerBase</span>(court_) {}
+
+    <span class="kw">function</span> <span class="fn">createDeal</span>(<span class="kw">address</span> payee) <span class="kw">external payable returns</span> (<span class="kw">uint256</span> id) {
+        <span class="kw">require</span>(msg.value &gt; 0 &amp;&amp; payee != <span class="kw">address</span>(0) &amp;&amp; payee != msg.sender, <span class="st">"bad deal"</span>);
+        id = nextId++;
+        deals[id] = Deal(msg.sender, payee, msg.value, <span class="kw">false</span>);
+    }
+
+    <span class="kw">function</span> <span class="fn">dispute</span>(<span class="kw">uint256</span> id, <span class="kw">string calldata</span> evidence) <span class="kw">external payable</span> {
+        Deal <span class="kw">storage</span> d = deals[id];
+        <span class="kw">require</span>(msg.sender == d.payer || msg.sender == d.payee, <span class="st">"not a party"</span>);
+        <span class="kw">require</span>(!d.settled, <span class="st">"settled"</span>);
+        <span class="fn">_openDispute</span>(id, evidence, msg.sender);
+    }
+
+    <span class="kw">function</span> <span class="fn">_settle</span>(<span class="kw">uint256</span> ref, Verdict verdict) <span class="kw">internal override</span> {
+        Deal <span class="kw">storage</span> d = deals[ref];
+        <span class="kw">require</span>(!d.settled, <span class="st">"settled"</span>);
+        d.settled = <span class="kw">true</span>;
+        <span class="kw">uint256</span> toPayee = (d.amount * <span class="fn">_payeeShareBps</span>(ref, verdict)) / 10000;
+        pending[d.payee] += toPayee;
+        pending[d.payer] += d.amount - toPayee;
+    }
+
+    <span class="kw">function</span> <span class="fn">withdraw</span>() <span class="kw">external</span> {
+        <span class="kw">uint256</span> amt = pending[msg.sender];
+        <span class="kw">require</span>(amt &gt; 0, <span class="st">"nothing to withdraw"</span>);
+        pending[msg.sender] = 0;
+        (<span class="kw">bool</span> ok,) = msg.sender.call{value: amt}(<span class="st">""</span>);
+        <span class="kw">require</span>(ok, <span class="st">"withdraw failed"</span>);
+    }
+
+    <span class="kw">receive</span>() <span class="kw">external payable</span> {}
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BASE SURFACE ============ -->
+    <section class="block" id="base" aria-label="VerdiktConsumerBase surface">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">the base · src/VerdiktConsumerBase.sol</span>
+          <h2>What the base does for you.</h2>
+          <p>
+            <span class="mono">VerdiktConsumerBase</span> handles the
+            boilerplate every consumer otherwise repeats. The court calls back
+            through <span class="mono">onVerdict</span>, which the base guards
+            with <span class="mono">onlyCourt</span> and routes to your
+            <span class="mono">_settle</span>.
+          </p>
+        </div>
+        <div class="surface-list rv">
+          <div class="sr">
+            <span class="sig">_openDispute(<i>ref, evidence, refundTo</i>)</span>
+            <span class="what"
+              >Quotes <span class="mono">court.quoteOpen()</span>, requires the
+              fee in <span class="mono">msg.value</span>, opens the case,
+              records the caseId&#8596;ref mapping, and credits any excess as a
+              pull-refund.</span
+            >
+          </div>
+          <div class="sr">
+            <span class="sig">_openDispute(<i>ref, evidence, refundTo, trialPanel</i>)</span>
+            <span class="what"
+              >Same, but selects the trial panel size — in
+              <span class="mono">[court.MIN_TRIAL_PANEL, 5]</span> — so the
+              dispute degrades to the validator set currently available instead
+              of reverting.</span
+            >
+          </div>
+          <div class="sr">
+            <span class="sig">_settle(<i>ref, verdict</i>)</span>
+            <span class="what"
+              >Abstract — the one function you implement. Invoked via
+              <span class="mono">onVerdict</span>, guarded by
+              <span class="mono">onlyCourt</span> and
+              <span class="mono">nonReentrant</span>.</span
+            >
+          </div>
+          <div class="sr">
+            <span class="sig">_payeeShareBps(<i>ref, verdict</i>)</span>
+            <span class="what"
+              >Resolves any verdict to the payee's share in basis points:
+              PAYEE = 10000, SPLIT = the court's graded
+              <span class="mono">splitBps</span>, PAYER / UNDECIDABLE / NONE =
+              0.</span
+            >
+          </div>
+          <div class="sr">
+            <span class="sig">withdrawRefund()</span>
+            <span class="what"
+              >Pull-withdraw for any fee overpayment credited at
+              dispute-opening time.</span
+            >
+          </div>
+          <div class="sr">
+            <span class="sig">caseToRef / refToCase</span>
+            <span class="what"
+              >Public mappings between the court's caseId and your own opaque
+              reference — a dealId, a policyId, a hash.</span
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIFECYCLE ============ -->
+    <div class="life" aria-label="Case lifecycle">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">opening a case · the lifecycle</span>
+          <h2>From open to final — four moves.</h2>
+          <p>
+            Every signature below is the real one from
+            <span class="mono">src/interfaces/IVerdiktCourt.sol</span>. Nothing
+            is invented.
+          </p>
+        </div>
+        <div class="life-rows rv">
+          <div class="life-row">
+            <span class="k">1 · open</span>
+            <p>
+              <span class="mono">quoteOpen()</span> returns the exact fee; pass
+              it as <span class="mono">msg.value</span> to
+              <span class="mono">openCase</span>. The court convenes the trial
+              panel (5 agents) and returns a
+              <span class="mono">caseId</span>. Quotes change with panel
+              pricing — read <span class="mono">quoteOpen()</span> at call
+              time, never hardcode the fee.
+            </p>
+          </div>
+          <div class="life-row">
+            <span class="k">2 · ruling</span>
+            <p>
+              The panel callback sets <span class="mono">status</span> to
+              <span class="mono">Ruled</span> and fills
+              <span class="mono">verdict</span> +
+              <span class="mono">rulingTime</span>. Read it with
+              <span class="mono">getCase(caseId)</span>. If the verdict is
+              SPLIT, read <span class="mono">splitBps(caseId)</span> — a graded
+              court may return 2500 / 5000 / 7500 rather than assuming 50/50.
+            </p>
+          </div>
+          <div class="life-row">
+            <span class="k">3 · appeal</span>
+            <p>
+              While <span class="mono">status == Ruled</span> and before
+              <span class="mono">appealDeadlineOf(caseId)</span>, the case's
+              original consumer can call
+              <span class="mono">appeal{value: quoteAppeal(caseId)}(caseId, newEvidence)</span>.
+              A larger panel (9 agents) re-tries with the appended evidence.
+            </p>
+          </div>
+          <div class="life-row">
+            <span class="k">4 · finalize</span>
+            <p>
+              Once the appeal window has passed, anyone — a keeper, the
+              counterparty, an agent — calls
+              <span class="mono">finalize(caseId)</span>. The court flips
+              <span class="mono">status</span> to
+              <span class="mono">Final</span> and invokes your
+              <span class="mono">onVerdict(escrowRef, verdict)</span>.
+              Permissionless, so no human is needed to settle. If the panel
+              errors, the consumer can <span class="mono">retry(caseId)</span>
+              with a fresh deposit.
+            </p>
+          </div>
         </div>
       </div>
     </div>
 
-    <section id="solidity">
-      <div class="wrap rv">
-        <div class="sec-head">
-          <div>
-            <span class="eyebrow">Solidity quickstart</span>
-            <h2>Inherit the base. Implement one function.</h2>
-          </div>
-          <a
-            class="more"
-            href="https://github.com/Ridwannurudeen/verdikt/blob/master/src/VerdiktConsumerBase.sol"
-            target="_blank"
-            rel="noopener"
-            >VerdiktConsumerBase.sol <svg class="i"><use href="#i-arrow" /></svg
-          ></a>
+    <!-- ============ JS / AGENT SDK ============ -->
+    <section class="block" id="sdk" aria-label="JS and agent SDK">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">js / ts · agent sdk</span>
+          <h2>Read cases, watch verdicts, run a keeper.</h2>
+          <p>
+            The SDK is a thin <span class="mono">viem</span> client.
+            <span class="mono">createVerdiktClient</span> reads cases and
+            subscribes to verdicts;
+            <span class="mono">createVerdiktAgent</span> gives a wallet-backed
+            agent the court actions — appeals, finalize, and a decentralized
+            keeper sweep. Both ship in <span class="mono">sdk/</span>.
+          </p>
         </div>
-        <p class="sub">
-          <span class="mono">VerdiktConsumerBase</span> handles the boilerplate
-          every consumer otherwise repeats. A child contract opens a dispute
-          with <span class="mono">_openDispute</span>, then implements
-          <span class="mono">_settle(ref, verdict)</span> — using
-          <span class="mono">_payeeShareBps</span> to turn the label into a
-          graded, UNDECIDABLE-aware payout. The court calls back through
-          <span class="mono">onVerdict</span>, which the base guards with
-          <span class="mono">onlyCourt</span> and routes to your
-          <span class="mono">_settle</span>.
-        </p>
-
-        <div class="code">
-          <div class="code-hd">
-            <span class="fn"
-              ><svg class="i"><use href="#i-code" /></svg> SimpleEscrow.sol — a
-              complete consumer in under 50 lines</span
-            >
-            <span class="src">src/examples/SimpleEscrow.sol</span>
-          </div>
-          <pre><span class="c">// SPDX-License-Identifier: MIT</span>
-<span class="k">pragma</span> solidity ^0.8.20;
-
-<span class="k">import</span> {<span class="t">VerdiktConsumerBase</span>} <span class="k">from</span> <span class="s">"../VerdiktConsumerBase.sol"</span>;
-<span class="k">import</span> {<span class="t">Verdict</span>} <span class="k">from</span> <span class="s">"../interfaces/IVerdiktCourt.sol"</span>;
-
-<span class="k">contract</span> <span class="t">SimpleEscrow</span> <span class="k">is</span> <span class="t">VerdiktConsumerBase</span> {
-    <span class="k">struct</span> Deal { <span class="k">address</span> payer; <span class="k">address</span> payee; <span class="k">uint256</span> amount; <span class="k">bool</span> settled; }
-
-    <span class="k">mapping</span>(<span class="k">uint256</span> => Deal) <span class="k">public</span> deals;
-    <span class="k">mapping</span>(<span class="k">address</span> => <span class="k">uint256</span>) <span class="k">public</span> pending;
-    <span class="k">uint256</span> <span class="k">public</span> nextId = 1;
-
-    <span class="k">constructor</span>(<span class="k">address</span> court_) <span class="t">VerdiktConsumerBase</span>(court_) {}
-
-    <span class="k">function</span> <span class="t">createDeal</span>(<span class="k">address</span> payee) <span class="k">external payable returns</span> (<span class="k">uint256</span> id) {
-        <span class="k">require</span>(<span class="k">msg</span>.value > 0 &amp;&amp; payee != <span class="k">address</span>(0) &amp;&amp; payee != <span class="k">msg</span>.sender, <span class="s">"bad deal"</span>);
-        id = nextId++;
-        deals[id] = Deal(<span class="k">msg</span>.sender, payee, <span class="k">msg</span>.value, <span class="k">false</span>);
-    }
-
-    <span class="k">function</span> <span class="t">dispute</span>(<span class="k">uint256</span> id, <span class="k">string calldata</span> evidence) <span class="k">external payable</span> {
-        Deal <span class="k">storage</span> d = deals[id];
-        <span class="k">require</span>(<span class="k">msg</span>.sender == d.payer || <span class="k">msg</span>.sender == d.payee, <span class="s">"not a party"</span>);
-        <span class="t">_openDispute</span>(id, evidence, <span class="k">msg</span>.sender); <span class="c">// base quotes the fee, opens the case, maps caseId&lt;-&gt;id</span>
-    }
-
-    <span class="k">function</span> <span class="t">_settle</span>(<span class="k">uint256</span> ref, Verdict verdict) <span class="k">internal override</span> {
-        Deal <span class="k">storage</span> d = deals[ref];
-        <span class="k">require</span>(!d.settled, <span class="s">"settled"</span>);
-        d.settled = <span class="k">true</span>;
-        <span class="k">uint256</span> toPayee = (d.amount * <span class="t">_payeeShareBps</span>(ref, verdict)) / 10000; <span class="c">// graded / UNDECIDABLE aware</span>
-        pending[d.payee] += toPayee;
-        pending[d.payer] += d.amount - toPayee; <span class="c">// pull payments -&gt; can't be bricked</span>
-    }
-
-    <span class="k">function</span> <span class="t">withdraw</span>() <span class="k">external</span> {
-        <span class="k">uint256</span> amt = pending[<span class="k">msg</span>.sender];
-        <span class="k">require</span>(amt > 0, <span class="s">"nothing to withdraw"</span>);
-        pending[<span class="k">msg</span>.sender] = 0;
-        (<span class="k">bool</span> ok,) = <span class="k">msg</span>.sender.call{value: amt}(<span class="s">""</span>);
-        <span class="k">require</span>(ok, <span class="s">"withdraw failed"</span>);
-    }
-
-    <span class="k">receive</span>() <span class="k">external payable</span> {}
-}</pre>
-        </div>
-        <p class="sub" style="font-size: 15px">
-          Excerpted verbatim from
-          <span class="mono">src/examples/SimpleEscrow.sol</span> — the
-          reference integration, validated end-to-end in
-          <span class="mono">test/SimpleEscrow.t.sol</span>. The base members it
-          relies on —
-          <span class="mono">_openDispute(ref, evidence, refundTo)</span>,
-          <span class="mono">_payeeShareBps(ref, verdict)</span>, and the
-          abstract <span class="mono">_settle</span> — are defined in
-          <span class="mono">src/VerdiktConsumerBase.sol</span>.
-        </p>
-      </div>
-    </section>
-
-    <section
-      style="
-        background: rgba(0, 0, 0, 0.18);
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-      "
-    >
-      <div class="wrap rv">
-        <span class="eyebrow">JS / TS · agent SDK</span>
-        <h2>Read cases, watch verdicts, run a keeper.</h2>
-        <p class="sub">
-          The SDK is a thin <span class="mono">viem</span> client.
-          <span class="mono">createVerdiktClient</span> reads cases and
-          subscribes to verdicts;
-          <span class="mono">createVerdiktAgent</span> gives a wallet-backed
-          agent the court actions — appeal, finalize, and a decentralized keeper
-          sweep. Both ship in <span class="mono">sdk/</span>.
-        </p>
-
-        <div class="twocol">
+        <div class="twocol rv">
           <div class="code">
-            <div class="code-hd">
-              <span class="fn"
-                ><svg class="i"><use href="#i-search" /></svg> Read &amp;
-                watch</span
-              >
-              <span class="src">sdk/index.mjs</span>
+            <div class="code-head">
+              <span>sdk/index.mjs · read &amp; watch</span>
+              <span>viem</span>
             </div>
-            <pre><span class="k">import</span> { createVerdiktClient, payeeShareBps, VERDICT }
-  <span class="k">from</span> <span class="s">"verdikt/sdk/index.mjs"</span>;
+            <pre><span class="kw">import</span> { <span class="fn">createVerdiktClient</span>, <span class="fn">payeeShareBps</span>, VERDICT }
+  <span class="kw">from</span> <span class="st">"verdikt/sdk/index.mjs"</span>;
 
-<span class="k">const</span> verdikt = <span class="t">createVerdiktClient</span>({ publicClient, court: <span class="s">"0x..."</span> });
+<span class="kw">const</span> verdikt = <span class="fn">createVerdiktClient</span>({ publicClient, court: <span class="st">"0x..."</span> });
 
-<span class="k">const</span> fee = <span class="k">await</span> verdikt.<span class="t">quoteOpen</span>();
-<span class="k">const</span> c   = <span class="k">await</span> verdikt.<span class="t">getCase</span>(1);      <span class="c">// { verdictLabel, statusLabel, ... }</span>
-<span class="k">const</span> bps = <span class="k">await</span> <span class="t">payeeShareBps</span>(verdikt, 1); <span class="c">// graded-SPLIT aware share</span>
+<span class="kw">const</span> fee = <span class="kw">await</span> verdikt.<span class="fn">quoteOpen</span>();
+<span class="kw">const</span> c   = <span class="kw">await</span> verdikt.<span class="fn">getCase</span>(1);    <span class="cm">// { verdictLabel, statusLabel, ... }</span>
+<span class="kw">const</span> bps = <span class="kw">await</span> <span class="fn">payeeShareBps</span>(verdikt, 1); <span class="cm">// graded-SPLIT aware share</span>
 
-<span class="k">const</span> unwatch = verdikt.<span class="t">watchVerdicts</span>((v) =>
+<span class="kw">const</span> unwatch = verdikt.<span class="fn">watchVerdicts</span>((v) =&gt;
   console.log(v.caseId, v.verdict, v.receiptId)
 );</pre>
           </div>
-
           <div class="code">
-            <div class="code-hd">
-              <span class="fn"
-                ><svg class="i"><use href="#i-cpu" /></svg> Autonomous
-                agent</span
-              >
-              <span class="src">sdk/agent.mjs</span>
+            <div class="code-head">
+              <span>sdk/agent.mjs · autonomous agent</span>
+              <span>viem</span>
             </div>
-            <pre><span class="k">import</span> { createVerdiktAgent } <span class="k">from</span> <span class="s">"verdikt/sdk/agent.mjs"</span>;
+            <pre><span class="kw">import</span> { <span class="fn">createVerdiktAgent</span> } <span class="kw">from</span> <span class="st">"verdikt/sdk/agent.mjs"</span>;
 
-<span class="k">const</span> agent = <span class="t">createVerdiktAgent</span>({
-  publicClient, walletClient, account, court: <span class="s">"0x..."</span>
+<span class="kw">const</span> agent = <span class="fn">createVerdiktAgent</span>({
+  publicClient, walletClient, account, court: <span class="st">"0x..."</span>
 });
 
-<span class="c">// finalize every case whose appeal deadline has passed</span>
-<span class="k">await</span> agent.<span class="t">runKeeper</span>();
+<span class="cm">// finalize every case whose appeal deadline has passed</span>
+<span class="kw">await</span> agent.<span class="fn">runKeeper</span>();
 
-<span class="c">// contest a ruling (auto-quotes the larger panel)</span>
-<span class="k">await</span> agent.<span class="t">appeal</span>(caseId, <span class="s">"new evidence"</span>);
+<span class="cm">// contest a ruling (auto-quotes the larger panel)</span>
+<span class="kw">await</span> agent.<span class="fn">appeal</span>(caseId, <span class="st">"new evidence"</span>);
 
-<span class="c">// settle a single ruled case</span>
-<span class="k">await</span> agent.<span class="t">finalize</span>(caseId);</pre>
+<span class="cm">// settle a case AND claim the keeper bounty</span>
+<span class="kw">await</span> agent.<span class="fn">finalizeForBounty</span>(bounty, caseId);</pre>
           </div>
         </div>
-        <p class="sub" style="font-size: 15px">
-          Snippets faithful to <span class="mono">sdk/index.mjs</span> and
-          <span class="mono">sdk/agent.mjs</span>. The read client exposes
-          <span class="mono">COURT_ABI</span>,
+        <p class="sdk-note rv">
+          The read client exposes <span class="mono">COURT_ABI</span>,
           <span class="mono">quoteOpen</span>,
+          <span class="mono">quoteAppeal</span>,
           <span class="mono">getCase</span>, <span class="mono">splitBps</span>,
           <span class="mono">payeeShareBps</span> and
-          <span class="mono">watchVerdicts</span>;
+          <span class="mono">watchVerdicts</span>. The agent adds
+          <span class="mono">appeal</span>, <span class="mono">finalize</span>,
+          <span class="mono">runKeeper</span> and
+          <span class="mono">finalizeForBounty</span> —
           <span class="mono">finalize</span> is permissionless, so anyone can
-          run <span class="mono">runKeeper()</span> as a keeper.
+          run a keeper and earn the bounty.
         </p>
       </div>
     </section>
 
-    <section>
-      <div class="wrap rv">
-        <span class="eyebrow">The integration, step by step</span>
-        <h2>From inherit to settled — five steps.</h2>
-        <p class="sub">
-          The same lifecycle powers all six deployed consumers. The base owns
-          the wiring; you own your deal logic and the verdict→money mapping.
-        </p>
-        <div class="flow">
-          <div class="node">
-            <div class="step">01</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-code" /></svg>
-            </div>
-            <h4>Inherit the base</h4>
-            <p>
-              VerdiktConsumerBase(court_) wires your contract to the shared
-              court.
-            </p>
-          </div>
-          <div class="node">
-            <div class="step">02</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-folder" /></svg>
-            </div>
-            <h4>Open a dispute</h4>
-            <p>
-              _openDispute(ref, evidence, refundTo) quotes the fee and opens the
-              case.
-            </p>
-          </div>
-          <div class="node">
-            <div class="step">03</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-users" /></svg>
-            </div>
-            <h4>Panel rules</h4>
-            <p>
-              The court convenes the validator panel and reaches byte-identical
-              consensus.
-            </p>
-          </div>
-          <div class="node">
-            <div class="step">04</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-scale" /></svg>
-            </div>
-            <h4>Map the verdict</h4>
-            <p>
-              _payeeShareBps(ref, verdict) turns the label into a graded payout
-              share.
-            </p>
-          </div>
-          <div class="node">
-            <div class="step">05</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-circlecheck" /></svg>
-            </div>
-            <h4>Settle (pull)</h4>
-            <p>
-              Credit a pending[] ledger so a reverting recipient can't brick
-              finalize().
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="live">
-      <div class="wrap rv">
-        <span class="eyebrow">Live on Shannon · chain 50312</span>
-        <h2>The premium stack — deployed, wired, and on-chain.</h2>
-        <p class="sub">
-          The premium contracts run the injection-resistant governed prompt,
-          model-pinned cases, two-sided evidence, abstention, adaptive trial
-          panels, and the attestation-registry hook. Point your consumer at the
-          premium Court; verify each address on the Shannon explorer.
-        </p>
-        <div class="live-grid">
-          <div class="panel">
-            <h3>Core contracts (premium)</h3>
-            <div class="addr">
-              <span class="k">VerdiktCourt</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xeBbA8b849343150e994BEE34778D4D8D38941eDE"
-                target="_blank"
-                rel="noopener"
-                >0xeBbA…1eDE ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">VerdiktEscrow</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d"
-                target="_blank"
-                rel="noopener"
-                >0x91Aa…099d ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">VerdiktRegistry</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"
-                target="_blank"
-                rel="noopener"
-                >0xd1e9…261E ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">AttestationRegistry</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1"
-                target="_blank"
-                rel="noopener"
-                >0x9CC2…A5f1 ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">ServiceSLA</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9"
-                target="_blank"
-                rel="noopener"
-                >0xfB2b…37c9 ↗</a
-              >
-            </div>
-          </div>
-          <div
-            class="panel"
-            style="
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            "
+    <!-- ============ CONTRACTS ============ -->
+    <section class="block" id="contracts" aria-label="Live contracts">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow"
+            ><span style="display: inline-flex; align-items: center; gap: 8px"
+              ><span class="dot-live"></span>live deployment · somnia
+              shannon</span
+            ></span
           >
-            <div>
-              <h3>Connect your client</h3>
-              <p class="sub" style="font-size: 15px; margin-top: 6px">
-                Chain ID <span class="mono">50312</span>. RPC
-                <span class="mono"
-                  >https://api.infra.testnet.somnia.network/</span
-                >. Point
-                <span class="mono">createVerdiktClient({ court })</span> at the
-                premium Court above, then read
-                <span class="mono">quoteOpen()</span> at call time — quotes
-                change with panel pricing, so never hardcode the fee.
-              </p>
-            </div>
-            <div class="cta-row">
-              <a
-                class="btn btn-primary"
-                href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
-                target="_blank"
-                rel="noopener"
-                ><svg class="i"><use href="#i-code" /></svg> Open the SDK</a
-              >
-              <a class="btn btn-ghost" href="/app/explorer.html"
-                ><svg class="i"><use href="#i-search" /></svg> Browse
-                precedent</a
-              >
-            </div>
-          </div>
+          <h2>Point your consumer at the live court.</h2>
+          <p>
+            The full stack is deployed on testnet. Pass the
+            <span class="mono">VerdiktCourt</span> address to your constructor
+            — or to <span class="mono">createVerdiktClient({ court })</span> —
+            and verify each address on the explorer.
+          </p>
         </div>
+        <div class="contracts rv">
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0xeBbA8b849343150e994BEE34778D4D8D38941eDE"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktCourt</span>
+            <span class="addr">0xeBbA8b849343150e994BEE34778D4D8D38941eDE</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktEscrow</span>
+            <span class="addr">0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktRegistry</span>
+            <span class="addr">0xd1e91c0167a3F5a5aC0F61f86E3883921610261E</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktAttestationRegistry</span>
+            <span class="addr">0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">ServiceSLA</span>
+            <span class="addr">0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+        </div>
+        <p class="chain-note rv">
+          chain id <b>50312</b> · rpc
+          <b>https://api.infra.testnet.somnia.network/</b>
+        </p>
       </div>
     </section>
 
-    <section>
-      <div class="wrap rv">
-        <div class="sec-head">
-          <div>
-            <span class="eyebrow">Get started</span>
-            <h2>Three ways in.</h2>
-          </div>
-          <a class="more" href="solutions.html"
-            >See the six consumers <svg class="i"><use href="#i-arrow" /></svg
-          ></a>
-        </div>
-        <div class="grid6">
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-code" /></svg>
-            </div>
-            <div>
-              <b>Inherit the base</b
-              ><span
-                >VerdiktConsumerBase + _settle — the &lt;50-line easy
-                path.</span
-              >
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-file" /></svg>
-            </div>
-            <div>
-              <b>Or the raw interface</b
-              ><span
-                >Implement onVerdict and the dispute flow against IVerdiktCourt
-                yourself.</span
-              >
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-cpu" /></svg>
-            </div>
-            <div>
-              <b>Run an agent / keeper</b
-              ><span
-                >Wallet-backed appeals, finalize, and a permissionless keeper
-                sweep.</span
-              >
-            </div>
-          </div>
-        </div>
-        <div class="cta-row" style="margin-top: 38px">
+    <!-- ============ FINAL CTA ============ -->
+    <section class="fin" aria-label="Get started">
+      <div class="wrap">
+        <span class="eyebrow">verdikt · developers</span>
+        <h2>Build the seventh consumer.</h2>
+        <p>
+          Inherit the base, implement <span class="mono">_settle</span>, point
+          at the live court — six protocols already settle here.
+        </p>
+        <div class="hero-ctas" style="margin-top: 30px">
           <a
-            class="btn btn-primary"
+            class="btn btn-primary btn-lg"
             href="https://github.com/Ridwannurudeen/verdikt"
             target="_blank"
             rel="noopener"
-            ><svg class="i"><use href="#i-link" /></svg> The repo on GitHub</a
+            >View on GitHub</a
           >
-          <a
-            class="btn btn-ghost"
-            href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
-            target="_blank"
-            rel="noopener"
-            ><svg class="i"><use href="#i-code" /></svg> Read the SDK</a
+          <a class="btn btn-ghost btn-lg" href="/app/arena.html"
+            >Launch app</a
           >
-          <a
-            class="btn btn-ghost"
-            href="https://github.com/Ridwannurudeen/verdikt/blob/master/src/examples/SimpleEscrow.sol"
-            target="_blank"
-            rel="noopener"
-            ><svg class="i"><use href="#i-file" /></svg> SimpleEscrow.sol</a
-          >
-        </div>
-      </div>
-    </section>
-
-    <section style="padding-top: 0">
-      <div class="wrap rv">
-        <div class="band">
-          <h2 style="font-size: 38px">
-            If your protocol has a subjective dispute, it can settle here.
-          </h2>
-          <p class="sub" style="margin: 16px auto 0">
-            Inherit the base, implement <span class="mono">_settle</span>, point
-            at the premium Court — and build the seventh consumer.
-          </p>
-          <div
-            class="cta-row"
-            style="justify-content: center; margin-top: 30px"
-          >
-            <a
-              class="btn btn-primary btn-lg"
-              href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
-              target="_blank"
-              rel="noopener"
-              ><svg class="i"><use href="#i-code" /></svg> Read the SDK</a
-            >
-            <a class="btn btn-ghost btn-lg" href="/app/courtroom.html"
-              >Watch a live verdict</a
-            >
-          </div>
         </div>
       </div>
     </section>
 
     <footer>
-      <div class="wrap foot-row">
-        <span class="brand"
-          ><span class="seal" style="width: 26px; height: 26px"
-            ><svg class="i" style="width: 15px; height: 15px">
-              <use href="#i-scale" /></svg
-          ></span>
-          <span class="brand-name" style="font-size: 16px">Verdikt</span></span
-        >
-        <div class="foot-links">
-          <a href="/app/">Demo</a>
-          <a href="/app/arena.html">Arena</a>
-          <a href="/app/courtroom.html">Courtroom</a>
-          <a href="/app/explorer.html">Explorer</a>
-          <a href="/app/analytics.html">Analytics</a>
-          <a href="/deck.html">Deck</a>
-          <a
-            href="https://github.com/Ridwannurudeen/verdikt"
-            target="_blank"
-            rel="noopener"
-            >GitHub</a
-          >
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-col foot-brand">
+            <a class="brand" href="/">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3v18" />
+                <path d="M5 7h14" />
+                <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+                <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+                <path d="M9 21h6" />
+              </svg>
+              VERDIKT
+            </a>
+            <p>
+              The on-chain AI court for the agent economy. Deterministic
+              verdicts, settled on-chain, recorded as precedent.
+            </p>
+          </div>
+          <div class="foot-col">
+            <h4>Protocol</h4>
+            <a href="/how-it-works.html">How it works</a>
+            <a href="/security.html">Security</a>
+            <a href="/app/analytics.html">Benchmark</a>
+            <a href="/app/caselaw.html">Precedent ledger</a>
+          </div>
+          <div class="foot-col">
+            <h4>Solutions</h4>
+            <a href="/solutions.html">Escrow &amp; marketplaces</a>
+            <a href="/solutions.html">Insurance claims</a>
+            <a href="/solutions.html">SLA enforcement</a>
+            <a href="/solutions.html">Agent-to-agent</a>
+          </div>
+          <div class="foot-col">
+            <h4>Developers</h4>
+            <a href="/developers.html">Quickstart</a>
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
+              target="_blank"
+              rel="noopener"
+              >SDK reference</a
+            >
+            <a href="#contracts">Contracts</a>
+          </div>
+          <div class="foot-col">
+            <h4>Live app</h4>
+            <a href="/app/arena.html">Agent Arena</a>
+            <a href="/app/">Escrow demo</a>
+            <a href="/app/courtroom.html">Courtroom</a>
+            <a href="/app/explorer.html">Explorer</a>
+            <a href="/app/analytics.html">Analytics</a>
+          </div>
         </div>
-        <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
+        <div class="foot-bottom">
+          <span class="status"
+            ><span class="dot-live"></span>Somnia Shannon testnet ·
+            operational</span
+          >
+          <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
+        </div>
       </div>
     </footer>
 

@@ -6,33 +6,38 @@
     <title>Verdikt — case-law explorer</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e8b931' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800"
+    />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600"
     />
     <style>
       :root {
-        --bg: #0b0d10;
-        --surface: #10151b;
-        --surface-2: #151b23;
-        --border: rgba(242, 245, 247, 0.1);
-        --border-2: rgba(242, 245, 247, 0.2);
-        --text: #f2f5f7;
-        --muted: #aeb8c2;
-        --dim: #737f8c;
-        --violet: #c7a45a;
-        --amber: #c7a45a;
-        --green: #9aa6b2;
-        --cyan: #9aa6b2;
-        --grad: #c7a45a;
+        --bg: #0a0b0d;
+        --surface: #121316;
+        --surface-2: #17181c;
+        --border: rgba(233, 229, 220, 0.08);
+        --border-2: rgba(233, 229, 220, 0.16);
+        --text: #e9e5dc;
+        --muted: #9b988f;
+        --dim: #6b6962;
+        --violet: #e8b931;
+        --amber: #e8b931;
+        --green: #4ade80;
+        --cyan: #9b988f;
+        --grad: #e8b931;
         color-scheme: dark;
       }
       * {
@@ -56,7 +61,8 @@
       h2,
       .big-stat,
       .brand {
-        font-family: "Zodiak", Georgia, serif;
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
+        font-weight: 800;
       }
       body::before {
         content: "";
@@ -64,29 +70,18 @@
         inset: 0;
         z-index: -1;
         pointer-events: none;
-        background:
-          linear-gradient(
-            180deg,
-            rgba(242, 245, 247, 0.035),
-            transparent 240px
-          ),
-          linear-gradient(
-            90deg,
-            rgba(242, 245, 247, 0.035) 1px,
-            transparent 1px
-          ),
-          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
-        background-size:
-          auto,
-          44px 44px,
-          44px 44px;
-        opacity: 0.7;
+        background: radial-gradient(
+          ellipse 70% 45% at 30% 0%,
+          rgba(233, 229, 220, 0.04),
+          transparent 70%
+        );
       }
       a {
-        color: #d8c48a;
+        color: var(--muted);
         text-decoration: none;
       }
       a:hover {
+        color: var(--text);
         text-decoration: underline;
       }
       :focus-visible {
@@ -98,6 +93,7 @@
       }
       .mono {
         font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
       }
       .muted {
         color: var(--muted);
@@ -122,15 +118,16 @@
         position: sticky;
         top: 0;
         z-index: 50;
-        backdrop-filter: blur(16px);
-        background: rgba(11, 10, 9, 0.72);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        background: rgba(10, 11, 13, 0.82);
         border-bottom: 1px solid var(--border);
       }
       .nav-in {
         max-width: 1160px;
         margin: 0 auto;
         padding: 0 22px;
-        height: 60px;
+        height: 64px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -140,25 +137,27 @@
         align-items: center;
         gap: 9px;
         font-weight: 800;
-        font-size: 17px;
+        font-size: 18px;
+        letter-spacing: 0.01em;
+        color: var(--text);
       }
       .brand .logo {
         width: 27px;
         height: 27px;
         border-radius: 8px;
         background: var(--surface-2);
-        border: 1px solid rgba(199, 164, 90, 0.4);
+        border: 1px solid var(--border-2);
         display: grid;
         place-items: center;
-        color: #d8c48a;
+        color: var(--text);
         font-size: 15px;
-        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
       }
       .nav-links {
         display: flex;
         gap: 20px;
         align-items: center;
-        font-size: 14px;
+        font-size: 14.5px;
+        font-weight: 500;
       }
       .nav-links a {
         color: var(--muted);
@@ -196,17 +195,19 @@
       }
       .kicker {
         display: block;
-        font-size: 12.5px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #aeb8c2;
+        color: var(--dim);
         margin: 0 0 8px;
       }
       h1 {
-        font-size: 32px;
+        font-size: clamp(30px, 3.6vw, 40px);
         font-weight: 800;
-        letter-spacing: -0.035em;
+        letter-spacing: -0.025em;
+        line-height: 1.1;
         margin: 0;
       }
       .head p {
@@ -234,22 +235,22 @@
       }
       .stat {
         position: relative;
-        background: linear-gradient(
-          180deg,
-          rgba(29, 24, 19, 0.9),
-          rgba(11, 10, 9, 0.9)
-        );
-        border: 1px solid var(--border-2);
+        background: var(--surface);
+        border: 1px solid var(--border);
         border-radius: 12px;
         padding: 18px;
-        box-shadow: 0 8px 24px -16px rgba(0, 0, 0, 0.6);
+        transition: border-color 140ms ease;
+      }
+      .stat:hover {
+        border-color: var(--border-2);
       }
       .stat .k {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
         font-size: 11px;
         color: var(--dim);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 700;
+        letter-spacing: 0.12em;
+        font-weight: 500;
         margin-bottom: 11px;
       }
       .stat .big-stat {
@@ -260,11 +261,19 @@
         font-variant-numeric: tabular-nums;
       }
       .stat.signature .big-stat {
-        background: #c7a45a;
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        filter: drop-shadow(0 6px 20px rgba(199, 164, 90, 0.22));
+        color: var(--amber);
+      }
+      .stat.signature::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse 80% 70% at 30% 0%,
+          rgba(232, 185, 49, 0.05),
+          transparent 70%
+        );
       }
       .stat .sub {
         font-size: 12px;
@@ -288,27 +297,38 @@
       .src {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
         font-size: 11px;
         color: var(--dim);
         margin-top: 10px;
       }
       .src .dot-live {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
+        position: relative;
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
         background: var(--green);
-        animation: none;
+        flex: none;
       }
-      @keyframes pulse {
+      .src .dot-live::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 999px;
+        border: 1px solid var(--green);
+        opacity: 0.6;
+        animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+      @keyframes ping {
         0% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.55);
+          transform: scale(0.6);
+          opacity: 0.7;
         }
-        70% {
-          box-shadow: 0 0 0 6px rgba(154, 166, 178, 0);
-        }
+        80%,
         100% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
+          transform: scale(1.9);
+          opacity: 0;
         }
       }
 
@@ -320,12 +340,13 @@
         margin-top: 16px;
       }
       .panel h2 {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
         font-size: 12px;
         margin: 0 0 4px;
         color: var(--dim);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 700;
+        letter-spacing: 0.14em;
+        font-weight: 500;
       }
       .panel .h2sub {
         font-size: 12.5px;
@@ -339,8 +360,8 @@
         flex-wrap: wrap;
       }
       input {
-        background: rgba(0, 0, 0, 0.35);
-        border: 1px solid var(--border);
+        background: rgba(233, 229, 220, 0.03);
+        border: 1px solid var(--border-2);
         color: var(--text);
         border-radius: 8px;
         padding: 8px 11px;
@@ -348,7 +369,7 @@
         font-size: 13px;
       }
       input:focus {
-        border-color: rgba(199, 164, 90, 0.5);
+        border-color: rgba(232, 185, 49, 0.5);
       }
       .btn {
         display: inline-flex;
@@ -358,13 +379,17 @@
         font-size: 13.5px;
         border-radius: 8px;
         padding: 8px 14px;
-        border: 0;
+        border: 1px solid transparent;
         cursor: pointer;
-        background: #c7a45a;
-        color: #0b0d10;
+        background: var(--text);
+        color: #101113;
+        transition:
+          transform 140ms ease,
+          box-shadow 140ms ease;
       }
       .btn:hover {
         transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(233, 229, 220, 0.14);
       }
       .big-stat {
         font-weight: 800;
@@ -385,48 +410,64 @@
         font-size: 13.5px;
       }
       th {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
         color: var(--dim);
-        font-weight: 600;
-        font-size: 12px;
+        font-weight: 500;
+        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.12em;
+      }
+      td:first-child,
+      td:nth-child(4) {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+      th:first-child,
+      th:nth-child(4) {
+        text-align: right;
+      }
+      tbody tr {
+        transition: background 120ms ease;
       }
       tbody tr:hover {
-        background: rgba(242, 245, 247, 0.03);
+        background: var(--surface-2);
       }
       /* verdict pills — single shared system */
       .vpill {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
+        gap: 6px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
         font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.02em;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         padding: 3px 10px;
-        border-radius: 100px;
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        background: rgba(199, 164, 90, 0.14);
-        color: #d8c48a;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--dim);
       }
       .vpill-PAYEE {
-        background: rgba(154, 166, 178, 0.16);
-        color: #aeb8c2;
-        border-color: rgba(154, 166, 178, 0.4);
+        background: var(--amber);
+        color: #161203;
+        border-color: transparent;
       }
       .vpill-PAYER {
-        background: rgba(115, 127, 140, 0.2);
-        color: #aeb8c2;
-        border-color: rgba(115, 127, 140, 0.55);
+        background: transparent;
+        color: var(--text);
+        border-color: var(--border-2);
       }
       .vpill-SPLIT {
-        background: rgba(199, 164, 90, 0.14);
-        color: #d8c48a;
-        border-color: rgba(199, 164, 90, 0.4);
+        background: transparent;
+        color: #f0cd66;
+        border-color: rgba(232, 185, 49, 0.55);
       }
       .vpill-UNDECIDABLE {
-        background: rgba(141, 130, 112, 0.16);
-        color: #aeb8c2;
-        border-color: var(--border-2);
+        background: transparent;
+        color: var(--dim);
+        border-color: var(--border);
       }
       .vpill-NONE {
         background: var(--surface-2);
@@ -440,21 +481,29 @@
         gap: 10px;
       }
       .repcard {
-        background: rgba(0, 0, 0, 0.28);
+        background: var(--surface-2);
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 12px 14px;
         font-size: 13px;
+        transition: border-color 140ms ease;
+      }
+      .repcard:hover {
+        border-color: var(--border-2);
       }
       .repcard .rk {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
         font-size: 10.5px;
         color: var(--dim);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 700;
+        letter-spacing: 0.12em;
+        font-weight: 500;
       }
       .repcard b {
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
+        font-weight: 800;
         font-size: 20px;
+        letter-spacing: -0.01em;
         font-variant-numeric: tabular-nums;
       }
       /* advanced config (demoted to a collapsible at the bottom) */
