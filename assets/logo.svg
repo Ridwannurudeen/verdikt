@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Verdikt">
+  <rect x="6.5" y="6.5" width="51" height="51" rx="15" stroke="#e9e5dc" stroke-width="2.4"/>
+  <g stroke="#e9e5dc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="32" y1="21" x2="32" y2="44"/>
+    <line x1="19" y1="22" x2="45" y2="22"/>
+    <line x1="25" y1="45" x2="39" y2="45"/>
+    <path d="M19 22 L14.5 31 a4.5 4.5 0 0 0 9 0 Z" stroke-width="2.2"/>
+    <path d="M45 22 L40.5 31 a4.5 4.5 0 0 0 9 0 Z" stroke-width="2.2"/>
+  </g>
+  <circle cx="32" cy="22" r="3.3" fill="#e8b931"/>
+</svg>
