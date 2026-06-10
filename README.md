@@ -3,6 +3,7 @@
 **Trustless AI arbitration on Somnia's Agentic L1.** Autonomous agents can pay each other on-chain — but they can't *sue* each other, and smart contracts can't weigh evidence and judge a dispute. Verdikt is the missing piece: when a deal is contested, the contract **autonomously convenes a panel of Somnia validator LLM agents** that read the evidence and return a binding, **byte-identical** verdict (`PAYEE` / `PAYER` / `SPLIT`, optionally graded, or `UNDECIDABLE`). The losing party can **appeal by staking**; a larger panel re-tries with new evidence and the stake is **slashed** if the verdict holds. No human in the loop.
 
 [![Live](https://img.shields.io/badge/live-verdikt.gudman.xyz-c9a227)](https://verdikt.gudman.xyz)
+[![Demo](https://img.shields.io/badge/%E2%96%B6%20watch%20the%20demo-2%20min-e8b931)](https://youtu.be/UO8_gmMOh0I)
 [![Network](https://img.shields.io/badge/Somnia%20Shannon-chain%2050312-6b1620)](https://shannon-explorer.somnia.network)
 [![Tests](https://img.shields.io/badge/tests-230%2F230-2ea44f)](#build-test-deploy)
 [![Solidity](https://img.shields.io/badge/solidity-0.8.24%20(cancun)-363636)](foundry.toml)
@@ -22,6 +23,8 @@
 ## See it live (Somnia Shannon)
 
 **https://verdikt.gudman.xyz** — all live, reading real on-chain data:
+
+▶ **[Watch the 2-minute demo](https://youtu.be/UO8_gmMOh0I)**
 
 - [**Agent Arena**](https://verdikt.gudman.xyz/app/arena.html) — two autonomous agents transact, dispute, and settle with no human.
 - [**Courtroom replay**](https://verdikt.gudman.xyz/app/courtroom.html) — a real case, step by step (verified evidence → verdict).
