@@ -3,47 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verdikt — the on-chain AI court for the agent economy</title>
+    <title>Verdikt — The on-chain AI court</title>
     <meta
       name="description"
-      content="Verdikt is a reusable on-chain arbitration primitive on Somnia's Agentic L1. A panel of validator LLM agents reaches byte-identical consensus on subjective disputes and settles them programmatically — no human in the loop. 92% agreement with human verdicts, live on Shannon."
+      content="A dispute-resolution primitive any contract can call. Deterministic AI verdicts — 100% byte-identical consensus, 92% agreement with human judges — settled on-chain and recorded as citable precedent."
     />
-    <meta name="author" content="Verdikt" />
-    <link rel="canonical" href="https://verdikt.gudman.xyz/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://verdikt.gudman.xyz/" />
-    <meta
-      property="og:title"
-      content="Verdikt — the on-chain AI court for the agent economy"
-    />
+    <meta property="og:title" content="Verdikt — The on-chain AI court" />
     <meta
       property="og:description"
-      content="A jury of validator LLM agents settles subjective on-chain disputes by byte-identical consensus — live on Somnia Shannon."
+      content="A dispute-resolution primitive any contract can call. Deterministic AI verdicts, settled on-chain, recorded as precedent."
     />
-    <meta property="og:site_name" content="Verdikt" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Verdikt — the on-chain AI court for the agent economy"
-    />
-    <meta
-      name="twitter:description"
-      content="A jury of validator LLM agents settles subjective on-chain disputes by byte-identical consensus. 92% agreement with humans, live on Shannon."
-    />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://verdikt.gudman.xyz/" />
+    <link rel="canonical" href="https://verdikt.gudman.xyz/" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800"
     />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
     />
     <script type="application/ld+json">
       {
@@ -57,23 +42,21 @@
       }
     </script>
     <style>
-      /* ============ THE BENCH — design tokens ============ */
+      /* ============ MARBLE & INK — design tokens ============ */
       :root {
-        --ink: #0b0d10; /* warm near-black base */
-        --ink-2: #10151b; /* raised surface */
-        --ink-3: #151b23; /* card */
-        --ink-4: #1b232d; /* hover / inset */
-        --ivory: #f2f5f7; /* primary text */
-        --ivory-dim: #aeb8c2; /* secondary text */
-        --dim: #737f8c; /* tertiary / labels */
-        --oxblood: #222a35; /* neutral fill alias */
-        --oxblood-ink: #aeb8c2; /* muted label alias */
-        --gold: #c7a45a; /* primary brass accent */
-        --gold-ink: #d8c48a; /* readable accent text */
-        --green: #9aa6b2; /* neutral status tone */
-        --border: rgba(242, 245, 247, 0.1);
-        --border-2: rgba(242, 245, 247, 0.2);
-        --seal: #c7a45a;
+        --bg: #0a0b0d;
+        --bg-2: #0e0f12;
+        --surface: #121316;
+        --surface-2: #17181c;
+        --border: rgba(233, 229, 220, 0.08);
+        --border-2: rgba(233, 229, 220, 0.16);
+        --ink: #e9e5dc;
+        --muted: #9b988f;
+        --faint: #6b6962;
+        --amber: #e8b931;
+        --amber-ink: #f0cd66;
+        --amber-dim: rgba(232, 185, 49, 0.12);
+        --live: #4ade80;
         color-scheme: dark;
       }
       * {
@@ -84,29 +67,22 @@
       }
       body {
         margin: 0;
-        background: var(--ink);
-        color: var(--ivory);
-        font-family:
-          "Switzer",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Switzer", system-ui, -apple-system, sans-serif;
         font-size: 16px;
-        line-height: 1.62;
+        line-height: 1.6;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         position: relative;
       }
-      /* editorial serif reserved for display; grotesque for everything else */
       h1,
       h2,
       h3,
-      .display,
-      .brand-name,
-      .stat-n,
-      .big-stat {
-        font-family: "Zodiak", Georgia, serif;
-        font-weight: 700;
+      .display {
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
+        font-weight: 800;
+        margin: 0;
       }
       a {
         color: inherit;
@@ -118,859 +94,216 @@
         overflow-wrap: anywhere;
       }
       .wrap {
-        max-width: 1140px;
+        max-width: 1180px;
         margin: 0 auto;
         padding: 0 24px;
-      }
-      @media (max-width: 520px) {
-        .wrap {
-          padding: 0 20px;
-        }
-      }
-      svg.i {
-        width: 1em;
-        height: 1em;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        display: block;
       }
       :focus-visible {
         outline: none;
         box-shadow:
-          0 0 0 2px var(--ink),
-          0 0 0 4px var(--gold);
+          0 0 0 2px var(--bg),
+          0 0 0 3.5px var(--amber);
         border-radius: 6px;
+        transition: box-shadow 120ms ease-out;
       }
       ::selection {
-        background: rgba(199, 164, 90, 0.28);
+        background: var(--amber-dim);
       }
 
-      /* one restrained signature light source — not a dot-grid/glow cliché */
-      body::before {
-        content: "";
-        position: fixed;
+      /* atmosphere: one warm radial, nothing else */
+      .aura {
+        position: absolute;
         inset: 0;
-        z-index: -1;
         pointer-events: none;
-        background:
-          linear-gradient(
-            180deg,
-            rgba(242, 245, 247, 0.035),
-            transparent 260px
-          ),
-          linear-gradient(
-            90deg,
-            rgba(242, 245, 247, 0.035) 1px,
-            transparent 1px
-          ),
-          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
-        background-size:
-          auto,
-          48px 48px,
-          48px 48px;
-        opacity: 0.72;
+        z-index: 0;
+        background: radial-gradient(
+          ellipse 70% 45% at 30% 0%,
+          rgba(233, 229, 220, 0.045),
+          transparent 70%
+        );
       }
 
-      /* ---- nav ---- */
+      /* ============ nav ============ */
       nav {
         position: sticky;
         top: 0;
-        z-index: 60;
+        z-index: 50;
+        background: rgba(10, 11, 13, 0.82);
         backdrop-filter: blur(14px);
-        background: rgba(11, 13, 16, 0.72);
+        -webkit-backdrop-filter: blur(14px);
         border-bottom: 1px solid var(--border);
       }
       .nav-in {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        height: 68px;
-        gap: 18px;
+        gap: 28px;
+        height: 64px;
       }
       .brand {
         display: flex;
         align-items: center;
-        gap: 11px;
-      }
-      .brand .seal {
-        width: 32px;
-        height: 32px;
-        border-radius: 9px;
-        background: var(--ink-3);
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
-      }
-      .brand .seal svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .brand-name {
-        font-size: 20px;
-        letter-spacing: -0.01em;
+        gap: 10px;
+        font-family: "Cabinet Grotesk", sans-serif;
         font-weight: 800;
+        font-size: 19px;
+        letter-spacing: 0.01em;
+      }
+      .brand svg {
+        flex: none;
       }
       .nav-links {
         display: flex;
-        gap: 26px;
-        align-items: center;
-      }
-      .nav-links a {
-        color: var(--ivory-dim);
+        gap: 24px;
+        margin-left: 12px;
         font-size: 14.5px;
+        color: var(--muted);
         font-weight: 500;
-        transition: color 0.15s;
       }
       .nav-links a:hover {
-        color: var(--ivory);
+        color: var(--ink);
       }
-      @media (max-width: 920px) {
-        .nav-links .hide-sm {
+      .nav-cta {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      @media (max-width: 900px) {
+        .nav-links {
           display: none;
         }
       }
 
+      /* ============ buttons ============ */
       .btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 600;
-        font-size: 14.5px;
+        height: 42px;
+        padding: 0 20px;
         border-radius: 8px;
-        padding: 10px 17px;
+        font-size: 14.5px;
+        font-weight: 600;
         border: 1px solid transparent;
-        cursor: pointer;
         transition:
-          transform 0.16s ease,
-          background 0.16s ease,
-          border-color 0.16s ease,
-          box-shadow 0.16s ease;
-      }
-      .btn svg.i {
-        width: 16px;
-        height: 16px;
+          transform 140ms ease,
+          box-shadow 140ms ease,
+          background 140ms ease,
+          border-color 140ms ease;
+        cursor: pointer;
       }
       .btn-primary {
-        background: #c7a45a;
-        color: #0b0d10;
-        font-weight: 700;
-        box-shadow: none;
+        background: var(--ink);
+        color: #101113;
       }
       .btn-primary:hover {
         transform: translateY(-1px);
-        box-shadow: none;
+        box-shadow: 0 6px 20px rgba(233, 229, 220, 0.14);
       }
       .btn-ghost {
-        background: transparent;
+        background: rgba(233, 229, 220, 0.03);
         border-color: var(--border-2);
-        color: var(--ivory);
+        color: var(--ink);
       }
       .btn-ghost:hover {
-        background: rgba(242, 245, 247, 0.05);
-        border-color: rgba(242, 245, 247, 0.32);
+        border-color: rgba(233, 229, 220, 0.3);
+        background: rgba(233, 229, 220, 0.06);
       }
       .btn-lg {
-        padding: 14px 24px;
+        height: 48px;
+        padding: 0 26px;
         font-size: 15.5px;
-        border-radius: 9px;
       }
 
+      /* ============ shared atoms ============ */
+      .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+      }
+      .eyebrow b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .lede {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.65;
+        max-width: 56ch;
+      }
+      .dot-live {
+        position: relative;
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--live);
+        flex: none;
+      }
+      .dot-live::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 999px;
+        border: 1px solid var(--live);
+        opacity: 0.6;
+        animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+      @keyframes ping {
+        0% {
+          transform: scale(0.6);
+          opacity: 0.7;
+        }
+        80%,
+        100% {
+          transform: scale(1.9);
+          opacity: 0;
+        }
+      }
+      .vpill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .vpill.payee {
+        background: var(--amber);
+        color: #161203;
+      }
+      .vpill.payer {
+        border: 1px solid var(--border-2);
+        color: var(--ink);
+      }
+      .vpill.split {
+        border: 1px solid rgba(232, 185, 49, 0.55);
+        color: var(--amber-ink);
+      }
+      .vpill.und {
+        border: 1px solid var(--border);
+        color: var(--faint);
+      }
+
+      /* reveal */
       .rv {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(14px);
         transition:
-          opacity 0.6s ease,
-          transform 0.6s ease;
+          opacity 600ms ease,
+          transform 600ms ease;
       }
       .rv.in {
         opacity: 1;
         transform: none;
-      }
-
-      /* ---- hero ---- */
-      .hero {
-        position: relative;
-        padding: 96px 0 78px;
-      }
-      .hero-grid {
-        display: grid;
-        grid-template-columns: 1.08fr 0.92fr;
-        gap: 56px;
-        align-items: center;
-      }
-      .hero-grid > * {
-        min-width: 0;
-      }
-      @media (max-width: 960px) {
-        .hero-grid {
-          grid-template-columns: 1fr;
-          gap: 46px;
-        }
-      }
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.1);
-        border: 1px solid rgba(199, 164, 90, 0.3);
-        padding: 6px 13px;
-        border-radius: 100px;
-      }
-      .dot-live {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green);
-        animation: none;
-      }
-      @keyframes pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.6);
-        }
-        70% {
-          box-shadow: 0 0 0 7px rgba(154, 166, 178, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
-        }
-      }
-      .kicker {
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--oxblood-ink);
-        margin: 20px 0 0;
-        font-family: "Switzer", sans-serif;
-      }
-      h1 {
-        font-size: 70px;
-        line-height: 1.02;
-        letter-spacing: -0.02em;
-        font-weight: 800;
-        margin: 14px 0 0;
-        text-wrap: balance;
-      }
-      @media (max-width: 960px) {
-        h1 {
-          font-size: 52px;
-        }
-      }
-      @media (max-width: 480px) {
-        h1 {
-          font-size: 38px;
-        }
-      }
-      /* subtle emphasis without decorative gradients */
-      .seal-word {
-        position: relative;
-        white-space: normal;
-        color: inherit;
-      }
-      .seal-word::after {
-        display: none;
-      }
-      .lede {
-        font-size: 18.5px;
-        color: var(--ivory-dim);
-        margin: 24px 0 0;
-        max-width: 540px;
-      }
-      .cta-row {
-        display: flex;
-        gap: 13px;
-        margin-top: 32px;
-        flex-wrap: wrap;
-      }
-      .hero-meta {
-        margin-top: 28px;
-        display: flex;
-        gap: 26px;
-        flex-wrap: wrap;
-      }
-      .hero-meta .m {
-        font-size: 13px;
-        color: var(--dim);
-      }
-      .hero-meta .m b {
-        display: block;
-        font-family: "Zodiak", serif;
-        font-size: 25px;
-        color: var(--ivory);
-        font-weight: 700;
-        letter-spacing: -0.01em;
-      }
-
-      /* ---- the docket card (signature motif) ---- */
-      .docket {
-        position: relative;
-        background: var(--ink-2);
-        border: 1px solid var(--border-2);
-        border-radius: 12px;
-        padding: 22px;
-        box-shadow: 0 40px 80px -50px #000;
-      }
-      .docket .hd {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 11px;
-        color: var(--dim);
-        text-transform: uppercase;
-        letter-spacing: 0.13em;
-        font-weight: 700;
-      }
-      .docket .hd .no {
-        color: var(--gold-ink);
-      }
-      .case-card {
-        margin-top: 13px;
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px;
-      }
-      .case-card .q {
-        font-weight: 600;
-        font-size: 14.5px;
-      }
-      .case-card .ev {
-        color: var(--ivory-dim);
-        font-size: 12.5px;
-        margin-top: 8px;
-        display: flex;
-        gap: 8px;
-        align-items: flex-start;
-      }
-      .case-card .ev svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--green);
-        flex: 0 0 auto;
-        margin-top: 3px;
-      }
-      .jurors {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-        margin: 15px 0;
-      }
-      .juror {
-        background: var(--ink-3);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 11px 4px 9px;
-        text-align: center;
-        animation: none;
-      }
-      .juror:nth-child(2) {
-        animation-delay: 0.07s;
-      }
-      .juror:nth-child(3) {
-        animation-delay: 0.14s;
-      }
-      .juror:nth-child(4) {
-        animation-delay: 0.21s;
-      }
-      .juror:nth-child(5) {
-        animation-delay: 0.28s;
-      }
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-      }
-      .juror .av {
-        width: 25px;
-        height: 25px;
-        margin: 0 auto;
-        border-radius: 7px;
-        background: var(--ink-4);
-        border: 1px solid rgba(199, 164, 90, 0.32);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-      }
-      .juror .av svg.i {
-        width: 13px;
-        height: 13px;
-      }
-      .juror .v {
-        display: inline-block;
-        margin-top: 8px;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.12);
-        border: 1px solid rgba(199, 164, 90, 0.3);
-        border-radius: 100px;
-        padding: 2px 6px;
-      }
-      .consensus {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        background: rgba(199, 164, 90, 0.08);
-        border: 1px solid rgba(199, 164, 90, 0.28);
-        border-radius: 10px;
-        padding: 12px 15px;
-      }
-      .consensus .lbl {
-        font-size: 11.5px;
-        color: var(--ivory-dim);
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-      .consensus .lbl svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--gold-ink);
-      }
-      .verdict-pill {
-        display: inline-flex;
-        align-items: center;
-        font-weight: 800;
-        font-size: 12px;
-        letter-spacing: 0.02em;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.14);
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        border-radius: 100px;
-        padding: 4px 11px;
-      }
-      .settle {
-        margin-top: 13px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--green);
-        font-size: 12.5px;
-        font-weight: 600;
-      }
-      .settle svg.i {
-        width: 15px;
-        height: 15px;
-      }
-
-      /* ---- proof strip ---- */
-      .proof {
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.18);
-      }
-      .proof-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-      }
-      @media (max-width: 760px) {
-        .proof-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .stat:nth-child(2) {
-          border-right: 0;
-        }
-      }
-      .stat {
-        padding: 34px 24px;
-        border-right: 1px solid var(--border);
-      }
-      .stat:last-child {
-        border-right: 0;
-      }
-      .stat-n {
-        font-size: clamp(34px, 4vw, 44px);
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        font-variant-numeric: tabular-nums;
-      }
-      .stat-n.gold {
-        color: var(--ivory);
-      }
-      .stat .l {
-        color: var(--ivory-dim);
-        font-size: 13.5px;
-        margin-top: 5px;
-      }
-
-      /* ---- sections ---- */
-      section {
-        position: relative;
-        padding: 96px 0;
-      }
-      .eyebrow {
-        color: var(--oxblood-ink);
-        font-weight: 700;
-        font-size: 12.5px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        font-family: "Switzer", sans-serif;
-      }
-      h2 {
-        font-size: 44px;
-        line-height: 1.08;
-        letter-spacing: -0.02em;
-        margin: 14px 0 0;
-        text-wrap: balance;
-      }
-      @media (max-width: 480px) {
-        h2 {
-          font-size: 32px;
-        }
-      }
-      .sub {
-        color: var(--ivory-dim);
-        font-size: 17.5px;
-        margin: 16px 0 0;
-        max-width: 660px;
-      }
-      .sec-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 24px;
-        flex-wrap: wrap;
-      }
-      .sec-head .more {
-        color: var(--gold-ink);
-        font-weight: 600;
-        font-size: 14.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        white-space: nowrap;
-      }
-      .sec-head .more svg.i {
-        width: 16px;
-        height: 16px;
-      }
-
-      /* docket flow (how it works) */
-      .flow {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0;
-        margin-top: 50px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        overflow: hidden;
-        background: var(--ink-2);
-      }
-      @media (max-width: 880px) {
-        .flow {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-      @media (max-width: 520px) {
-        .flow {
-          grid-template-columns: 1fr;
-        }
-      }
-      .node {
-        padding: 24px 20px;
-        border-right: 1px solid var(--border);
-      }
-      .node:last-child {
-        border-right: 0;
-      }
-      @media (max-width: 880px) {
-        .node {
-          border-bottom: 1px solid var(--border);
-        }
-      }
-      .node .step {
-        font-family: "Zodiak", serif;
-        font-size: 13px;
-        color: var(--gold-ink);
-        font-weight: 700;
-        letter-spacing: 0.06em;
-      }
-      .node .ic {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
-        background: var(--ink-4);
-        border: 1px solid var(--border-2);
-        display: grid;
-        place-items: center;
-        color: var(--oxblood-ink);
-        margin-top: 14px;
-      }
-      .node .ic svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .node h4 {
-        margin: 14px 0 6px;
-        font-size: 15.5px;
-        font-weight: 700;
-        font-family: "Switzer", sans-serif;
-      }
-      .node p {
-        color: var(--ivory-dim);
-        font-size: 13px;
-        margin: 0;
-      }
-
-      /* trust cards */
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 50px;
-      }
-      @media (max-width: 880px) {
-        .cards {
-          grid-template-columns: 1fr;
-        }
-      }
-      .card {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-        transition:
-          transform 0.18s,
-          border-color 0.18s;
-      }
-      .card:hover {
-        transform: translateY(-2px);
-        border-color: var(--border-2);
-      }
-      .card .ic {
-        width: 42px;
-        height: 42px;
-        border-radius: 9px;
-        background: rgba(115, 127, 140, 0.16);
-        border: 1px solid rgba(115, 127, 140, 0.4);
-        display: grid;
-        place-items: center;
-        color: var(--oxblood-ink);
-      }
-      .card .ic svg.i {
-        width: 21px;
-        height: 21px;
-      }
-      .card h3 {
-        font-size: 18px;
-        font-weight: 700;
-        margin: 17px 0 8px;
-      }
-      .card p {
-        color: var(--ivory-dim);
-        font-size: 14px;
-        margin: 0;
-      }
-      .tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 15px;
-        font-size: 11.5px;
-        font-weight: 700;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.1);
-        border: 1px solid rgba(199, 164, 90, 0.28);
-        border-radius: 100px;
-        padding: 4px 11px;
-      }
-      .tag svg.i {
-        width: 12px;
-        height: 12px;
-      }
-
-      /* solutions */
-      .grid6 {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-        margin-top: 46px;
-      }
-      @media (max-width: 760px) {
-        .grid6 {
-          grid-template-columns: 1fr;
-        }
-      }
-      .mini {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px 20px;
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-        transition: border-color 0.18s;
-      }
-      .mini:hover {
-        border-color: var(--border-2);
-      }
-      .mini .ic {
-        width: 38px;
-        height: 38px;
-        flex: 0 0 auto;
-        border-radius: 8px;
-        background: var(--ink-4);
-        border: 1px solid var(--border-2);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-      }
-      .mini .ic svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .mini b {
-        font-weight: 700;
-        font-size: 15px;
-        font-family: "Switzer", sans-serif;
-      }
-      .mini span {
-        display: block;
-        color: var(--ivory-dim);
-        font-size: 13px;
-        margin-top: 3px;
-      }
-
-      /* live */
-      .live {
-        background: rgba(0, 0, 0, 0.18);
-        border-top: 1px solid var(--border);
-      }
-      .live-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin-top: 50px;
-      }
-      @media (max-width: 880px) {
-        .live-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .panel {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-      }
-      .live-grid > *,
-      .panel,
-      .docket {
-        min-width: 0;
-      }
-      .panel h3 {
-        margin: 0 0 16px;
-        font-size: 16px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 700;
-      }
-      .addr {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-        font-size: 13.5px;
-      }
-      .addr:last-child {
-        border-bottom: 0;
-      }
-      .addr .k {
-        color: var(--ivory-dim);
-      }
-      .addr a {
-        color: var(--gold-ink);
-        overflow-wrap: anywhere;
-      }
-      .big-stat {
-        font-size: 56px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        line-height: 1;
-        color: var(--gold-ink);
-      }
-      .big-stat .unit {
-        font-size: 16px;
-        color: var(--ivory-dim);
-        font-weight: 500;
-        font-family: "Switzer", sans-serif;
-      }
-
-      /* faq */
-      details {
-        border-bottom: 1px solid var(--border);
-        padding: 18px 0;
-      }
-      summary {
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 16.5px;
-        list-style: none;
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-      }
-      summary::-webkit-details-marker {
-        display: none;
-      }
-      summary::after {
-        content: "+";
-        color: var(--gold-ink);
-        font-size: 22px;
-        line-height: 1;
-      }
-      details[open] summary::after {
-        content: "−";
-      }
-      details p {
-        color: var(--ivory-dim);
-        margin: 12px 0 0;
-        font-size: 15px;
-      }
-
-      /* band + footer */
-      .band {
-        position: relative;
-        border: 1px solid var(--border-2);
-        border-radius: 14px;
-        padding: 64px 28px;
-        text-align: center;
-        overflow: hidden;
-        background: var(--ink-2);
-      }
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 40px 0;
-        color: var(--dim);
-        font-size: 13.5px;
-      }
-      .foot-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .foot-links {
-        display: flex;
-        gap: 22px;
-        flex-wrap: wrap;
-      }
-      .foot-links a:hover {
-        color: var(--ivory);
       }
       @media (prefers-reduced-motion: reduce) {
         *,
@@ -979,727 +312,1628 @@
           animation-duration: 0.01ms !important;
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+        .rv {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ============ hero ============ */
+      .hero {
+        position: relative;
+        padding: 96px 0 72px;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.04fr 0.96fr;
+        gap: 56px;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      .hero h1 {
+        font-size: clamp(44px, 6vw, 76px);
+        line-height: 1.01;
+        letter-spacing: -0.035em;
+        margin: 18px 0 22px;
+      }
+      .hero h1 .amber {
+        color: var(--amber-ink);
+      }
+      .hero-ctas {
+        display: flex;
+        gap: 12px;
+        margin: 30px 0 0;
+        flex-wrap: wrap;
+      }
+      .hero-meta {
+        display: flex;
+        gap: 28px;
+        margin-top: 36px;
+        flex-wrap: wrap;
+      }
+      .hero-meta .m {
+        font-size: 13.5px;
+        color: var(--faint);
+      }
+      .hero-meta .m b {
+        display: block;
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      @media (max-width: 980px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding-top: 64px;
+        }
+      }
+
+      /* docket card — the real case */
+      .docket {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .docket-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+      }
+      .docket-head .id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .docket-body {
+        padding: 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .evidence {
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 12px 14px;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .evidence .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+      }
+      .evidence.attested {
+        border-color: rgba(232, 185, 49, 0.35);
+      }
+      .evidence.attested .tag {
+        color: var(--amber-ink);
+      }
+      .evidence.claim .tag {
+        color: var(--faint);
+      }
+      .jurors {
+        display: grid;
+        gap: 6px;
+      }
+      .juror {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .juror .v {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        color: var(--ink);
+        letter-spacing: 0.06em;
+      }
+      .docket-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 18px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* ============ proof band ============ */
+      .proof {
+        background: var(--bg-2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 84px 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .proof::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse 40% 60% at 22% 50%,
+          rgba(232, 185, 49, 0.05),
+          transparent 70%
+        );
+      }
+      .proof-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 56px;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      .proof .xl {
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: clamp(84px, 10vw, 132px);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+      }
+      .proof .xl-label {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 16px;
+        max-width: 38ch;
+      }
+      .proof-side {
+        display: grid;
+        gap: 0;
+      }
+      .proof-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 0;
+      }
+      .proof-row + .proof-row {
+        border-top: 1px solid var(--border);
+      }
+      .proof-row b {
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: clamp(30px, 3.4vw, 42px);
+        letter-spacing: -0.025em;
+        font-variant-numeric: tabular-nums;
+      }
+      .proof-row span {
+        color: var(--muted);
+        font-size: 14px;
+        text-align: right;
+      }
+      .proof-row.live b {
+        color: var(--amber-ink);
+      }
+      @media (max-width: 900px) {
+        .proof-grid {
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+      }
+
+      /* ============ sections ============ */
+      section.block {
+        padding: 112px 0 0;
+      }
+      .sec-head {
+        max-width: 720px;
+        margin-bottom: 48px;
+      }
+      .sec-head h2 {
+        font-size: clamp(30px, 3.6vw, 44px);
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+        margin: 14px 0 16px;
+      }
+      .sec-head p {
+        color: var(--muted);
+        font-size: 16.5px;
+        margin: 0;
+      }
+
+      /* primitive flow */
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+      }
+      .flow .step {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px 18px;
+        transition: border-color 140ms ease;
+      }
+      .flow .step:hover {
+        border-color: var(--border-2);
+      }
+      .flow .n {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--faint);
+        letter-spacing: 0.12em;
+      }
+      .flow h3 {
+        font-size: 16.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 10px 0 7px;
+      }
+      .flow p {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .flow .step.verdict {
+        border-color: rgba(232, 185, 49, 0.4);
+      }
+      @media (max-width: 980px) {
+        .flow {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        .flow {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* product family */
+      .family {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .fam-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition:
+          border-color 140ms ease,
+          background 140ms ease;
+      }
+      .fam-card:hover {
+        border-color: var(--border-2);
+        background: var(--surface-2);
+      }
+      .fam-card svg {
+        color: var(--muted);
+      }
+      .fam-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .fam-card p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.55;
+        flex: 1;
+      }
+      .fam-card .link {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .fam-card .link::after {
+        content: " →";
+        color: var(--faint);
+      }
+      @media (max-width: 980px) {
+        .family {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        .family {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* determinism feature (asymmetric) */
+      .det {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 56px;
+        align-items: start;
+      }
+      .det-claims {
+        display: grid;
+        gap: 0;
+      }
+      .det-claim {
+        padding: 20px 0;
+        display: grid;
+        gap: 6px;
+      }
+      .det-claim + .det-claim {
+        border-top: 1px solid var(--border);
+      }
+      .det-claim h3 {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .det-claim p {
+        margin: 0;
+        font-size: 14.5px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .bench {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .bench-head {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface-2);
+      }
+      .bench-rows {
+        padding: 8px 20px 16px;
+      }
+      .bench-row {
+        display: grid;
+        grid-template-columns: 110px 1fr 64px;
+        align-items: center;
+        gap: 16px;
+        padding: 13px 0;
+      }
+      .bench-row + .bench-row {
+        border-top: 1px solid var(--border);
+      }
+      .bench-row .lab {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 0.06em;
+      }
+      .bar {
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(233, 229, 220, 0.08);
+        overflow: hidden;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        background: var(--ink);
+        border-radius: 999px;
+        width: 0;
+        transition: width 900ms cubic-bezier(0.2, 0.6, 0.2, 1);
+      }
+      .bench-row.amber .bar i {
+        background: var(--amber);
+      }
+      .bench-row .val {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        text-align: right;
+        color: var(--ink);
+      }
+      .bench-foot {
+        padding: 14px 20px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--faint);
+      }
+      .bench-foot a {
+        color: var(--muted);
+        border-bottom: 1px solid var(--border-2);
+      }
+      @media (max-width: 980px) {
+        .det {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+      }
+
+      /* solutions */
+      .sols {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .sol {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        display: grid;
+        gap: 8px;
+        transition: border-color 140ms ease;
+      }
+      .sol:hover {
+        border-color: var(--border-2);
+      }
+      .sol h3 {
+        font-size: 16.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .sol p {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .sol .who {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--faint);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      @media (max-width: 980px) {
+        .sols {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        .sols {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* live app showcase */
+      .apps {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+      }
+      .app-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition:
+          border-color 140ms ease,
+          background 140ms ease;
+      }
+      .app-card:hover {
+        border-color: var(--border-2);
+        background: var(--surface-2);
+      }
+      .app-card.feature {
+        grid-row: span 2;
+        justify-content: flex-end;
+        min-height: 280px;
+        position: relative;
+        overflow: hidden;
+      }
+      .app-card.feature::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 80% 60% at 80% 0%,
+          rgba(232, 185, 49, 0.07),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+      .app-card .k {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .app-card h3 {
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .app-card.feature h3 {
+        font-size: 26px;
+        letter-spacing: -0.02em;
+      }
+      .app-card p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .app-card .open {
+        margin-top: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+      }
+      .app-card .open::after {
+        content: " →";
+        color: var(--faint);
+      }
+      @media (max-width: 980px) {
+        .apps {
+          grid-template-columns: 1fr 1fr;
+        }
+        .app-card.feature {
+          grid-column: span 2;
+          grid-row: auto;
+          min-height: 0;
+        }
+      }
+      @media (max-width: 560px) {
+        .apps {
+          grid-template-columns: 1fr;
+        }
+        .app-card.feature {
+          grid-column: auto;
+        }
+      }
+
+      /* developers */
+      .dev {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 56px;
+        align-items: center;
+      }
+      .code {
+        background: #0c0d10;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .code-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--faint);
+      }
+      .code pre {
+        margin: 0;
+        padding: 18px 20px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.8px;
+        line-height: 1.65;
+        color: var(--muted);
+        overflow-x: auto;
+      }
+      .code .kw {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .code .fn {
+        color: var(--amber-ink);
+      }
+      .code .cm {
+        color: var(--faint);
+      }
+      .dev-points {
+        display: grid;
+        gap: 0;
+        margin-top: 28px;
+      }
+      .dev-point {
+        display: flex;
+        gap: 14px;
+        align-items: baseline;
+        padding: 12px 0;
+        font-size: 14.5px;
+        color: var(--muted);
+      }
+      .dev-point + .dev-point {
+        border-top: 1px solid var(--border);
+      }
+      .dev-point b {
+        color: var(--ink);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      @media (max-width: 980px) {
+        .dev {
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+      }
+
+      /* contracts table */
+      .contracts {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .ct-row {
+        display: grid;
+        grid-template-columns: 220px 1fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 15px 20px;
+        font-size: 14px;
+        transition: background 120ms ease;
+      }
+      .ct-row:hover {
+        background: var(--surface);
+      }
+      .ct-row + .ct-row {
+        border-top: 1px solid var(--border);
+      }
+      .ct-row .name {
+        font-weight: 600;
+      }
+      .ct-row .addr {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .ct-row .view {
+        font-size: 13px;
+        color: var(--faint);
+        white-space: nowrap;
+      }
+      .ct-row:hover .view {
+        color: var(--ink);
+      }
+      @media (max-width: 760px) {
+        .ct-row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        .ct-row .view {
+          display: none;
+        }
+      }
+
+      /* final CTA */
+      .fin {
+        margin: 128px 0 0;
+        border-top: 1px solid var(--border);
+        background: var(--bg-2);
+        padding: 104px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .fin::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 50% 70% at 50% 100%,
+          rgba(232, 185, 49, 0.06),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+      .fin h2 {
+        font-size: clamp(34px, 4.4vw, 56px);
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin: 16px 0 14px;
+        position: relative;
+      }
+      .fin p {
+        color: var(--muted);
+        max-width: 52ch;
+        margin: 0 auto;
+        position: relative;
+      }
+      .fin .hero-ctas {
+        justify-content: center;
+        position: relative;
+      }
+
+      /* footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 64px 0 40px;
+        font-size: 14px;
+      }
+      .foot-grid {
+        display: grid;
+        grid-template-columns: 1.4fr repeat(4, 1fr);
+        gap: 32px;
+      }
+      .foot-col h4 {
+        margin: 0 0 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+      }
+      .foot-col a {
+        display: block;
+        color: var(--muted);
+        padding: 4px 0;
+      }
+      .foot-col a:hover {
+        color: var(--ink);
+      }
+      .foot-brand p {
+        color: var(--faint);
+        font-size: 13.5px;
+        max-width: 30ch;
+        margin: 12px 0 0;
+        line-height: 1.6;
+      }
+      .foot-bottom {
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--faint);
+        font-size: 13px;
+      }
+      .foot-bottom .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      @media (max-width: 980px) {
+        .foot-grid {
+          grid-template-columns: 1fr 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
-      <defs>
-        <symbol id="i-scale" viewBox="0 0 24 24">
-          <path
-            d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
-          />
-        </symbol>
-        <symbol id="i-play" viewBox="0 0 24 24">
-          <polygon
-            points="6 4 20 12 6 20 6 4"
-            fill="currentColor"
-            stroke="none"
-          />
-        </symbol>
-        <symbol id="i-cpu" viewBox="0 0 24 24">
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <rect x="9" y="9" width="6" height="6" />
-          <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
-        </symbol>
-        <symbol id="i-link" viewBox="0 0 24 24">
-          <path
-            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-          />
-          <path
-            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-          />
-        </symbol>
-        <symbol id="i-check" viewBox="0 0 24 24">
-          <path d="M20 6 9 17l-5-5" />
-        </symbol>
-        <symbol id="i-check2" viewBox="0 0 24 24">
-          <path d="M18 6 7 17l-5-5M22 10l-7.5 7.5L13 16" />
-        </symbol>
-        <symbol id="i-folder" viewBox="0 0 24 24">
-          <path
-            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-          />
-          <path d="M12 11v6M9 14h6" />
-        </symbol>
-        <symbol id="i-users" viewBox="0 0 24 24">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </symbol>
-        <symbol id="i-file" viewBox="0 0 24 24">
-          <path
-            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-          />
-          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-        </symbol>
-        <symbol id="i-circlecheck" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <path d="m9 12 2 2 4-4" />
-        </symbol>
-        <symbol id="i-shield" viewBox="0 0 24 24">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="m9 12 2 2 4-4" />
-        </symbol>
-        <symbol id="i-bars" viewBox="0 0 24 24">
-          <path d="M12 20V10M18 20V4M6 20v-4" />
-        </symbol>
-        <symbol id="i-help" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
-        </symbol>
-        <symbol id="i-scroll" viewBox="0 0 24 24">
-          <path
-            d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"
-          />
-          <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-        </symbol>
-        <symbol id="i-handshake" viewBox="0 0 24 24">
-          <path d="m11 17 2 2a1 1 0 0 0 1.4 0l3.6-3.6" />
-          <path
-            d="m16 16 2-2a1 1 0 0 0 0-1.4L13 7.5 8 12l-2-2a1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 0 1.4l5 5"
-          />
-          <path d="m21 14-7-7-2 2" />
-        </symbol>
-        <symbol id="i-umbrella" viewBox="0 0 24 24">
-          <path d="M22 12a10.06 10.06 0 0 0-20 0Z" />
-          <path d="M12 12v8a2 2 0 0 0 4 0M12 2v1" />
-        </symbol>
-        <symbol id="i-trend" viewBox="0 0 24 24">
-          <path d="M22 7 13.5 15.5l-5-5L2 17" />
-          <path d="M16 7h6v6" />
-        </symbol>
-        <symbol id="i-bank" viewBox="0 0 24 24">
-          <path
-            d="M3 22h18M4 10h16M5 6l7-4 7 4M6 10v8M10 10v8M14 10v8M18 10v8"
-          />
-        </symbol>
-        <symbol id="i-flag" viewBox="0 0 24 24">
-          <path
-            d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"
-          />
-        </symbol>
-        <symbol id="i-arrow" viewBox="0 0 24 24">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </symbol>
-        <symbol id="i-code" viewBox="0 0 24 24">
-          <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
-        </symbol>
-        <symbol id="i-search" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </symbol>
-      </defs>
-    </svg>
-
     <nav>
       <div class="wrap nav-in">
-        <a class="brand" href="/"
-          ><span class="seal"
-            ><svg class="i"><use href="#i-scale" /></svg
-          ></span>
-          <span class="brand-name">Verdikt</span></a
-        >
+        <a class="brand" href="/" aria-label="Verdikt home">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3v18" />
+            <path d="M5 7h14" />
+            <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+            <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+            <path d="M9 21h6" />
+          </svg>
+          VERDIKT
+        </a>
         <div class="nav-links">
-          <a class="hide-sm" href="/how-it-works.html">How it works</a>
-          <a class="hide-sm" href="/solutions.html">Solutions</a>
-          <a class="hide-sm" href="/developers.html">Developers</a>
-          <a class="hide-sm" href="/security.html">Security</a>
-          <a class="hide-sm" href="/app/courtroom.html">Courtroom</a>
+          <a href="/how-it-works.html">Protocol</a>
+          <a href="/solutions.html">Solutions</a>
+          <a href="/developers.html">Developers</a>
+          <a href="/security.html">Security</a>
+          <a href="/app/explorer.html">Explorer</a>
+        </div>
+        <div class="nav-cta">
           <a
-            class="hide-sm"
+            class="btn btn-ghost"
             href="https://github.com/Ridwannurudeen/verdikt"
             target="_blank"
             rel="noopener"
             >GitHub</a
           >
-          <a class="btn btn-primary" href="/app/">Launch app</a>
+          <a class="btn btn-primary" href="/app/arena.html">Launch app</a>
         </div>
       </div>
     </nav>
 
+    <!-- ============ HERO ============ -->
     <header class="hero">
+      <div class="aura"></div>
       <div class="wrap hero-grid">
-        <div class="rv in">
-          <span class="pill"
-            ><span class="dot-live"></span> Live on Somnia Shannon · Agentic
-            L1</span
+        <div>
+          <span class="eyebrow"
+            ><b>The on-chain AI court</b> · live on Somnia Shannon</span
           >
-          <span class="kicker">The settlement court for the agent economy</span>
           <h1>
-            Justice, executed by
-            <span class="seal-word">autonomous agents</span>.
+            Disputes settled by
+            <span class="amber">deterministic&nbsp;AI&nbsp;verdicts.</span>
           </h1>
           <p class="lede">
-            Smart contracts can't make subjective judgments — and autonomous
-            agents can't sue each other. Verdikt is the neutral arbiter: a panel
-            of validator LLM agents that reaches
-            <b>byte-identical consensus</b> on a dispute and settles it
-            programmatically. No admin. No human in the loop.
+            Verdikt is a dispute-resolution primitive any contract can call. A
+            panel of validator LLM agents must converge byte-identically before
+            a verdict exists — then it settles funds and enters an on-chain
+            precedent ledger. No human in the loop.
           </p>
-          <div class="cta-row">
+          <div class="hero-ctas">
             <a class="btn btn-primary btn-lg" href="/app/arena.html"
-              ><svg class="i"><use href="#i-play" /></svg> Enter the Agent
-              Arena</a
+              >Launch app</a
             >
-            <a class="btn btn-ghost btn-lg" href="/app/courtroom.html"
-              >Watch a live verdict</a
+            <a class="btn btn-ghost btn-lg" href="/developers.html"
+              >Integrate the Court</a
             >
           </div>
           <div class="hero-meta">
-            <span class="m"><b>92%</b> agreement with human verdicts</span>
-            <span class="m"><b>100%</b> byte-identical consensus</span>
-            <span class="m"><b>0</b> successful injections</span>
+            <span class="m"
+              ><b data-count="92" data-suffix="%">0%</b> agreement with human
+              verdicts</span
+            >
+            <span class="m"
+              ><b data-count="100" data-suffix="%">0%</b> byte-identical
+              consensus</span
+            >
+            <span class="m"
+              ><b data-count="0">0</b> successful prompt injections</span
+            >
           </div>
         </div>
 
-        <div class="docket rv in">
-          <div class="hd">
-            <span>Docket · live ruling</span><span class="no">№ 001</span>
+        <!-- a real case from the live registry -->
+        <aside class="docket rv" aria-label="A real settled case">
+          <div class="docket-head">
+            <span class="id">CASE #1 · VerdiktEscrow · Shannon</span>
+            <span class="vpill payee">Payee</span>
           </div>
-          <div class="case-card">
-            <div class="q">Did the seller deliver the order?</div>
-            <div class="ev">
-              <svg class="i"><use href="#i-link" /></svg> Attested on-chain:
-              courier confirms 3 of 4 units delivered. Buyer claims a full
-              refund.
+          <div class="docket-body">
+            <div class="evidence attested">
+              <span class="tag">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+                Verified · Courier-Oracle attestor
+              </span>
+              "Parcel delivered and signed for before the deadline."
+            </div>
+            <div class="evidence claim">
+              <span class="tag">Untrusted · payer claim</span>
+              "The goods never arrived. I want a full refund."
+            </div>
+            <div class="jurors">
+              <div class="juror">
+                <span>Validator 1 · LLM inference agent</span
+                ><span class="v">PAYEE</span>
+              </div>
+              <div class="juror">
+                <span>Validator 2 · LLM inference agent</span
+                ><span class="v">PAYEE</span>
+              </div>
+              <div class="juror">
+                <span>Validator 3 · LLM inference agent</span
+                ><span class="v">PAYEE</span>
+              </div>
+              <div class="juror">
+                <span>Validator 4 · LLM inference agent</span
+                ><span class="v">PAYEE</span>
+              </div>
             </div>
           </div>
-          <div class="jurors">
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
-              </div>
-              <div class="v">SPLIT75</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
-              </div>
-              <div class="v">SPLIT75</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
-              </div>
-              <div class="v">SPLIT75</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
-              </div>
-              <div class="v">SPLIT75</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
-              </div>
-              <div class="v">SPLIT75</div>
-            </div>
-          </div>
-          <div class="consensus">
-            <span class="lbl"
-              ><svg class="i"><use href="#i-check2" /></svg> Byte-identical · 5
-              of 5 jurors</span
+          <div class="docket-foot">
+            <span
+              >4/4 byte-identical · attested fact outweighed the false
+              claim</span
             >
-            <span class="verdict-pill">SPLIT · 75% → payee</span>
+            <a
+              class="mono"
+              style="font-size: 12px; color: var(--faint)"
+              href="/app/courtroom.html?case=1"
+              >Replay →</a
+            >
           </div>
-          <div class="settle">
-            <svg class="i"><use href="#i-circlecheck" /></svg> Settled on-chain
-            — funds released, no human in the loop
-          </div>
-        </div>
+        </aside>
       </div>
     </header>
 
-    <div class="proof">
+    <!-- ============ PROOF BAND ============ -->
+    <section class="proof" aria-label="Proof">
       <div class="wrap proof-grid">
-        <div class="stat">
-          <div class="stat-n gold" id="rulings" data-count>—</div>
-          <div class="l">final rulings on record</div>
+        <div class="rv">
+          <span class="eyebrow">determinism · 12-case benchmark</span>
+          <div class="xl" data-count="92" data-suffix="%">0%</div>
+          <p class="xl-label">
+            agreement with human-expected verdicts across the public 12-case
+            benchmark — every panel converging byte-identically.
+          </p>
         </div>
-        <div class="stat">
-          <div class="stat-n" data-count="92" data-suffix="%">92%</div>
-          <div class="l">agree with human arbitrators</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n" data-count="100" data-suffix="%">100%</div>
-          <div class="l">byte-identical convergence</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n" data-count="6">6</div>
-          <div class="l">protocols on one shared court</div>
-        </div>
-      </div>
-    </div>
-
-    <section id="how">
-      <div class="wrap rv">
-        <div class="sec-head">
-          <div>
-            <span class="eyebrow">The docket — from claim to settlement</span>
-            <h2>A dispute, decided by an AI jury.</h2>
+        <div class="proof-side rv">
+          <div class="proof-row">
+            <b data-count="100" data-suffix="%">0%</b>
+            <span>byte-identical consensus, 12 of 12 panels</span>
           </div>
-          <a class="more" href="/app/courtroom.html"
-            >See a real case replay <svg class="i"><use href="#i-arrow" /></svg
-          ></a>
-        </div>
-        <p class="sub">
-          A consumer opens a case with evidence. The court convenes a panel of
-          Somnia validator agents that each run the same inference and must
-          converge byte-identically. The verdict is delivered back
-          programmatically.
-        </p>
-        <div class="flow">
-          <div class="node">
-            <div class="step">01</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-folder" /></svg>
-            </div>
-            <h4>Open a case</h4>
-            <p>
-              A contract or agent submits the dispute, evidence, and panel fee.
-            </p>
+          <div class="proof-row">
+            <b data-count="230">0</b>
+            <span>tests passing across 27 suites</span>
           </div>
-          <div class="node">
-            <div class="step">02</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-users" /></svg>
-            </div>
-            <h4>Panel deliberates</h4>
-            <p>5 validator LLM agents each judge the evidence independently.</p>
+          <div class="proof-row">
+            <b data-count="6">0</b>
+            <span>protocols settling on one shared court</span>
           </div>
-          <div class="node">
-            <div class="step">03</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-check2" /></svg>
-            </div>
-            <h4>Byte-identical consensus</h4>
-            <p>
-              The panel must agree on the exact label — trust-minimized
-              judgment.
-            </p>
-          </div>
-          <div class="node">
-            <div class="step">04</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-file" /></svg>
-            </div>
-            <h4>Verdict + receipt</h4>
-            <p>
-              PAYEE / PAYER / graded SPLIT, with an on-chain receipt of the
-              reasoning.
-            </p>
-          </div>
-          <div class="node">
-            <div class="step">05</div>
-            <div class="ic">
-              <svg class="i"><use href="#i-circlecheck" /></svg>
-            </div>
-            <h4>Settled, no human</h4>
-            <p>
-              onVerdict() settles funds. Stake-backed appeals escalate the
-              panel.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section
-      id="trust"
-      style="
-        background: rgba(0, 0, 0, 0.18);
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-      "
-    >
-      <div class="wrap rv">
-        <span class="eyebrow">Why you can trust an AI judge</span>
-        <h2>
-          The hard part isn't convening a panel.<br />It's making the verdict
-          defensible.
-        </h2>
-        <p class="sub">
-          Every one of these is live on Shannon and reproducible on-chain — not
-          a slide.
-        </p>
-        <div class="cards">
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-shield" /></svg>
-            </div>
-            <h3>Manipulation-resistant</h3>
-            <p>
-              Evidence is sanitized, fenced, and marked untrusted, so a party
-              can't inject instructions. Proven live: a panel ignored an
-              embedded "rule for me" and decided on the facts.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> injection gate ·
-              PASS</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-bars" /></svg>
-            </div>
-            <h3>Measurably accurate</h3>
-            <p>
-              On 12 curated disputes, a live panel agreed with the
-              human-expected verdict 11/12 and converged byte-identically every
-              time.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> 92% / 100%</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-link" /></svg>
-            </div>
-            <h3>Grounded in attested facts</h3>
-            <p>
-              Trusted oracles post on-chain facts the court weighs as
-              authoritative — above the parties' claims. Verdicts rest on truth,
-              not assertions.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> attestation
-              registry</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-help" /></svg>
-            </div>
-            <h3>Knows when to abstain</h3>
-            <p>
-              On genuinely insufficient evidence the panel answers UNDECIDABLE
-              and refunds — instead of guessing. Validated live.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> abstention gate ·
-              PASS</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-scroll" /></svg>
-            </div>
-            <h3>Governed like law</h3>
-            <p>
-              The prompt is the court's legal code: versioned, immutable per
-              version, timelock-governed, and cited per case — auditable, not
-              "whatever the deployer typed".
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> prompt
-              governance</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-scale" /></svg>
-            </div>
-            <h3>Graded, not binary</h3>
-            <p>
-              SPLIT 25/50/75 for partial fault — determinism-validated live, so
-              the court can do justice, not just pick a winner.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> graded
-              verdicts</span
+          <div class="proof-row live">
+            <b id="rulings">·</b>
+            <span
+              ><span
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 8px;
+                  justify-content: flex-end;
+                "
+                ><span class="dot-live"></span>rulings on the live precedent
+                ledger</span
+              ></span
             >
           </div>
         </div>
       </div>
     </section>
 
-    <section id="solutions">
-      <div class="wrap rv">
-        <div class="sec-head">
-          <div>
-            <span class="eyebrow"
-              >One court · every dispute-bearing protocol</span
-            >
-            <h2>Built as a primitive.</h2>
-          </div>
-          <a class="more" href="#build"
-            >For developers <svg class="i"><use href="#i-arrow" /></svg
-          ></a>
-        </div>
-        <p class="sub">
-          VerdiktCourt is a reusable AI-jury any contract or agent can call.
-          Integrate in a few lines with
-          <span class="mono">VerdiktConsumerBase</span> — six consumers already
-          share one court.
-        </p>
-        <div class="grid6">
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-handshake" /></svg>
-            </div>
-            <div>
-              <b>Escrow</b
-              ><span>Two-party deals — release, refund, or split.</span>
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-cpu" /></svg>
-            </div>
-            <div>
-              <b>Agent-to-agent</b
-              ><span>Machine-native escrow — no EOA in the loop.</span>
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-umbrella" /></svg>
-            </div>
-            <div>
-              <b>Insurance</b
-              ><span>A pool's subjective claims, arbitrated.</span>
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-trend" /></svg>
-            </div>
-            <div>
-              <b>Prediction markets</b
-              ><span>Resolve a subjective outcome as an oracle.</span>
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-bank" /></svg>
-            </div>
-            <div>
-              <b>DAO grants</b><span>Clawback vs. release on a milestone.</span>
-            </div>
-          </div>
-          <div class="mini">
-            <div class="ic">
-              <svg class="i"><use href="#i-flag" /></svg>
-            </div>
-            <div>
-              <b>Freelance milestones</b
-              ><span>Was the deliverable acceptable?</span>
-            </div>
-          </div>
-        </div>
-        <div class="cta-row" id="build" style="margin-top: 38px">
-          <a
-            class="btn btn-ghost"
-            href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
-            target="_blank"
-            rel="noopener"
-            ><svg class="i"><use href="#i-code" /></svg> Read the SDK</a
-          >
-          <a class="btn btn-ghost" href="/app/explorer.html"
-            ><svg class="i"><use href="#i-search" /></svg> Explore the
-            precedent</a
-          >
+    <!-- ============ PROBLEM ============ -->
+    <section class="block" aria-label="The problem">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">the gap</span>
+          <h2>Smart contracts hold value. They can't judge intent.</h2>
+          <p>
+            Escrows, insurance pools, SLAs, and agent-to-agent commerce all end
+            the same way: a subjective dispute that code alone can't decide.
+            Today that means trusted human arbitrators, multisig committees, or
+            stalemate. Verdikt replaces them with a court that is itself a
+            contract — callable, deterministic, and auditable down to the
+            prompt that decided each case.
+          </p>
         </div>
       </div>
     </section>
 
-    <section class="live">
-      <div class="wrap rv">
-        <span class="eyebrow">Live on Shannon · chain 50312</span>
-        <h2>Not a mockup — deployed and exercised on-chain.</h2>
-        <p class="sub">
-          The premium stack runs model-pinned inference, two-sided evidence,
-          adaptive panels, abstention, and the attestation registry. A real
-          dispute settled where an attested delivery fact overrode a false
-          claim; ServiceSLA then proved abstention versus attested outage
-          refunds.
-        </p>
-        <div class="live-grid">
-          <div class="panel">
-            <h3>Core contracts (premium)</h3>
-            <div class="addr">
-              <span class="k">VerdiktCourt</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xeBbA8b849343150e994BEE34778D4D8D38941eDE"
-                target="_blank"
-                rel="noopener"
-                >0xeBbA…1eDE ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">VerdiktEscrow</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d"
-                target="_blank"
-                rel="noopener"
-                >0x91Aa…099d ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">AttestationRegistry</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1"
-                target="_blank"
-                rel="noopener"
-                >0x9CC2…A5f1 ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">Precedent Registry</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"
-                target="_blank"
-                rel="noopener"
-                >0xd1e9…261E ↗</a
-              >
-            </div>
-            <div class="addr">
-              <span class="k">ServiceSLA</span
-              ><a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9"
-                target="_blank"
-                rel="noopener"
-                >0xfB2b…37c9 ↗</a
-              >
-            </div>
+    <!-- ============ HOW THE COURT WORKS ============ -->
+    <section class="block" id="how" aria-label="How it works">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">the primitive</span>
+          <h2>One call in. One verdict out.</h2>
+          <p>
+            A consumer contract opens a case; the court convenes a panel of
+            Somnia validator LLM agents and only accepts a ruling when every
+            juror returns the same bytes.
+          </p>
+        </div>
+        <div class="flow rv">
+          <div class="step">
+            <span class="n">01 · openCase()</span>
+            <h3>Dispute filed</h3>
+            <p>
+              Both parties' evidence is sanitized, fenced, and combined —
+              attested facts ride above untrusted claims.
+            </p>
           </div>
-          <div
-            class="panel"
-            style="
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            "
-          >
-            <div>
-              <h3>The case-law moat, growing live</h3>
-              <div class="big-stat">
-                <span id="rulings2">—</span>
-                <span class="unit">final rulings recorded</span>
-              </div>
-              <p class="sub" style="font-size: 15px; margin-top: 14px">
-                Every final ruling is an immutable, citable precedent —
-                on-chain, AI-authored case law.
+          <div class="step">
+            <span class="n">02 · panel</span>
+            <h3>Jury convenes</h3>
+            <p>
+              3–5 validator LLM agents are convened on-chain, model pinned per
+              case, under an on-chain versioned prompt.
+            </p>
+          </div>
+          <div class="step">
+            <span class="n">03 · consensus</span>
+            <h3>Byte-identical or nothing</h3>
+            <p>
+              Jurors must converge on the exact same bytes. Divergence means no
+              verdict — never a coin flip.
+            </p>
+          </div>
+          <div class="step verdict">
+            <span class="n">04 · onVerdict()</span>
+            <h3>Funds settle</h3>
+            <p>
+              The verdict — including graded splits — settles through
+              pull-payments. No party can brick the court.
+            </p>
+          </div>
+          <div class="step">
+            <span class="n">05 · record()</span>
+            <h3>Precedent recorded</h3>
+            <p>
+              Every final ruling enters a queryable on-chain ledger, citable as
+              precedent in future cases.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRODUCT FAMILY ============ -->
+    <section class="block" aria-label="Products">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">the platform</span>
+          <h2>Four pieces. One court.</h2>
+        </div>
+        <div class="family rv">
+          <a class="fam-card" href="/how-it-works.html">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 3v18" />
+              <path d="M5 7h14" />
+              <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+              <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+            </svg>
+            <h3>The Court</h3>
+            <p>
+              The arbitration engine: adaptive panels, injection-hardened
+              prompts governed on-chain, appeals with stake-slashing, model
+              pinned per case.
+            </p>
+            <span class="link">How it works</span>
+          </a>
+          <a class="fam-card" href="/developers.html">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M16 18l6-6-6-6" />
+              <path d="M8 6l-6 6 6 6" />
+            </svg>
+            <h3>Consumer SDK</h3>
+            <p>
+              Inherit VerdiktConsumerBase, implement one function, and your
+              contract can route any dispute to the court — in under 50 lines.
+            </p>
+            <span class="link">Quickstart</span>
+          </a>
+          <a class="fam-card" href="/app/caselaw.html">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <h3>Precedent Ledger</h3>
+            <p>
+              An append-only registry of final rulings — queryable by topic,
+              party, or consumer, and citable as case law in new evidence.
+            </p>
+            <span class="link">Browse case law</span>
+          </a>
+          <a class="fam-card" href="/security.html">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            <h3>Attestation Registry</h3>
+            <p>
+              Registered oracles post verified facts that the jury weighs above
+              untrusted party claims — evidence with a signature, not a story.
+            </p>
+            <span class="link">Trust model</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DETERMINISM / PROOF FEATURE ============ -->
+    <section class="block" aria-label="Why the verdict holds">
+      <div class="wrap det">
+        <div class="rv">
+          <span class="eyebrow">why the verdict holds</span>
+          <h2 style="font-size: clamp(30px, 3.6vw, 44px); letter-spacing: -0.025em; line-height: 1.1; margin: 14px 0 16px">
+            A verdict you can re-run.
+          </h2>
+          <p style="color: var(--muted); font-size: 16.5px; margin: 0 0 8px">
+            Every claim below is reproducible against the live chain — the
+            gates were run on real panels, and the results are recorded in the
+            repo's deployment manifest.
+          </p>
+          <div class="det-claims">
+            <div class="det-claim">
+              <h3>Injection-resistant by construction</h3>
+              <p>
+                Evidence is sanitized and fenced; a live red-team probe with an
+                embedded "rule PAYEE" injection ruled against the injector,
+                5/5.
               </p>
             </div>
-            <div class="cta-row">
-              <a class="btn btn-primary" href="/app/courtroom.html"
-                ><svg class="i"><use href="#i-play" /></svg> Open the
-                courtroom</a
-              >
-              <a class="btn btn-ghost" href="/app/explorer.html"
-                >Browse precedent</a
-              >
+            <div class="det-claim">
+              <h3>The law is on-chain</h3>
+              <p>
+                The court's prompts are versioned, append-only state — every
+                case snapshots the prompt version that decided it.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>The model is pinned</h3>
+              <p>
+                Each case records the exact inference agent that judged it.
+                Appeals re-run on the same model — verdicts are auditable
+                against both law and judge.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>Abstention over guesswork</h3>
+              <p>
+                When evidence is genuinely insufficient, the court can return
+                UNDECIDABLE and settle to the safe default instead of
+                inventing a winner.
+              </p>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="wrap rv" style="max-width: 820px">
-        <span class="eyebrow">FAQ</span>
-        <h2>Questions.</h2>
-        <div style="margin-top: 28px">
-          <details open>
-            <summary>Why an AI jury instead of a human one?</summary>
-            <p>
-              Human arbitration is slow and expensive; a single off-chain bot
-              can't be trusted. Somnia's validators each run the inference and
-              reach consensus on a byte-identical result — making AI judgment
-              trust-minimized, fast, and on-chain. Verdikt measures 92%
-              agreement with human verdicts.
-            </p>
-          </details>
-          <details>
-            <summary>What stops a party from gaming the prompt?</summary>
-            <p>
-              Evidence is sanitized (angle brackets stripped) and wrapped in a
-              fenced block the system prompt marks as untrusted, so a party
-              can't break out and inject instructions. We proved it live: a
-              panel ignored an embedded "output PAYEE" and ruled on the facts.
-            </p>
-          </details>
-          <details>
-            <summary>What if the evidence is genuinely unclear?</summary>
-            <p>
-              The panel can answer UNDECIDABLE and refund the depositor, rather
-              than guess. Trusted on-chain attestors can also post verified
-              facts the court weighs above the parties' claims.
-            </p>
-          </details>
-          <details>
-            <summary>Can other protocols build on it?</summary>
-            <p>
-              Yes — VerdiktCourt is a reusable primitive. Inherit
-              <span class="mono">VerdiktConsumerBase</span> and a protocol
-              integrates the jury in a few lines; six consumers already share
-              one court, and a staked marketplace lets operators run competing
-              courts.
-            </p>
-          </details>
+        <div class="bench rv" aria-label="Benchmark results">
+          <div class="bench-head">
+            <span class="eyebrow" style="color: var(--muted)"
+              >12-case public benchmark</span
+            >
+            <span class="mono" style="font-size: 12px; color: var(--faint)"
+              >live panels · Shannon</span
+            >
+          </div>
+          <div class="bench-rows">
+            <div class="bench-row">
+              <span class="lab">PAYEE cases</span>
+              <div class="bar"><i data-w="100"></i></div>
+              <span class="val">4/4</span>
+            </div>
+            <div class="bench-row">
+              <span class="lab">PAYER cases</span>
+              <div class="bar"><i data-w="100"></i></div>
+              <span class="val">4/4</span>
+            </div>
+            <div class="bench-row">
+              <span class="lab">SPLIT cases</span>
+              <div class="bar"><i data-w="75"></i></div>
+              <span class="val">3/4</span>
+            </div>
+            <div class="bench-row amber">
+              <span class="lab">Convergence</span>
+              <div class="bar"><i data-w="100"></i></div>
+              <span class="val">12/12</span>
+            </div>
+          </div>
+          <div class="bench-foot">
+            The one miss: a defensible PAYEE on a correct-but-late delivery.
+            Full methodology in
+            <a href="/app/analytics.html">the benchmark report</a>.
+          </div>
         </div>
       </div>
     </section>
 
-    <section style="padding-top: 0">
-      <div class="wrap rv">
-        <div class="band">
-          <h2 style="font-size: 38px">
-            The settlement court for the agent economy.
-          </h2>
-          <p class="sub" style="margin: 16px auto 0">
-            Watch a real dispute get decided on-chain — evidence, verdict, and
-            settlement, no human in the loop.
+    <!-- ============ SOLUTIONS ============ -->
+    <section class="block" id="solutions" aria-label="Solutions">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">solutions</span>
+          <h2>Six protocols already settle here.</h2>
+          <p>
+            Each is a deployed consumer contract routing its disputes to the
+            same shared court — escrow to insurance to autonomous agents.
           </p>
-          <div
-            class="cta-row"
-            style="justify-content: center; margin-top: 30px"
+        </div>
+        <div class="sols rv">
+          <a class="sol" href="/solutions.html">
+            <span class="who">commerce</span>
+            <h3>Escrow &amp; marketplaces</h3>
+            <p>
+              Two-sided evidence, graded splits, and pull-payment settlement
+              for buyer-seller disputes.
+            </p>
+          </a>
+          <a class="sol" href="/solutions.html">
+            <span class="who">coverage</span>
+            <h3>Insurance claims</h3>
+            <p>
+              Claims pools where payouts follow the panel's ruling instead of
+              an adjuster's discretion.
+            </p>
+          </a>
+          <a class="sol" href="/solutions.html">
+            <span class="who">services</span>
+            <h3>SLA enforcement</h3>
+            <p>
+              Service-level breaches judged on attested uptime facts — refunds
+              execute themselves.
+            </p>
+          </a>
+          <a class="sol" href="/solutions.html">
+            <span class="who">markets</span>
+            <h3>Prediction markets</h3>
+            <p>
+              Subjective outcomes resolved by jury — judgment as an oracle for
+              markets code can't score.
+            </p>
+          </a>
+          <a class="sol" href="/solutions.html">
+            <span class="who">funding</span>
+            <h3>Grants &amp; milestones</h3>
+            <p>
+              DAO grant clawbacks and freelance milestones released or
+              recovered by verdict.
+            </p>
+          </a>
+          <a class="sol" href="/solutions.html">
+            <span class="who">agent economy</span>
+            <h3>Agent-to-agent settlement</h3>
+            <p>
+              Autonomous agents can transact but can't sue. Verdikt is the
+              court where machines resolve their disputes.
+            </p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIVE APP ============ -->
+    <section class="block" aria-label="Live app">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow"
+            ><span
+              style="display: inline-flex; align-items: center; gap: 8px"
+              ><span class="dot-live"></span>live on shannon testnet</span
+            ></span
           >
-            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"
-              ><svg class="i"><use href="#i-play" /></svg> Watch the
-              courtroom</a
-            >
-            <a class="btn btn-ghost btn-lg" href="/app/">Launch the demo</a>
+          <h2>Watch the court work. Right now.</h2>
+          <p>
+            Every page below reads the live chain — real cases, real verdicts,
+            real settlements. Nothing is mocked.
+          </p>
+        </div>
+        <div class="apps rv">
+          <a class="app-card feature" href="/app/arena.html">
+            <span class="k">agent arena</span>
+            <h3>Two autonomous agents. One dispute. Zero humans.</h3>
+            <p>
+              Watch a buyer agent and a seller agent escrow funds, clash, and
+              get judged by a live AI jury — end to end on-chain.
+            </p>
+            <span class="open">Enter the arena</span>
+          </a>
+          <a class="app-card" href="/app/courtroom.html">
+            <span class="k">courtroom</span>
+            <h3>Replay any case</h3>
+            <p>
+              Evidence, attested facts, the governing prompt, the panel, the
+              verdict — as a timeline.
+            </p>
+            <span class="open">Open</span>
+          </a>
+          <a class="app-card" href="/app/explorer.html">
+            <span class="k">explorer</span>
+            <h3>Precedent &amp; reputation</h3>
+            <p>
+              Search rulings by topic and look up any party's on-chain
+              win-loss record.
+            </p>
+            <span class="open">Open</span>
+          </a>
+          <a class="app-card" href="/app/caselaw.html">
+            <span class="k">case law</span>
+            <h3>The full ledger</h3>
+            <p>
+              Every final ruling on record, newest first, with graded splits
+              and receipts.
+            </p>
+            <span class="open">Open</span>
+          </a>
+          <a class="app-card" href="/app/analytics.html">
+            <span class="k">analytics</span>
+            <h3>The benchmark</h3>
+            <p>
+              The 12-case accuracy and determinism results, case by case,
+              divergences flagged.
+            </p>
+            <span class="open">Open</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEVELOPERS ============ -->
+    <section class="block" id="build" aria-label="Developers">
+      <div class="wrap dev">
+        <div class="rv">
+          <span class="eyebrow">developers</span>
+          <h2 style="font-size: clamp(30px, 3.6vw, 44px); letter-spacing: -0.025em; line-height: 1.1; margin: 14px 0 16px">
+            Inherit the base. Implement one function.
+          </h2>
+          <p style="color: var(--muted); font-size: 16.5px; margin: 0">
+            SimpleEscrow is the complete reference consumer — a working
+            two-party escrow on the AI jury in under 50 lines. Your contract
+            only decides what a verdict means for its own funds.
+          </p>
+          <div class="dev-points">
+            <div class="dev-point">
+              <b>&lt;50 lines</b>
+              <span>for a complete escrow integration</span>
+            </div>
+            <div class="dev-point">
+              <b>1 function</b>
+              <span>to implement: <span class="mono">_settle(ref, verdict)</span></span>
+            </div>
+            <div class="dev-point">
+              <b>0 EOAs required</b>
+              <span>contracts and agents are first-class parties</span>
+            </div>
           </div>
+          <div class="hero-ctas">
+            <a class="btn btn-primary" href="/developers.html">Quickstart</a>
+            <a
+              class="btn btn-ghost"
+              href="https://github.com/Ridwannurudeen/verdikt"
+              target="_blank"
+              rel="noopener"
+              >View source</a
+            >
+          </div>
+        </div>
+        <div class="code rv">
+          <div class="code-head">
+            <span>src/examples/SimpleEscrow.sol</span>
+            <span>solidity ^0.8.20</span>
+          </div>
+          <pre><span class="kw">contract</span> SimpleEscrow <span class="kw">is</span> <span class="fn">VerdiktConsumerBase</span> {
+
+  <span class="kw">function</span> <span class="fn">dispute</span>(uint256 id, <span class="kw">string calldata</span> evidence)
+    <span class="kw">external payable</span>
+  {
+    Deal <span class="kw">storage</span> d = deals[id];
+    <span class="kw">require</span>(msg.sender == d.payer || msg.sender == d.payee);
+    _openDispute(id, evidence, msg.sender);  <span class="cm">// → the court</span>
+  }
+
+  <span class="cm">// the only function you implement: what a verdict means</span>
+  <span class="kw">function</span> <span class="fn">_settle</span>(uint256 ref, Verdict verdict)
+    <span class="kw">internal override</span>
+  {
+    Deal <span class="kw">storage</span> d = deals[ref];
+    d.settled = <span class="kw">true</span>;
+    uint256 toPayee =
+      (d.amount * <span class="fn">_payeeShareBps</span>(ref, verdict)) / 10000;
+    pending[d.payee] += toPayee;
+    pending[d.payer] += d.amount - toPayee;
+  }
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTRACTS ============ -->
+    <section class="block" id="contracts" aria-label="Live contracts">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">live deployment · somnia shannon</span>
+          <h2>Verify everything.</h2>
+          <p>
+            The full stack is live on testnet. Click through — every claim on
+            this page is checkable against these contracts.
+          </p>
+        </div>
+        <div class="contracts rv">
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0xeBbA8b849343150e994BEE34778D4D8D38941eDE"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktCourt</span>
+            <span class="addr">0xeBbA8b849343150e994BEE34778D4D8D38941eDE</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktEscrow</span>
+            <span class="addr">0x91AaCFDF78D32Fa213408e7e5a187Af697fB099d</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0xd1e91c0167a3F5a5aC0F61f86E3883921610261E"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktRegistry</span>
+            <span class="addr">0xd1e91c0167a3F5a5aC0F61f86E3883921610261E</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">VerdiktAttestationRegistry</span>
+            <span class="addr">0x9CC2FB982D1a3ED67b827B51Efa7AA43ad3DA5f1</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+          <a
+            class="ct-row"
+            href="https://shannon-explorer.somnia.network/address/0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="name">ServiceSLA</span>
+            <span class="addr">0xfB2bE585c0776547Ed2e0626F657e9a4AF9e37c9</span>
+            <span class="view">Explorer ↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA ============ -->
+    <section class="fin" aria-label="Get started">
+      <div class="wrap">
+        <span class="eyebrow">verdikt</span>
+        <h2>Give your protocol a court.</h2>
+        <p>
+          Settle the disputes your code can't — with a verdict that is
+          deterministic, auditable, and final.
+        </p>
+        <div class="hero-ctas" style="margin-top: 30px">
+          <a class="btn btn-primary btn-lg" href="/developers.html"
+            >Integrate the Court</a
+          >
+          <a class="btn btn-ghost btn-lg" href="/app/arena.html"
+            >Watch it judge live</a
+          >
         </div>
       </div>
     </section>
 
     <footer>
-      <div class="wrap foot-row">
-        <span class="brand"
-          ><span class="seal" style="width: 26px; height: 26px"
-            ><svg class="i" style="width: 15px; height: 15px">
-              <use href="#i-scale" /></svg
-          ></span>
-          <span class="brand-name" style="font-size: 16px">Verdikt</span></span
-        >
-        <div class="foot-links">
-          <a href="/app/">Demo</a>
-          <a href="/app/arena.html">Arena</a>
-          <a href="/app/courtroom.html">Courtroom</a>
-          <a href="/app/explorer.html">Explorer</a>
-          <a href="/app/analytics.html">Analytics</a>
-          <a href="/deck.html">Deck</a>
-          <a
-            href="https://github.com/Ridwannurudeen/verdikt"
-            target="_blank"
-            rel="noopener"
-            >GitHub</a
-          >
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-col foot-brand">
+            <a class="brand" href="/">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3v18" />
+                <path d="M5 7h14" />
+                <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+                <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+                <path d="M9 21h6" />
+              </svg>
+              VERDIKT
+            </a>
+            <p>
+              The on-chain AI court for the agent economy. Deterministic
+              verdicts, settled on-chain, recorded as precedent.
+            </p>
+          </div>
+          <div class="foot-col">
+            <h4>Protocol</h4>
+            <a href="/how-it-works.html">How it works</a>
+            <a href="/security.html">Security</a>
+            <a href="/app/analytics.html">Benchmark</a>
+            <a href="/app/caselaw.html">Precedent ledger</a>
+          </div>
+          <div class="foot-col">
+            <h4>Solutions</h4>
+            <a href="/solutions.html">Escrow &amp; marketplaces</a>
+            <a href="/solutions.html">Insurance claims</a>
+            <a href="/solutions.html">SLA enforcement</a>
+            <a href="/solutions.html">Agent-to-agent</a>
+          </div>
+          <div class="foot-col">
+            <h4>Developers</h4>
+            <a href="/developers.html">Quickstart</a>
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
+              target="_blank"
+              rel="noopener"
+              >SDK reference</a
+            >
+            <a href="#contracts">Contracts</a>
+          </div>
+          <div class="foot-col">
+            <h4>Live app</h4>
+            <a href="/app/arena.html">Agent Arena</a>
+            <a href="/app/">Escrow demo</a>
+            <a href="/app/courtroom.html">Courtroom</a>
+            <a href="/app/explorer.html">Explorer</a>
+            <a href="/app/analytics.html">Analytics</a>
+          </div>
         </div>
-        <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
+        <div class="foot-bottom">
+          <span class="status"
+            ><span class="dot-live"></span>Somnia Shannon testnet ·
+            operational</span
+          >
+          <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
+        </div>
       </div>
     </footer>
 
@@ -1715,6 +1949,21 @@
         { threshold: 0.12 },
       );
       document.querySelectorAll(".rv").forEach((el) => io.observe(el));
+
+      // benchmark bars animate on reveal
+      const bo = new IntersectionObserver(
+        (es) =>
+          es.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target
+                .querySelectorAll("[data-w]")
+                .forEach((i) => (i.style.width = i.dataset.w + "%"));
+              bo.unobserve(e.target);
+            }
+          }),
+        { threshold: 0.4 },
+      );
+      document.querySelectorAll(".bench").forEach((el) => bo.observe(el));
 
       function countUp(el, to, suffix) {
         const dur = 1100,
@@ -1748,8 +1997,9 @@
 
       // live ruling count from the premium registry (real on-chain data)
       try {
-        const { createPublicClient, http } =
-          await import("https://esm.sh/viem@2.21.0?bundle");
+        const { createPublicClient, http } = await import(
+          "https://esm.sh/viem@2.21.0?bundle"
+        );
         const client = createPublicClient({
           transport: http("https://api.infra.testnet.somnia.network/"),
         });
@@ -1768,17 +2018,11 @@
         });
         const v = Number(n);
         const a = document.getElementById("rulings");
-        if (a) {
-          a.removeAttribute("data-count");
-          countUp(a, v, "");
-        }
-        const b = document.getElementById("rulings2");
-        if (b) b.textContent = v;
+        if (a) countUp(a, v, "");
       } catch (e) {
+        // last verified on-chain value (2026-06-10); shown only if the RPC read fails
         const a = document.getElementById("rulings");
-        if (a) a.textContent = "1";
-        const b = document.getElementById("rulings2");
-        if (b) b.textContent = "1";
+        if (a) a.textContent = "5";
       }
     </script>
   </body>
