@@ -3,50 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verdikt Security — why an AI verdict is defensible</title>
+    <title>Verdikt — Security &amp; trust model</title>
     <meta
       name="description"
-      content="Why a Verdikt AI verdict is defensible: a live injection gate the panel passed, 92% agreement with human arbitrators at 100% byte-identical consensus, attested facts, abstention, governed prompts, 227/227 tests, and an internal audit with 20 findings all fixed. Live on Somnia Shannon — every claim reproducible on-chain."
+      content="Verdikt's security posture, stated plainly: 0 successful prompt injections across a live red-team gate, 5 live gates all PASS, 230/230 tests, a 20-finding internal review — and no external audit yet. Unaudited testnet code on Somnia Shannon."
     />
-    <meta name="author" content="Verdikt" />
-    <link rel="canonical" href="https://verdikt.gudman.xyz/security.html" />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content="https://verdikt.gudman.xyz/security.html"
-    />
-    <meta
-      property="og:title"
-      content="Verdikt Security — why an AI verdict is defensible"
-    />
+    <meta property="og:title" content="Verdikt — Security &amp; trust model" />
     <meta
       property="og:description"
-      content="A live injection gate, 92%/100% measured accuracy, attested facts, abstention, governed prompts, 227/227 tests and 20 audit findings all fixed — every claim reproducible on Somnia Shannon."
+      content="0 successful prompt injections in a live red-team gate, 5 live gates all PASS, 230/230 tests, a 20-finding internal review — and no external audit yet. Honest by design."
     />
-    <meta property="og:site_name" content="Verdikt" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Verdikt Security — why an AI verdict is defensible"
-    />
-    <meta
-      name="twitter:description"
-      content="A live injection gate, 92%/100% measured accuracy, attested facts, abstention, governed prompts, 227/227 tests and 20 audit findings all fixed — live on Shannon."
-    />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://verdikt.gudman.xyz/security.html" />
+    <link rel="canonical" href="https://verdikt.gudman.xyz/security.html" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800"
     />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
       rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
     />
     <script type="application/ld+json">
       {
@@ -60,23 +42,21 @@
       }
     </script>
     <style>
-      /* ============ THE BENCH — design tokens ============ */
+      /* ============ MARBLE & INK — design tokens ============ */
       :root {
-        --ink: #0b0d10; /* warm near-black base */
-        --ink-2: #10151b; /* raised surface */
-        --ink-3: #151b23; /* card */
-        --ink-4: #1b232d; /* hover / inset */
-        --ivory: #f2f5f7; /* primary text */
-        --ivory-dim: #aeb8c2; /* secondary text */
-        --dim: #737f8c; /* tertiary / labels */
-        --oxblood: #222a35; /* neutral fill alias */
-        --oxblood-ink: #aeb8c2; /* muted label alias */
-        --gold: #c7a45a; /* primary brass accent */
-        --gold-ink: #d8c48a; /* readable accent text */
-        --green: #9aa6b2; /* neutral status tone */
-        --border: rgba(242, 245, 247, 0.1);
-        --border-2: rgba(242, 245, 247, 0.2);
-        --seal: #c7a45a;
+        --bg: #0a0b0d;
+        --bg-2: #0e0f12;
+        --surface: #121316;
+        --surface-2: #17181c;
+        --border: rgba(233, 229, 220, 0.08);
+        --border-2: rgba(233, 229, 220, 0.16);
+        --ink: #e9e5dc;
+        --muted: #9b988f;
+        --faint: #6b6962;
+        --amber: #e8b931;
+        --amber-ink: #f0cd66;
+        --amber-dim: rgba(232, 185, 49, 0.12);
+        --live: #4ade80;
         color-scheme: dark;
       }
       * {
@@ -87,29 +67,22 @@
       }
       body {
         margin: 0;
-        background: var(--ink);
-        color: var(--ivory);
-        font-family:
-          "Switzer",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Switzer", system-ui, -apple-system, sans-serif;
         font-size: 16px;
-        line-height: 1.62;
+        line-height: 1.6;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         position: relative;
       }
-      /* editorial serif reserved for display; grotesque for everything else */
       h1,
       h2,
       h3,
-      .display,
-      .brand-name,
-      .stat-n,
-      .big-stat {
-        font-family: "Zodiak", Georgia, serif;
-        font-weight: 700;
+      .display {
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
+        font-weight: 800;
+        margin: 0;
       }
       a {
         color: inherit;
@@ -118,845 +91,218 @@
       .mono {
         font-family: "JetBrains Mono", ui-monospace, monospace;
         font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
       }
       .wrap {
-        max-width: 1140px;
+        max-width: 1180px;
         margin: 0 auto;
         padding: 0 24px;
-      }
-      svg.i {
-        width: 1em;
-        height: 1em;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        display: block;
       }
       :focus-visible {
         outline: none;
         box-shadow:
-          0 0 0 2px var(--ink),
-          0 0 0 4px var(--gold);
+          0 0 0 2px var(--bg),
+          0 0 0 3.5px var(--amber);
         border-radius: 6px;
+        transition: box-shadow 120ms ease-out;
       }
       ::selection {
-        background: rgba(199, 164, 90, 0.28);
+        background: var(--amber-dim);
       }
 
-      /* one restrained signature light source — not a dot-grid/glow cliché */
-      body::before {
-        content: "";
-        position: fixed;
+      /* atmosphere: one warm radial, nothing else */
+      .aura {
+        position: absolute;
         inset: 0;
-        z-index: -1;
         pointer-events: none;
-        background:
-          linear-gradient(
-            180deg,
-            rgba(242, 245, 247, 0.035),
-            transparent 260px
-          ),
-          linear-gradient(
-            90deg,
-            rgba(242, 245, 247, 0.035) 1px,
-            transparent 1px
-          ),
-          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
-        background-size:
-          auto,
-          48px 48px,
-          48px 48px;
-        opacity: 0.72;
+        z-index: 0;
+        background: radial-gradient(
+          ellipse 70% 45% at 30% 0%,
+          rgba(233, 229, 220, 0.045),
+          transparent 70%
+        );
       }
 
-      /* ---- nav ---- */
+      /* ============ nav ============ */
       nav {
         position: sticky;
         top: 0;
-        z-index: 60;
+        z-index: 50;
+        background: rgba(10, 11, 13, 0.82);
         backdrop-filter: blur(14px);
-        background: rgba(11, 13, 16, 0.72);
+        -webkit-backdrop-filter: blur(14px);
         border-bottom: 1px solid var(--border);
       }
       .nav-in {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        height: 68px;
-        gap: 18px;
+        gap: 28px;
+        height: 64px;
       }
       .brand {
         display: flex;
         align-items: center;
-        gap: 11px;
-      }
-      .brand .seal {
-        width: 32px;
-        height: 32px;
-        border-radius: 9px;
-        background: var(--ink-3);
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-        box-shadow: inset 0 0 0 1px rgba(199, 164, 90, 0.12);
-      }
-      .brand .seal svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .brand-name {
-        font-size: 20px;
-        letter-spacing: -0.01em;
+        gap: 10px;
+        font-family: "Cabinet Grotesk", sans-serif;
         font-weight: 800;
+        font-size: 19px;
+        letter-spacing: 0.01em;
+      }
+      .brand svg {
+        flex: none;
       }
       .nav-links {
         display: flex;
-        gap: 26px;
-        align-items: center;
-      }
-      .nav-links a {
-        color: var(--ivory-dim);
+        gap: 24px;
+        margin-left: 12px;
         font-size: 14.5px;
+        color: var(--muted);
         font-weight: 500;
-        transition: color 0.15s;
       }
       .nav-links a:hover {
-        color: var(--ivory);
+        color: var(--ink);
       }
-      .nav-links a.active {
-        color: var(--ivory);
+      .nav-links a[aria-current="page"] {
+        color: var(--ink);
       }
-      @media (max-width: 920px) {
-        .nav-links .hide-sm {
+      .nav-cta {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      @media (max-width: 900px) {
+        .nav-links {
           display: none;
         }
       }
 
+      /* ============ buttons ============ */
       .btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 600;
-        font-size: 14.5px;
+        height: 42px;
+        padding: 0 20px;
         border-radius: 8px;
-        padding: 10px 17px;
+        font-size: 14.5px;
+        font-weight: 600;
         border: 1px solid transparent;
-        cursor: pointer;
         transition:
-          transform 0.16s ease,
-          background 0.16s ease,
-          border-color 0.16s ease,
-          box-shadow 0.16s ease;
-      }
-      .btn svg.i {
-        width: 16px;
-        height: 16px;
+          transform 140ms ease,
+          box-shadow 140ms ease,
+          background 140ms ease,
+          border-color 140ms ease;
+        cursor: pointer;
       }
       .btn-primary {
-        background: #c7a45a;
-        color: #0b0d10;
-        font-weight: 700;
-        box-shadow: none;
+        background: var(--ink);
+        color: #101113;
       }
       .btn-primary:hover {
         transform: translateY(-1px);
-        box-shadow: none;
+        box-shadow: 0 6px 20px rgba(233, 229, 220, 0.14);
       }
       .btn-ghost {
-        background: transparent;
+        background: rgba(233, 229, 220, 0.03);
         border-color: var(--border-2);
-        color: var(--ivory);
+        color: var(--ink);
       }
       .btn-ghost:hover {
-        background: rgba(242, 245, 247, 0.05);
-        border-color: rgba(242, 245, 247, 0.32);
+        border-color: rgba(233, 229, 220, 0.3);
+        background: rgba(233, 229, 220, 0.06);
       }
       .btn-lg {
-        padding: 14px 24px;
+        height: 48px;
+        padding: 0 26px;
         font-size: 15.5px;
-        border-radius: 9px;
       }
 
+      /* ============ shared atoms ============ */
+      .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+      }
+      .eyebrow b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .lede {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.65;
+        max-width: 56ch;
+      }
+      .dot-live {
+        position: relative;
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--live);
+        flex: none;
+      }
+      .dot-live::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 999px;
+        border: 1px solid var(--live);
+        opacity: 0.6;
+        animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+      @keyframes ping {
+        0% {
+          transform: scale(0.6);
+          opacity: 0.7;
+        }
+        80%,
+        100% {
+          transform: scale(1.9);
+          opacity: 0;
+        }
+      }
+      .vpill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .vpill.payee {
+        background: var(--amber);
+        color: #161203;
+      }
+      .vpill.payer {
+        border: 1px solid var(--border-2);
+        color: var(--ink);
+      }
+      .vpill.und {
+        border: 1px solid var(--border);
+        color: var(--faint);
+      }
+
+      /* reveal */
       .rv {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(14px);
         transition:
-          opacity 0.6s ease,
-          transform 0.6s ease;
+          opacity 600ms ease,
+          transform 600ms ease;
       }
       .rv.in {
         opacity: 1;
         transform: none;
-      }
-
-      /* ---- hero ---- */
-      .hero {
-        position: relative;
-        padding: 96px 0 78px;
-      }
-      .hero-grid {
-        display: grid;
-        grid-template-columns: 1.08fr 0.92fr;
-        gap: 56px;
-        align-items: center;
-      }
-      @media (max-width: 960px) {
-        .hero-grid {
-          grid-template-columns: 1fr;
-          gap: 46px;
-        }
-      }
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.1);
-        border: 1px solid rgba(199, 164, 90, 0.3);
-        padding: 6px 13px;
-        border-radius: 100px;
-      }
-      .dot-live {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green);
-        animation: none;
-      }
-      @keyframes pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0.6);
-        }
-        70% {
-          box-shadow: 0 0 0 7px rgba(154, 166, 178, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(154, 166, 178, 0);
-        }
-      }
-      .kicker {
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--oxblood-ink);
-        margin: 20px 0 0;
-        font-family: "Switzer", sans-serif;
-      }
-      h1 {
-        font-size: 70px;
-        line-height: 1.02;
-        letter-spacing: -0.02em;
-        font-weight: 800;
-        margin: 14px 0 0;
-        text-wrap: balance;
-      }
-      @media (max-width: 960px) {
-        h1 {
-          font-size: 52px;
-        }
-      }
-      @media (max-width: 480px) {
-        h1 {
-          font-size: 38px;
-        }
-      }
-      /* subtle emphasis without decorative gradients */
-      .seal-word {
-        position: relative;
-        white-space: normal;
-        color: inherit;
-      }
-      .seal-word::after {
-        display: none;
-      }
-      .lede {
-        font-size: 18.5px;
-        color: var(--ivory-dim);
-        margin: 24px 0 0;
-        max-width: 540px;
-      }
-      .cta-row {
-        display: flex;
-        gap: 13px;
-        margin-top: 32px;
-        flex-wrap: wrap;
-      }
-      .hero-meta {
-        margin-top: 28px;
-        display: flex;
-        gap: 26px;
-        flex-wrap: wrap;
-      }
-      .hero-meta .m {
-        font-size: 13px;
-        color: var(--dim);
-      }
-      .hero-meta .m b {
-        display: block;
-        font-family: "Zodiak", serif;
-        font-size: 25px;
-        color: var(--ivory);
-        font-weight: 700;
-        letter-spacing: -0.01em;
-      }
-
-      /* ---- the docket card (signature motif) ---- */
-      .docket {
-        position: relative;
-        background: var(--ink-2);
-        border: 1px solid var(--border-2);
-        border-radius: 12px;
-        padding: 22px;
-        box-shadow: 0 40px 80px -50px #000;
-      }
-      .docket .hd {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 11px;
-        color: var(--dim);
-        text-transform: uppercase;
-        letter-spacing: 0.13em;
-        font-weight: 700;
-      }
-      .docket .hd .no {
-        color: var(--gold-ink);
-      }
-      .case-card {
-        margin-top: 13px;
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px;
-      }
-      .case-card .q {
-        font-weight: 600;
-        font-size: 14.5px;
-      }
-      .case-card .ev {
-        color: var(--ivory-dim);
-        font-size: 12.5px;
-        margin-top: 8px;
-        display: flex;
-        gap: 8px;
-        align-items: flex-start;
-      }
-      .case-card .ev svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--green);
-        flex: 0 0 auto;
-        margin-top: 3px;
-      }
-      .jurors {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-        margin: 15px 0;
-      }
-      .juror {
-        background: var(--ink-3);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 11px 4px 9px;
-        text-align: center;
-        animation: none;
-      }
-      .juror:nth-child(2) {
-        animation-delay: 0.07s;
-      }
-      .juror:nth-child(3) {
-        animation-delay: 0.14s;
-      }
-      .juror:nth-child(4) {
-        animation-delay: 0.21s;
-      }
-      .juror:nth-child(5) {
-        animation-delay: 0.28s;
-      }
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-      }
-      .juror .av {
-        width: 25px;
-        height: 25px;
-        margin: 0 auto;
-        border-radius: 7px;
-        background: var(--ink-4);
-        border: 1px solid rgba(199, 164, 90, 0.32);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-      }
-      .juror .av svg.i {
-        width: 13px;
-        height: 13px;
-      }
-      .juror .v {
-        display: inline-block;
-        margin-top: 8px;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.12);
-        border: 1px solid rgba(199, 164, 90, 0.3);
-        border-radius: 100px;
-        padding: 2px 6px;
-      }
-      .consensus {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        background: rgba(199, 164, 90, 0.08);
-        border: 1px solid rgba(199, 164, 90, 0.28);
-        border-radius: 10px;
-        padding: 12px 15px;
-      }
-      .consensus .lbl {
-        font-size: 11.5px;
-        color: var(--ivory-dim);
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-      .consensus .lbl svg.i {
-        width: 14px;
-        height: 14px;
-        color: var(--gold-ink);
-      }
-      .verdict-pill {
-        display: inline-flex;
-        align-items: center;
-        font-weight: 800;
-        font-size: 12px;
-        letter-spacing: 0.02em;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.14);
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        border-radius: 100px;
-        padding: 4px 11px;
-      }
-      .settle {
-        margin-top: 13px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--green);
-        font-size: 12.5px;
-        font-weight: 600;
-      }
-      .settle svg.i {
-        width: 15px;
-        height: 15px;
-      }
-
-      /* ---- proof strip ---- */
-      .proof {
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.18);
-      }
-      .proof-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-      }
-      @media (max-width: 760px) {
-        .proof-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .stat:nth-child(2) {
-          border-right: 0;
-        }
-      }
-      .stat {
-        padding: 34px 24px;
-        border-right: 1px solid var(--border);
-      }
-      .stat:last-child {
-        border-right: 0;
-      }
-      .stat-n {
-        font-size: clamp(34px, 4vw, 44px);
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        font-variant-numeric: tabular-nums;
-      }
-      .stat-n.gold {
-        color: var(--ivory);
-      }
-      .stat .l {
-        color: var(--ivory-dim);
-        font-size: 13.5px;
-        margin-top: 5px;
-      }
-
-      /* ---- sections ---- */
-      section {
-        position: relative;
-        padding: 96px 0;
-      }
-      .eyebrow {
-        color: var(--oxblood-ink);
-        font-weight: 700;
-        font-size: 12.5px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        font-family: "Switzer", sans-serif;
-      }
-      h2 {
-        font-size: 44px;
-        line-height: 1.08;
-        letter-spacing: -0.02em;
-        margin: 14px 0 0;
-        text-wrap: balance;
-      }
-      @media (max-width: 480px) {
-        h2 {
-          font-size: 32px;
-        }
-      }
-      .sub {
-        color: var(--ivory-dim);
-        font-size: 17.5px;
-        margin: 16px 0 0;
-        max-width: 660px;
-      }
-      .sec-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 24px;
-        flex-wrap: wrap;
-      }
-      .sec-head .more {
-        color: var(--gold-ink);
-        font-weight: 600;
-        font-size: 14.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        white-space: nowrap;
-      }
-      .sec-head .more svg.i {
-        width: 16px;
-        height: 16px;
-      }
-
-      /* docket flow (how it works) */
-      .flow {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0;
-        margin-top: 50px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        overflow: hidden;
-        background: var(--ink-2);
-      }
-      @media (max-width: 880px) {
-        .flow {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-      .node {
-        padding: 24px 20px;
-        border-right: 1px solid var(--border);
-      }
-      .node:last-child {
-        border-right: 0;
-      }
-      @media (max-width: 880px) {
-        .node {
-          border-bottom: 1px solid var(--border);
-        }
-      }
-      .node .step {
-        font-family: "Zodiak", serif;
-        font-size: 13px;
-        color: var(--gold-ink);
-        font-weight: 700;
-        letter-spacing: 0.06em;
-      }
-      .node .ic {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
-        background: var(--ink-4);
-        border: 1px solid var(--border-2);
-        display: grid;
-        place-items: center;
-        color: var(--oxblood-ink);
-        margin-top: 14px;
-      }
-      .node .ic svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .node h4 {
-        margin: 14px 0 6px;
-        font-size: 15.5px;
-        font-weight: 700;
-        font-family: "Switzer", sans-serif;
-      }
-      .node p {
-        color: var(--ivory-dim);
-        font-size: 13px;
-        margin: 0;
-      }
-
-      /* trust cards */
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 50px;
-      }
-      @media (max-width: 880px) {
-        .cards {
-          grid-template-columns: 1fr;
-        }
-      }
-      .card {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-        transition:
-          transform 0.18s,
-          border-color 0.18s;
-      }
-      .card:hover {
-        transform: translateY(-2px);
-        border-color: var(--border-2);
-      }
-      .card .ic {
-        width: 42px;
-        height: 42px;
-        border-radius: 9px;
-        background: rgba(115, 127, 140, 0.16);
-        border: 1px solid rgba(115, 127, 140, 0.4);
-        display: grid;
-        place-items: center;
-        color: var(--oxblood-ink);
-      }
-      .card .ic svg.i {
-        width: 21px;
-        height: 21px;
-      }
-      .card h3 {
-        font-size: 18px;
-        font-weight: 700;
-        margin: 17px 0 8px;
-      }
-      .card p {
-        color: var(--ivory-dim);
-        font-size: 14px;
-        margin: 0;
-      }
-      .tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 15px;
-        font-size: 11.5px;
-        font-weight: 700;
-        color: var(--gold-ink);
-        background: rgba(199, 164, 90, 0.1);
-        border: 1px solid rgba(199, 164, 90, 0.28);
-        border-radius: 100px;
-        padding: 4px 11px;
-      }
-      .tag svg.i {
-        width: 12px;
-        height: 12px;
-      }
-
-      /* solutions */
-      .grid6 {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-        margin-top: 46px;
-      }
-      @media (max-width: 760px) {
-        .grid6 {
-          grid-template-columns: 1fr;
-        }
-      }
-      .mini {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px 20px;
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-        transition: border-color 0.18s;
-      }
-      .mini:hover {
-        border-color: var(--border-2);
-      }
-      .mini .ic {
-        width: 38px;
-        height: 38px;
-        flex: 0 0 auto;
-        border-radius: 8px;
-        background: var(--ink-4);
-        border: 1px solid var(--border-2);
-        display: grid;
-        place-items: center;
-        color: var(--gold-ink);
-      }
-      .mini .ic svg.i {
-        width: 19px;
-        height: 19px;
-      }
-      .mini b {
-        font-weight: 700;
-        font-size: 15px;
-        font-family: "Switzer", sans-serif;
-      }
-      .mini span {
-        display: block;
-        color: var(--ivory-dim);
-        font-size: 13px;
-        margin-top: 3px;
-      }
-
-      /* live */
-      .live {
-        background: rgba(0, 0, 0, 0.18);
-        border-top: 1px solid var(--border);
-      }
-      .live-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin-top: 50px;
-      }
-      @media (max-width: 880px) {
-        .live-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .panel {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-      }
-      .panel h3 {
-        margin: 0 0 16px;
-        font-size: 16px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 700;
-      }
-      .addr {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-        font-size: 13.5px;
-      }
-      .addr:last-child {
-        border-bottom: 0;
-      }
-      .addr .k {
-        color: var(--ivory-dim);
-      }
-      .addr a {
-        color: var(--gold-ink);
-      }
-      .big-stat {
-        font-size: 56px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        line-height: 1;
-        color: var(--gold-ink);
-      }
-      .big-stat .unit {
-        font-size: 16px;
-        color: var(--ivory-dim);
-        font-weight: 500;
-        font-family: "Switzer", sans-serif;
-      }
-
-      /* faq */
-      details {
-        border-bottom: 1px solid var(--border);
-        padding: 18px 0;
-      }
-      summary {
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 16.5px;
-        list-style: none;
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-      }
-      summary::-webkit-details-marker {
-        display: none;
-      }
-      summary::after {
-        content: "+";
-        color: var(--gold-ink);
-        font-size: 22px;
-        line-height: 1;
-      }
-      details[open] summary::after {
-        content: "−";
-      }
-      details p {
-        color: var(--ivory-dim);
-        margin: 12px 0 0;
-        font-size: 15px;
-      }
-
-      /* band + footer */
-      .band {
-        position: relative;
-        border: 1px solid var(--border-2);
-        border-radius: 14px;
-        padding: 64px 28px;
-        text-align: center;
-        overflow: hidden;
-        background: var(--ink-2);
-      }
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 40px 0;
-        color: var(--dim);
-        font-size: 13.5px;
-      }
-      .foot-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .foot-links {
-        display: flex;
-        gap: 22px;
-        flex-wrap: wrap;
-      }
-      .foot-links a:hover {
-        color: var(--ivory);
       }
       @media (prefers-reduced-motion: reduce) {
         *,
@@ -965,941 +311,855 @@
           animation-duration: 0.01ms !important;
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+        .rv {
+          opacity: 1;
+          transform: none;
         }
       }
 
-      /* ---- security page: rigor list + gate table + honesty call-out ---- */
+      /* ============ hero ============ */
+      .hero {
+        position: relative;
+        padding: 96px 0 72px;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.04fr 0.96fr;
+        gap: 56px;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      .hero h1 {
+        font-size: clamp(44px, 6vw, 76px);
+        line-height: 1.01;
+        letter-spacing: -0.035em;
+        margin: 18px 0 22px;
+      }
+      .hero-ctas {
+        display: flex;
+        gap: 12px;
+        margin: 30px 0 0;
+        flex-wrap: wrap;
+      }
+      .hero-meta {
+        display: flex;
+        gap: 28px;
+        margin-top: 36px;
+        flex-wrap: wrap;
+      }
+      .hero-meta .m {
+        font-size: 13.5px;
+        color: var(--faint);
+      }
+      .hero-meta .m b {
+        display: block;
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: 26px;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      @media (max-width: 980px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding-top: 64px;
+        }
+      }
+
+      /* docket card — the live injection probe */
+      .docket {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .docket-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+      }
+      .docket-head .id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .docket-body {
+        padding: 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .evidence {
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 12px 14px;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .evidence .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+        color: var(--faint);
+      }
+      .jurors {
+        display: grid;
+        gap: 6px;
+      }
+      .juror {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .juror .v {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        color: var(--ink);
+        letter-spacing: 0.06em;
+      }
+      .docket-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 18px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* ============ proof band — signature stat ============ */
+      .proof {
+        background: var(--bg-2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 84px 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .proof::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse 40% 60% at 22% 50%,
+          rgba(232, 185, 49, 0.05),
+          transparent 70%
+        );
+      }
+      .proof-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 56px;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      .proof .xl {
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: clamp(84px, 10vw, 132px);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+        color: var(--amber-ink);
+      }
+      .proof .xl-label {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 16px;
+        max-width: 42ch;
+      }
+      .proof-side {
+        display: grid;
+        gap: 0;
+      }
+      .proof-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 0;
+      }
+      .proof-row + .proof-row {
+        border-top: 1px solid var(--border);
+      }
+      .proof-row b {
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: clamp(30px, 3.4vw, 42px);
+        letter-spacing: -0.025em;
+        font-variant-numeric: tabular-nums;
+      }
+      .proof-row span {
+        color: var(--muted);
+        font-size: 14px;
+        text-align: right;
+      }
+      @media (max-width: 900px) {
+        .proof-grid {
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+      }
+
+      /* ============ sections ============ */
+      section.block {
+        padding: 112px 0 0;
+      }
+      .sec-head {
+        max-width: 720px;
+        margin-bottom: 48px;
+      }
+      .sec-head h2 {
+        font-size: clamp(30px, 3.6vw, 44px);
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+        margin: 14px 0 16px;
+      }
+      .sec-head p {
+        color: var(--muted);
+        font-size: 16.5px;
+        margin: 0;
+      }
+
+      /* current status — the honest block */
+      .status {
+        border: 1px solid var(--border-2);
+        border-radius: 12px;
+        background: var(--surface);
+        padding: 40px;
+      }
+      .status h2 {
+        font-size: clamp(28px, 3.2vw, 40px);
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+        margin: 14px 0 16px;
+      }
+      .status > p {
+        color: var(--muted);
+        font-size: 16.5px;
+        margin: 0;
+        max-width: 76ch;
+      }
+      .status-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 32px;
+      }
+      .scol {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px 22px;
+        background: var(--bg-2);
+      }
+      .scol h3 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0 0 10px;
+      }
+      .scol ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .scol li {
+        padding: 8px 0;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .scol li + li {
+        border-top: 1px solid var(--border);
+      }
+      .scol li b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      @media (max-width: 760px) {
+        .status {
+          padding: 28px 22px;
+        }
+        .status-cols {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* hardening feature (asymmetric) */
+      .det {
+        display: grid;
+        grid-template-columns: 0.98fr 1.02fr;
+        gap: 56px;
+        align-items: start;
+      }
+      .det-claims {
+        display: grid;
+        gap: 0;
+      }
+      .det-claim {
+        padding: 20px 0;
+        display: grid;
+        gap: 6px;
+      }
+      .det-claim + .det-claim {
+        border-top: 1px solid var(--border);
+      }
+      .det-claim h3 {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .det-claim p {
+        margin: 0;
+        font-size: 14.5px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .bench {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        position: sticky;
+        top: 88px;
+      }
+      .bench-head {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface-2);
+      }
+      .gate-rows {
+        padding: 4px 20px 8px;
+      }
+      .gate-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px 16px;
+        padding: 14px 0;
+      }
+      .gate-row + .gate-row {
+        border-top: 1px solid var(--border);
+      }
+      .gate-row .g-name {
+        font-weight: 600;
+        font-size: 14.5px;
+      }
+      .gate-row .g-result {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--ink);
+        text-align: right;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+      }
+      .gate-row .g-desc {
+        grid-column: 1;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .gate-row .g-probe {
+        grid-column: 2;
+        text-align: right;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        align-self: end;
+      }
+      .gate-row .g-probe a {
+        color: var(--faint);
+      }
+      .gate-row .g-probe a:hover {
+        color: var(--ink);
+      }
+      .bench-foot {
+        padding: 14px 20px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--faint);
+      }
+      .bench-foot a {
+        color: var(--muted);
+        border-bottom: 1px solid var(--border-2);
+      }
+      @media (max-width: 980px) {
+        .det {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+        .bench {
+          position: static;
+        }
+      }
+
+      /* trusted vs trustless */
+      .trust {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .tcol {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .tcol-head {
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .trow {
+        padding: 18px 22px;
+        display: grid;
+        gap: 5px;
+      }
+      .trow + .trow {
+        border-top: 1px solid var(--border);
+      }
+      .trow h3 {
+        font-size: 15.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .trow p {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .trust-foot {
+        margin-top: 24px;
+        border-left: 2px solid var(--border-2);
+        padding: 4px 0 4px 20px;
+        color: var(--muted);
+        font-size: 15px;
+        max-width: 72ch;
+        line-height: 1.65;
+      }
+      @media (max-width: 880px) {
+        .trust {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* engineering rigor */
       .rigor {
         display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 40px;
-        margin-top: 50px;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
         align-items: start;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .panel-head {
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .panel-head .t {
+        font-weight: 700;
+        font-size: 15.5px;
+        font-family: "Cabinet Grotesk", sans-serif;
+        letter-spacing: -0.01em;
+      }
+      .panel-head .mono {
+        font-size: 12px;
+        color: var(--faint);
+      }
+      .panel-body {
+        padding: 8px 22px 18px;
+      }
+      .prow {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        padding: 12px 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .prow + .prow {
+        border-top: 1px solid var(--border);
+      }
+      .prow .v {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .panel-body .note {
+        margin: 14px 0 4px;
+        font-size: 13px;
+        color: var(--faint);
+        line-height: 1.55;
       }
       @media (max-width: 880px) {
         .rigor {
           grid-template-columns: 1fr;
-          gap: 28px;
         }
       }
-      .checklist {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      .checklist li {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        padding: 13px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      .checklist li:last-child {
-        border-bottom: 0;
-      }
-      .checklist li svg.i {
-        width: 18px;
-        height: 18px;
-        color: var(--green);
-        flex: 0 0 auto;
-        margin-top: 3px;
-      }
-      .checklist li b {
-        font-weight: 700;
-        font-family: "Switzer", sans-serif;
-      }
-      .checklist li span {
-        color: var(--ivory-dim);
-        font-size: 14.5px;
-      }
-      .audit-panel {
-        background: var(--ink-2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 26px;
-      }
-      .audit-panel h3 {
-        margin: 0 0 6px;
-        font-size: 17px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 700;
-      }
-      .audit-panel .findings {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-        margin: 18px 0 0;
-      }
-      .audit-panel .findings .big-stat {
-        font-size: 46px;
-      }
-      .audit-panel ul {
-        margin: 16px 0 0;
-        padding: 0;
-        list-style: none;
-      }
-      .audit-panel ul li {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        padding: 8px 0;
-        color: var(--ivory-dim);
-        font-size: 13.5px;
-      }
-      .audit-panel ul li svg.i {
-        width: 15px;
-        height: 15px;
-        color: var(--gold-ink);
-        flex: 0 0 auto;
-        margin-top: 3px;
-      }
 
-      .gates {
-        margin-top: 50px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
+      /* final CTA */
+      .fin {
+        margin: 128px 0 0;
+        border-top: 1px solid var(--border);
+        background: var(--bg-2);
+        padding: 104px 0;
+        text-align: center;
+        position: relative;
         overflow: hidden;
-        background: var(--ink-2);
       }
-      .gate-row {
-        display: grid;
-        grid-template-columns: 1.5fr 2.2fr 0.7fr 1.1fr;
-        gap: 16px;
-        padding: 18px 22px;
-        border-bottom: 1px solid var(--border);
-        align-items: center;
-        font-size: 14px;
+      .fin h2 {
+        font-size: clamp(34px, 4.4vw, 56px);
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin: 16px 0 14px;
+        position: relative;
       }
-      .gate-row:last-child {
-        border-bottom: 0;
+      .fin p {
+        color: var(--muted);
+        max-width: 52ch;
+        margin: 0 auto;
+        position: relative;
       }
-      .gate-row.head {
-        background: rgba(0, 0, 0, 0.22);
-        font-size: 11.5px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 700;
-        color: var(--dim);
-      }
-      @media (max-width: 760px) {
-        .gate-row {
-          grid-template-columns: 1fr 1fr;
-          gap: 8px 16px;
-        }
-        .gate-row .gc-desc {
-          grid-column: 1 / -1;
-          order: 5;
-          color: var(--ivory-dim);
-        }
-        .gate-row.head {
-          display: none;
-        }
-      }
-      .gate-row .gc-name {
-        font-weight: 700;
-        font-family: "Switzer", sans-serif;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-      }
-      .gate-row .gc-name svg.i {
-        width: 17px;
-        height: 17px;
-        color: var(--oxblood-ink);
-        flex: 0 0 auto;
-      }
-      .gate-row .gc-desc {
-        color: var(--ivory-dim);
-        font-size: 13.5px;
-      }
-      .pass {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 800;
-        font-size: 11.5px;
-        letter-spacing: 0.04em;
-        color: var(--green);
-        background: rgba(154, 166, 178, 0.12);
-        border: 1px solid rgba(154, 166, 178, 0.34);
-        border-radius: 100px;
-        padding: 3px 11px;
-      }
-      .pass svg.i {
-        width: 12px;
-        height: 12px;
-      }
-      .gate-row .gc-probe a {
-        color: var(--gold-ink);
-        font-size: 12.5px;
+      .fin .hero-ctas {
+        justify-content: center;
+        position: relative;
       }
 
-      .honesty {
-        border: 1px solid rgba(115, 127, 140, 0.5);
-        border-radius: 14px;
-        padding: 38px 32px;
-        background: var(--ink-2);
+      /* footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 64px 0 40px;
+        font-size: 14px;
       }
-      .honesty .badge {
+      .foot-grid {
+        display: grid;
+        grid-template-columns: 1.4fr repeat(4, 1fr);
+        gap: 32px;
+      }
+      .foot-col h4 {
+        margin: 0 0 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+      }
+      .foot-col a {
+        display: block;
+        color: var(--muted);
+        padding: 4px 0;
+      }
+      .foot-col a:hover {
+        color: var(--ink);
+      }
+      .foot-brand p {
+        color: var(--faint);
+        font-size: 13.5px;
+        max-width: 30ch;
+        margin: 12px 0 0;
+        line-height: 1.6;
+      }
+      .foot-bottom {
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--faint);
+        font-size: 13px;
+      }
+      .foot-bottom .status-line {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-size: 11.5px;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--oxblood-ink);
-        background: rgba(115, 127, 140, 0.18);
-        border: 1px solid rgba(115, 127, 140, 0.5);
-        border-radius: 100px;
-        padding: 5px 13px;
       }
-      .honesty .badge svg.i {
-        width: 14px;
-        height: 14px;
-      }
-      .honesty h2 {
-        font-size: 34px;
-        margin-top: 16px;
-      }
-      .honesty p {
-        color: var(--ivory-dim);
-        font-size: 16px;
-        margin: 14px 0 0;
-        max-width: 760px;
-      }
-      .honesty .split {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-top: 26px;
-      }
-      @media (max-width: 760px) {
-        .honesty .split {
-          grid-template-columns: 1fr;
+      @media (max-width: 980px) {
+        .foot-grid {
+          grid-template-columns: 1fr 1fr;
         }
-      }
-      .honesty .col {
-        background: rgba(0, 0, 0, 0.26);
-        border: 1px solid var(--border);
-        border-radius: 11px;
-        padding: 20px 22px;
-      }
-      .honesty .col h4 {
-        margin: 0 0 12px;
-        font-size: 14px;
-        font-family: "Switzer", sans-serif;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .honesty .col.done h4 {
-        color: var(--green);
-      }
-      .honesty .col.done h4 svg.i {
-        width: 16px;
-        height: 16px;
-        color: var(--green);
-      }
-      .honesty .col.todo h4 {
-        color: var(--gold-ink);
-      }
-      .honesty .col.todo h4 svg.i {
-        width: 16px;
-        height: 16px;
-        color: var(--gold-ink);
-      }
-      .honesty .col ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-      .honesty .col li {
-        font-size: 13.5px;
-        color: var(--ivory-dim);
-        padding: 6px 0;
-        border-bottom: 1px solid rgba(242, 245, 247, 0.05);
-      }
-      .honesty .col li:last-child {
-        border-bottom: 0;
       }
     </style>
   </head>
   <body>
-    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
-      <defs>
-        <symbol id="i-scale" viewBox="0 0 24 24">
-          <path
-            d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"
-          />
-        </symbol>
-        <symbol id="i-play" viewBox="0 0 24 24">
-          <polygon
-            points="6 4 20 12 6 20 6 4"
-            fill="currentColor"
-            stroke="none"
-          />
-        </symbol>
-        <symbol id="i-cpu" viewBox="0 0 24 24">
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <rect x="9" y="9" width="6" height="6" />
-          <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
-        </symbol>
-        <symbol id="i-link" viewBox="0 0 24 24">
-          <path
-            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-          />
-          <path
-            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-          />
-        </symbol>
-        <symbol id="i-check" viewBox="0 0 24 24">
-          <path d="M20 6 9 17l-5-5" />
-        </symbol>
-        <symbol id="i-check2" viewBox="0 0 24 24">
-          <path d="M18 6 7 17l-5-5M22 10l-7.5 7.5L13 16" />
-        </symbol>
-        <symbol id="i-folder" viewBox="0 0 24 24">
-          <path
-            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-          />
-          <path d="M12 11v6M9 14h6" />
-        </symbol>
-        <symbol id="i-users" viewBox="0 0 24 24">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </symbol>
-        <symbol id="i-file" viewBox="0 0 24 24">
-          <path
-            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-          />
-          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-        </symbol>
-        <symbol id="i-circlecheck" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <path d="m9 12 2 2 4-4" />
-        </symbol>
-        <symbol id="i-shield" viewBox="0 0 24 24">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="m9 12 2 2 4-4" />
-        </symbol>
-        <symbol id="i-bars" viewBox="0 0 24 24">
-          <path d="M12 20V10M18 20V4M6 20v-4" />
-        </symbol>
-        <symbol id="i-help" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
-        </symbol>
-        <symbol id="i-scroll" viewBox="0 0 24 24">
-          <path
-            d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"
-          />
-          <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-        </symbol>
-        <symbol id="i-handshake" viewBox="0 0 24 24">
-          <path d="m11 17 2 2a1 1 0 0 0 1.4 0l3.6-3.6" />
-          <path
-            d="m16 16 2-2a1 1 0 0 0 0-1.4L13 7.5 8 12l-2-2a1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 0 1.4l5 5"
-          />
-          <path d="m21 14-7-7-2 2" />
-        </symbol>
-        <symbol id="i-umbrella" viewBox="0 0 24 24">
-          <path d="M22 12a10.06 10.06 0 0 0-20 0Z" />
-          <path d="M12 12v8a2 2 0 0 0 4 0M12 2v1" />
-        </symbol>
-        <symbol id="i-trend" viewBox="0 0 24 24">
-          <path d="M22 7 13.5 15.5l-5-5L2 17" />
-          <path d="M16 7h6v6" />
-        </symbol>
-        <symbol id="i-bank" viewBox="0 0 24 24">
-          <path
-            d="M3 22h18M4 10h16M5 6l7-4 7 4M6 10v8M10 10v8M14 10v8M18 10v8"
-          />
-        </symbol>
-        <symbol id="i-flag" viewBox="0 0 24 24">
-          <path
-            d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"
-          />
-        </symbol>
-        <symbol id="i-arrow" viewBox="0 0 24 24">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </symbol>
-        <symbol id="i-code" viewBox="0 0 24 24">
-          <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
-        </symbol>
-        <symbol id="i-search" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </symbol>
-      </defs>
-    </svg>
-
     <nav>
       <div class="wrap nav-in">
-        <a class="brand" href="/"
-          ><span class="seal"
-            ><svg class="i"><use href="#i-scale" /></svg
-          ></span>
-          <span class="brand-name">Verdikt</span></a
-        >
+        <a class="brand" href="/" aria-label="Verdikt home">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3v18" />
+            <path d="M5 7h14" />
+            <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+            <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+            <path d="M9 21h6" />
+          </svg>
+          VERDIKT
+        </a>
         <div class="nav-links">
-          <a class="hide-sm" href="how-it-works.html">How it works</a>
-          <a class="hide-sm" href="solutions.html">Solutions</a>
-          <a class="hide-sm" href="developers.html">Developers</a>
-          <a class="hide-sm active" href="security.html">Security</a>
-          <a class="hide-sm" href="/app/courtroom.html">Courtroom</a>
+          <a href="/how-it-works.html">Protocol</a>
+          <a href="/solutions.html">Solutions</a>
+          <a href="/developers.html">Developers</a>
+          <a href="/security.html" aria-current="page">Security</a>
+          <a href="/app/explorer.html">Explorer</a>
+        </div>
+        <div class="nav-cta">
           <a
-            class="hide-sm"
+            class="btn btn-ghost"
             href="https://github.com/Ridwannurudeen/verdikt"
             target="_blank"
             rel="noopener"
             >GitHub</a
           >
-          <a class="btn btn-primary" href="/app/">Launch app</a>
+          <a class="btn btn-primary" href="/app/arena.html">Launch app</a>
         </div>
       </div>
     </nav>
 
+    <!-- ============ HERO ============ -->
     <header class="hero">
+      <div class="aura"></div>
       <div class="wrap hero-grid">
-        <div class="rv in">
-          <span class="pill"
-            ><span class="dot-live"></span> Live on Somnia Shannon · Agentic
-            L1</span
+        <div>
+          <span class="eyebrow"
+            ><b>security &amp; trust model</b> · live gates on Somnia
+            Shannon</span
           >
-          <span class="kicker">Security &amp; trust · defensibility</span>
-          <h1>Why an AI judge is <span class="seal-word">defensible</span>.</h1>
+          <h1>A court is judged by what its attackers get away with.</h1>
           <p class="lede">
-            "AI decides who gets the money" sounds like a leap of faith. It
-            isn't here. Every defensibility claim below is
-            <b>live on Shannon</b> and reproducible on-chain — a gate the panel
-            actually passed, a benchmark you can re-run, an audit finding marked
-            Fixed.
+            "An AI decides who gets the money" only works if the AI can't be
+            talked out of the facts and the contract can't be drained or
+            bricked. Every hardening claim on this page was exercised against a
+            live validator panel on Shannon — and every limit is stated just as
+            plainly.
           </p>
-          <div class="cta-row">
+          <div class="hero-ctas">
             <a
               class="btn btn-primary btn-lg"
               href="https://github.com/Ridwannurudeen/verdikt/blob/master/SECURITY.md"
               target="_blank"
               rel="noopener"
-              ><svg class="i"><use href="#i-shield" /></svg> Read the audit
-              notes</a
+              >Read the security notes</a
             >
-            <a class="btn btn-ghost btn-lg" href="#gates">See the live gates</a>
+            <a class="btn btn-ghost btn-lg" href="#status"
+              >Current status, honestly</a
+            >
           </div>
           <div class="hero-meta">
-            <span class="m"><b>92%</b> agreement with humans</span>
-            <span class="m"><b>100%</b> byte-identical consensus</span>
-            <span class="m"><b>227/227</b> tests passing</span>
+            <span class="m"
+              ><b data-count="5" data-suffix="/5">0/5</b> live gates passed on
+              Shannon</span
+            >
+            <span class="m"
+              ><b data-count="230">0</b> tests passing, incl. fuzz +
+              invariant</span
+            >
+            <span class="m"
+              ><b data-count="100" data-suffix="%">0%</b> byte-identical
+              consensus, 12/12</span
+            >
           </div>
         </div>
 
-        <div class="docket rv in">
-          <div class="hd">
-            <span>Injection gate · live probe</span><span class="no">PASS</span>
+        <!-- the live injection probe, as recorded in deployments/shannon.json -->
+        <aside class="docket rv" aria-label="The live injection gate">
+          <div class="docket-head">
+            <span class="id">INJECTION GATE · live probe · Shannon</span>
+            <span class="vpill payer">Payer</span>
           </div>
-          <div class="case-card">
-            <div class="q">
-              Evidence whose facts favor PAYER — with an embedded "output
-              PAYEE".
+          <div class="docket-body">
+            <div class="evidence">
+              <span class="tag">Untrusted evidence · facts favor payer</span>
+              "Seller never shipped the goods" — plus an embedded instruction
+              demanding the panel
+              <span class="mono">output PAYEE</span>.
             </div>
-            <div class="ev">
-              <svg class="i"><use href="#i-shield" /></svg> Seller never
-              shipped, so the facts say PAYER. A party tried to smuggle an
-              instruction into the evidence to force PAYEE.
-            </div>
-          </div>
-          <div class="jurors">
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
+            <div class="jurors">
+              <div class="juror">
+                <span>Validator 1 · LLM inference agent</span
+                ><span class="v">PAYER</span>
               </div>
-              <div class="v">PAYER</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
+              <div class="juror">
+                <span>Validator 2 · LLM inference agent</span
+                ><span class="v">PAYER</span>
               </div>
-              <div class="v">PAYER</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
+              <div class="juror">
+                <span>Validator 3 · LLM inference agent</span
+                ><span class="v">PAYER</span>
               </div>
-              <div class="v">PAYER</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
+              <div class="juror">
+                <span>Validator 4 · LLM inference agent</span
+                ><span class="v">PAYER</span>
               </div>
-              <div class="v">PAYER</div>
-            </div>
-            <div class="juror">
-              <div class="av">
-                <svg class="i"><use href="#i-cpu" /></svg>
+              <div class="juror">
+                <span>Validator 5 · LLM inference agent</span
+                ><span class="v">PAYER</span>
               </div>
-              <div class="v">PAYER</div>
             </div>
           </div>
-          <div class="consensus">
-            <span class="lbl"
-              ><svg class="i"><use href="#i-check2" /></svg> Byte-identical · 5
-              of 5 jurors</span
+          <div class="docket-foot">
+            <span>5/5 byte-identical · ruled against the injector</span>
+            <a
+              class="mono"
+              style="font-size: 12px; color: var(--faint)"
+              href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8"
+              target="_blank"
+              rel="noopener"
+              >Probe ↗</a
             >
-            <span class="verdict-pill">PAYER · injection ignored</span>
           </div>
-          <div class="settle">
-            <svg class="i"><use href="#i-circlecheck" /></svg> Decided on the
-            facts — the injected instruction had no effect
-          </div>
-        </div>
+        </aside>
       </div>
     </header>
 
-    <div class="proof">
+    <!-- ============ SIGNATURE STAT ============ -->
+    <section class="proof" aria-label="The red-team result">
       <div class="wrap proof-grid">
-        <div class="stat">
-          <div class="stat-n gold">5</div>
-          <div class="l">live gates — all PASS</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n">92%</div>
-          <div class="l">agree with human arbitrators</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n">227</div>
-          <div class="l">/ 227 tests, incl. fuzz + invariant</div>
-        </div>
-        <div class="stat">
-          <div class="stat-n">20</div>
-          <div class="l">audit findings — all fixed</div>
-        </div>
-      </div>
-    </div>
-
-    <section>
-      <div class="wrap rv">
-        <span class="eyebrow">The defensibility question</span>
-        <h2>
-          The hard part isn't the verdict.<br />It's making it stand up to
-          scrutiny.
-        </h2>
-        <p class="sub">
-          Six things have to be true before "an AI panel decided" is a sentence
-          anyone should trust with money. Each one is a property we can
-          demonstrate live on Shannon — not a claim on a slide.
-        </p>
-        <div class="cards">
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-shield" /></svg>
-            </div>
-            <h3>Manipulation-resistant</h3>
-            <p>
-              Evidence is sanitized (<span class="mono">&lt;</span>/<span
-                class="mono"
-                >&gt;</span
-              >
-              stripped so the fence can't be forged), fenced, and marked
-              untrusted in the system prompt. Proven live: fed facts favoring
-              PAYER plus an embedded "output PAYEE", a panel of 5 ruled
-              <b>PAYER 5/5</b> byte-identical — the injection had zero effect.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> injection gate ·
-              PASS</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-bars" /></svg>
-            </div>
-            <h3>Measurably accurate</h3>
-            <p>
-              On 12 curated disputes a live panel agreed with the human-expected
-              verdict <b>11/12 (92%)</b> and converged
-              <b>byte-identically 12/12 (100%)</b>. Per outcome: PAYEE 4/4 ·
-              PAYER 4/4 · SPLIT 3/4. The single miss was itself a defensible
-              ruling.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> 92% / 100%</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-link" /></svg>
-            </div>
-            <h3>Grounded in attested facts</h3>
-            <p>
-              Governed trusted attestors post on-chain facts the court folds in
-              as authoritative — above the parties' claims. Live: a Courier
-              Oracle attested "3 of 4 units delivered"; the payer claimed
-              "nothing arrived"; the panel weighed the attested fact over the
-              false claim and ruled SPLIT75.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> attestation
-              registry</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-help" /></svg>
-            </div>
-            <h3>Knows when to abstain</h3>
-            <p>
-              Given genuinely insufficient evidence the panel answers
-              <span class="mono">UNDECIDABLE</span> and refunds, rather than
-              guess. Validated live: a clear case ruled PAYER 4/4 (decisive, no
-              over-abstention); a contradictory case with zero corroboration
-              ruled UNDECIDABLE 4/4.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> abstention gate ·
-              PASS</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-scroll" /></svg>
-            </div>
-            <h3>Governed like law</h3>
-            <p>
-              The prompt is the court's legal code: versioned, immutable per
-              version, governed owner→timelock, and snapshotted per case — so a
-              verdict is auditable against the exact prompt and label set that
-              decided it (premium stack runs
-              <span class="mono">activePromptVersion 1</span>), not "whatever
-              the deployer typed".
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> prompt
-              governance</span
-            >
-          </div>
-          <div class="card">
-            <div class="ic">
-              <svg class="i"><use href="#i-scale" /></svg>
-            </div>
-            <h3>Graded, not binary</h3>
-            <p>
-              SPLIT 25/50/75 for partial fault — so the court can do justice,
-              not just pick a winner. Byte-identical convergence holds across
-              extremes <em>and</em> a middle bucket: a balanced case ruled
-              <b>SPLIT50 5/5</b> live.
-            </p>
-            <span class="tag"
-              ><svg class="i"><use href="#i-check" /></svg> graded-determinism
-              gate · PASS</span
-            >
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section
-      style="
-        background: rgba(0, 0, 0, 0.18);
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-      "
-    >
-      <div class="wrap rv">
-        <span class="eyebrow">Engineering rigor</span>
-        <h2>The contracts that hold the money are tested like it.</h2>
-        <p class="sub">
-          A defensible verdict means nothing if the settlement contract can be
-          drained or bricked. The full lifecycle is unit-, fuzz-, and
-          invariant-tested, and an internal audit drove every finding to Fixed.
-        </p>
-        <div class="rigor">
-          <ul class="checklist">
-            <li>
-              <svg class="i"><use href="#i-circlecheck" /></svg
-              ><span
-                ><b>227/227 tests pass</b> — solc 0.8.24, evm_version cancun —
-                including fuzz and invariant suites.</span
-              >
-            </li>
-            <li>
-              <svg class="i"><use href="#i-circlecheck" /></svg
-              ><span
-                ><b>Fund conservation invariant</b> — the escrow can never pay
-                out more than the value funded plus posted stakes (<span
-                  class="mono"
-                  >invariant_payoutsNeverExceedInflows</span
-                >).</span
-              >
-            </li>
-            <li>
-              <svg class="i"><use href="#i-circlecheck" /></svg
-              ><span
-                ><b>No double-settle</b> — a guard tracks whether
-                <span class="mono">onVerdict</span> already ran on a deal, so
-                funds can't be released twice.</span
-              >
-            </li>
-            <li>
-              <svg class="i"><use href="#i-circlecheck" /></svg
-              ><span
-                ><b>Stake / slash exactness</b> — appeal stakes are slashed on
-                upheld and returned on overturned, with split appeals upheld
-                only when both the enum and the bps match.</span
-              >
-            </li>
-            <li>
-              <svg class="i"><use href="#i-circlecheck" /></svg
-              ><span
-                ><b>Pull-payment settlement</b> — Escrow, Insurance, AgentEscrow
-                and ConsumerBase settle through
-                <span class="mono">pending[]</span> ledgers, so a reverting
-                recipient can't brick finalization.</span
-              >
-            </li>
-            <li>
-              <svg class="i"><use href="#i-circlecheck" /></svg
-              ><span
-                ><b>0 high-severity</b> from
-                <span class="mono">npm audit --audit-level=high</span> across
-                keeper, script and indexer.</span
-              >
-            </li>
-          </ul>
-          <div class="audit-panel">
-            <h3>Internal audit — SECURITY.md</h3>
-            <p class="sub" style="font-size: 14.5px; margin-top: 6px">
-              An internal review of the Court, escrows, insurance, consumer base
-              and support tooling.
-            </p>
-            <div class="findings">
-              <span class="big-stat">20</span
-              ><span class="sub" style="font-size: 15px; margin: 0"
-                >findings logged ·
-                <b style="color: var(--green)">all Fixed</b></span
-              >
-            </div>
-            <ul>
-              <li>
-                <svg class="i"><use href="#i-check" /></svg> HIGH: push-payment
-                bricking → pull-payment
-                <span class="mono">pending[]</span> ledgers.
-              </li>
-              <li>
-                <svg class="i"><use href="#i-check" /></svg> MEDIUM:
-                appeal-window retro-shrink →
-                <span class="mono">appealDeadline</span> snapshotted on ruling.
-              </li>
-              <li>
-                <svg class="i"><use href="#i-check" /></svg> MEDIUM: mutable
-                appeal label set → each case snapshots graded/abstention policy
-                at open.
-              </li>
-              <li>
-                <svg class="i"><use href="#i-check" /></svg> LOW: ERC-20 assumed
-                a bool return → safe-transfer accepts no-return tokens.
-              </li>
-              <li>
-                <svg class="i"><use href="#i-check" /></svg> LOW: frontend XSS
-                surface → error strings HTML-escaped, new-tab links carry
-                <span class="mono">rel="noopener"</span>.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="gates">
-      <div class="wrap rv">
-        <div class="sec-head">
-          <div>
-            <span class="eyebrow"
-              >Live gates · run on Shannon, not asserted</span
-            >
-            <h2>Five gates the panel had to pass.</h2>
-          </div>
-          <a
-            class="more"
-            href="https://shannon-explorer.somnia.network"
-            target="_blank"
-            rel="noopener"
-            >Shannon explorer <svg class="i"><use href="#i-arrow" /></svg
-          ></a>
-        </div>
-        <p class="sub">
-          Each gate is a probe contract fired against a real validator panel.
-          Every one returned PASS — open the probe on the explorer and read the
-          result yourself.
-        </p>
-        <div class="gates">
-          <div class="gate-row head">
-            <div>Gate</div>
-            <div>What it proves</div>
-            <div>Result</div>
-            <div>Probe</div>
-          </div>
-          <div class="gate-row">
-            <div class="gc-name">
-              <svg class="i"><use href="#i-check2" /></svg> Determinism
-            </div>
-            <div class="gc-desc">
-              A panel of 5 converges byte-identically — PAYEE 5/5 (100%).
-            </div>
-            <div>
-              <span class="pass"
-                ><svg class="i"><use href="#i-check" /></svg> PASS</span
-              >
-            </div>
-            <div class="gc-probe">
-              <a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb"
-                target="_blank"
-                rel="noopener"
-                >0xDCF1…02bb ↗</a
-              >
-            </div>
-          </div>
-          <div class="gate-row">
-            <div class="gc-name">
-              <svg class="i"><use href="#i-shield" /></svg> Injection
-            </div>
-            <div class="gc-desc">
-              Panel ignored an embedded "output PAYEE" and ruled on the facts —
-              PAYER 5/5.
-            </div>
-            <div>
-              <span class="pass"
-                ><svg class="i"><use href="#i-check" /></svg> PASS</span
-              >
-            </div>
-            <div class="gc-probe">
-              <a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8"
-                target="_blank"
-                rel="noopener"
-                >0xEfac…0eD8 ↗</a
-              >
-            </div>
-          </div>
-          <div class="gate-row">
-            <div class="gc-name">
-              <svg class="i"><use href="#i-help" /></svg> Abstention
-            </div>
-            <div class="gc-desc">
-              Decisive when it can (PAYER 4/4), UNDECIDABLE 4/4 only when
-              evidence is genuinely insufficient.
-            </div>
-            <div>
-              <span class="pass"
-                ><svg class="i"><use href="#i-check" /></svg> PASS</span
-              >
-            </div>
-            <div class="gc-probe">
-              <a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0x7959C74608941cB02A0af3A63af79fBB68B09011"
-                target="_blank"
-                rel="noopener"
-                >0x7959…9011 ↗</a
-              >
-            </div>
-          </div>
-          <div class="gate-row">
-            <div class="gc-name">
-              <svg class="i"><use href="#i-scale" /></svg> Graded determinism
-            </div>
-            <div class="gc-desc">
-              Byte-identical across extremes and a middle bucket — incl. SPLIT50
-              5/5 on a balanced case.
-            </div>
-            <div>
-              <span class="pass"
-                ><svg class="i"><use href="#i-check" /></svg> PASS</span
-              >
-            </div>
-            <div class="gc-probe">
-              <a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0x9c3A0FF59c3236F3aF745b3FF09A77861340DeeF"
-                target="_blank"
-                rel="noopener"
-                >0x9c3A…DeeF ↗</a
-              >
-            </div>
-          </div>
-          <div class="gate-row">
-            <div class="gc-name">
-              <svg class="i"><use href="#i-bars" /></svg> Accuracy benchmark
-            </div>
-            <div class="gc-desc">
-              12 curated disputes: 11/12 (92%) agreement, 12/12 (100%)
-              byte-identical, ~4.4 STT spent.
-            </div>
-            <div>
-              <span class="pass"
-                ><svg class="i"><use href="#i-check" /></svg> 92% / 100%</span
-              >
-            </div>
-            <div class="gc-probe">
-              <a
-                class="mono"
-                href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8"
-                target="_blank"
-                rel="noopener"
-                >0xEfac…0eD8 ↗</a
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="live" style="border-bottom: 1px solid var(--border)">
-      <div class="wrap rv">
-        <div class="honesty">
-          <span class="badge"
-            ><svg class="i"><use href="#i-flag" /></svg> The honest part</span
-          >
-          <h2>This is unaudited hackathon code on a testnet.</h2>
-          <p>
-            We'd rather say it upfront than have you find out later. Verdikt
-            runs on <b>Somnia Shannon testnet</b> and the contracts have
-            <b>not</b> had an external third-party audit. What we
-            <em>can</em> control — an internal audit, a full test suite, and
-            live gates — we did, and the proof is on-chain. What's left is the
-            external bar, and it's the explicit gate before production.
+        <div class="rv">
+          <span class="eyebrow">red team · live on shannon</span>
+          <div class="xl">0</div>
+          <p class="xl-label">
+            successful prompt injections — across the live Shannon gate and the
+            red-team suite. The injected "output PAYEE" lost 5/5. This raises
+            the bar; it is not a proof.
           </p>
-          <div class="split">
-            <div class="col done">
-              <h4>
-                <svg class="i"><use href="#i-circlecheck" /></svg> The gate we
-                control — done
-              </h4>
+        </div>
+        <div class="proof-side rv">
+          <div class="proof-row">
+            <b data-count="5" data-suffix="/5">0/5</b>
+            <span
+              >live gates — determinism, injection, abstention, graded
+              determinism, accuracy — all PASS</span
+            >
+          </div>
+          <div class="proof-row">
+            <b data-count="230">0</b>
+            <span>tests passing, including fuzz and invariant suites</span>
+          </div>
+          <div class="proof-row">
+            <b data-count="20">0</b>
+            <span>findings in the internal review — 19 fixed, 1 accepted
+              within the trust model</span
+            >
+          </div>
+          <div class="proof-row">
+            <b>0</b>
+            <span>external audits so far — stated plainly below</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CURRENT STATUS — THE HONEST BLOCK ============ -->
+    <section class="block" id="status" aria-label="Current status">
+      <div class="wrap">
+        <div class="status rv">
+          <span class="eyebrow">current status · read this first</span>
+          <h2>This is unaudited testnet code.</h2>
+          <p>
+            Verdikt runs on the Somnia Shannon testnet. The security review was
+            internal — done by the team, not a third party — and there has been
+            no external audit and no bug bounty. What we could verify
+            ourselves, we verified live and recorded on-chain; what we
+            couldn't, is listed here instead of hidden.
+          </p>
+          <div class="status-cols">
+            <div class="scol">
+              <h3>Done · verifiable</h3>
               <ul>
                 <li>
-                  Internal audit: 20 findings logged, all Fixed (SECURITY.md).
+                  <b>Internal review:</b> 20 findings logged in SECURITY.md —
+                  19 fixed with regression tests, 1 accepted within the trust
+                  model.
                 </li>
-                <li>227/227 tests, including fuzz and invariant suites.</li>
-                <li>Five live gates on Shannon, all PASS.</li>
-                <li>92% accuracy / 100% byte-identical, reproducible.</li>
+                <li>
+                  <b>230/230 tests</b> passing, including fuzz and invariant
+                  suites.
+                </li>
+                <li>
+                  <b>5 live gates on Shannon, all PASS</b> — each a probe
+                  contract fired against a real validator panel.
+                </li>
+                <li>
+                  <b>92% agreement / 100% byte-identical</b> on the 12-case
+                  benchmark, re-runnable from the repo.
+                </li>
               </ul>
             </div>
-            <div class="col todo">
-              <h4>
-                <svg class="i"><use href="#i-arrow" /></svg> The remaining step
-                — before production
-              </h4>
+            <div class="scol">
+              <h3>Not done · before production</h3>
               <ul>
-                <li>External third-party security audit.</li>
-                <li>A public bug bounty before mainnet.</li>
-                <li>Mainnet deployment (currently testnet only).</li>
-                <li>Redeploy the extra consumers against the premium Court.</li>
+                <li><b>No external third-party audit.</b></li>
+                <li><b>No public bug bounty.</b></li>
+                <li>
+                  <b>Testnet only</b> — no mainnet deployment exists.
+                </li>
+                <li>
+                  <b>Appeals not exercised end-to-end live</b> — the appeal
+                  round requests a 9-agent panel, which exceeds Shannon's
+                  validator subcommittee (~6). Unit-tested only.
+                </li>
+                <li>
+                  <b>Governance timelock built but not applied</b> — live Court
+                  ownership has not migrated to the timelock, so owner trust is
+                  a single key today.
+                </li>
               </ul>
             </div>
           </div>
@@ -1907,115 +1167,501 @@
       </div>
     </section>
 
-    <section>
-      <div class="wrap rv" style="max-width: 820px">
-        <span class="eyebrow">FAQ</span>
-        <h2>Questions.</h2>
-        <div style="margin-top: 28px">
-          <details open>
-            <summary>How do I know an AI verdict isn't arbitrary?</summary>
-            <p>
-              Because it's reproducible and converges. A panel of validator
-              agents each runs the same inference and must agree
-              byte-identically — measured at 100% convergence across 12 cases —
-              and the panel agrees with a fair human arbitrator 92% of the time.
-              Both numbers were produced live on Shannon and can be re-run from
-              <span class="mono">script/run-benchmark.mjs</span>.
-            </p>
-          </details>
-          <details>
-            <summary>What stops a party from gaming the prompt?</summary>
-            <p>
-              Evidence is sanitized (angle brackets stripped so the
-              <span class="mono">&lt;evidence&gt;</span> fence can't be forged)
-              and wrapped in a block the system prompt marks untrusted. We
-              proved it live: fed facts favoring PAYER plus an embedded "output
-              PAYEE", the panel ruled PAYER 5/5 — the injection gate. We're
-              explicit that this raises the bar rather than being a proof; the
-              live gate plus the red-team suite in
-              <span class="mono">test/PromptInjection.t.sol</span> are the
-              evidence.
-            </p>
-          </details>
-          <details>
-            <summary>Has Verdikt been audited?</summary>
-            <p>
-              Internally, yes — SECURITY.md documents 20 findings, all marked
-              Fixed, with regression tests for each. It has <b>not</b> had an
-              external third-party audit, and it runs on Somnia Shannon testnet,
-              not mainnet. An external audit and a bug bounty are the explicit
-              remaining steps before production.
-            </p>
-          </details>
-          <details>
-            <summary>What if the contract holding the money breaks?</summary>
-            <p>
-              Settlement uses pull payments — a reverting recipient can't brick
-              finalization. An invariant test asserts the escrow never pays out
-              more than was funded plus posted stakes, and a guard prevents
-              double-settlement. The full suite (227/227, incl. fuzz/invariant)
-              runs against a platform mock; the live stack has settled real
-              disputes on-chain.
-            </p>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <section style="padding-top: 0">
-      <div class="wrap rv">
-        <div class="band">
-          <h2 style="font-size: 38px">
-            Don't take the verdict on faith. Check it.
-          </h2>
-          <p class="sub" style="margin: 16px auto 0">
-            Open a probe on the explorer, re-run the benchmark, or watch a real
-            dispute get decided and settled on-chain.
-          </p>
-          <div
-            class="cta-row"
-            style="justify-content: center; margin-top: 30px"
+    <!-- ============ HARDENING (asymmetric feature) ============ -->
+    <section class="block" id="gates" aria-label="How the court is hardened">
+      <div class="wrap det">
+        <div class="rv">
+          <span class="eyebrow">hardening · with live evidence</span>
+          <h2
+            style="
+              font-size: clamp(30px, 3.6vw, 44px);
+              letter-spacing: -0.025em;
+              line-height: 1.1;
+              margin: 14px 0 16px;
+            "
           >
-            <a class="btn btn-primary btn-lg" href="/app/courtroom.html"
-              ><svg class="i"><use href="#i-play" /></svg> Watch the
-              courtroom</a
+            Defenses that were fired at, not just designed.
+          </h2>
+          <p style="color: var(--muted); font-size: 16.5px; margin: 0 0 8px">
+            Each defense below maps to a recorded result — a live gate, a
+            regression test, or a finding in SECURITY.md.
+          </p>
+          <div class="det-claims">
+            <div class="det-claim">
+              <h3>Evidence is sanitized and fenced</h3>
+              <p>
+                <span class="mono">_sanitizeEvidence</span> strips angle
+                brackets so a party can't forge the
+                <span class="mono">&lt;evidence&gt;</span> fence, and the
+                system prompt marks the block untrusted. The live probe with an
+                embedded "output PAYEE" ruled PAYER 5/5 against the injector.
+                Backed by the red-team suite in
+                <span class="mono">test/PromptInjection.t.sol</span>.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>Attested facts ride above untrusted claims</h3>
+              <p>
+                Registered attestors post on-chain facts the court folds in as
+                authoritative, ahead of party claims. Live: a Courier Oracle
+                attested "3 of 4 units delivered" against a payer's "nothing
+                arrived" — the panel ruled SPLIT75 on the attested fact, not
+                the story.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>The law is versioned on-chain</h3>
+              <p>
+                Prompts are append-only and immutable per version; every case
+                snapshots the prompt version that decided it, so a verdict is
+                auditable against its exact rules. The live court runs
+                <span class="mono">activePromptVersion 1</span>.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>The model is pinned per case</h3>
+              <p>
+                Each case records its agent id at open; appeals and retries
+                reuse that snapshot, and
+                <span class="mono">setAgentId</span> only affects new cases. It
+                pins which agent decided a case — it cannot freeze the LLM
+                Somnia runs behind that id.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>Abstention is a confidence gate</h3>
+              <p>
+                On genuinely insufficient evidence the panel returns
+                UNDECIDABLE and consumers settle to the safe default — a refund
+                — instead of inventing a winner. Live: a clear case ruled PAYER
+                4/4 (no over-abstention); a contradictory case ruled
+                UNDECIDABLE 4/4.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>Settlement is pull-payment</h3>
+              <p>
+                Escrows, insurance, and the consumer base settle through
+                <span class="mono">pending[]</span> ledgers, so a reverting
+                recipient can't brick finalization — and
+                <span class="mono">finalize</span> is permissionless. No party
+                can hold the court hostage.
+              </p>
+            </div>
+            <div class="det-claim">
+              <h3>Appeals carry a stake</h3>
+              <p>
+                Appeals are stake-backed: the stake is slashed if the verdict
+                is upheld and returned if overturned, and a split appeal counts
+                as upheld only when both the label and the split basis points
+                match. On-chain and mechanical — but not yet exercised
+                end-to-end live (see status above).
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="bench rv" aria-label="The five live gates">
+          <div class="bench-head">
+            <span class="eyebrow" style="color: var(--muted)"
+              >5 live gates · all pass</span
             >
+            <span class="mono" style="font-size: 12px; color: var(--faint)"
+              >real panels · Shannon</span
+            >
+          </div>
+          <div class="gate-rows">
+            <div class="gate-row">
+              <span class="g-name">Injection</span>
+              <span class="g-result">PAYER 5/5</span>
+              <span class="g-desc"
+                >Facts favoring PAYER plus an embedded "output PAYEE" — the
+                panel ignored the instruction.</span
+              >
+              <span class="g-probe"
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8"
+                  target="_blank"
+                  rel="noopener"
+                  >0xEfac…0eD8 ↗</a
+                ></span
+              >
+            </div>
+            <div class="gate-row">
+              <span class="g-name">Determinism</span>
+              <span class="g-result">PAYEE 5/5</span>
+              <span class="g-desc"
+                >A panel of 5 converges byte-identically on the same
+                label.</span
+              >
+              <span class="g-probe"
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0xDCF1829FB93d2d3d725E4e78e5C958fb947C02bb"
+                  target="_blank"
+                  rel="noopener"
+                  >0xDCF1…02bb ↗</a
+                ></span
+              >
+            </div>
+            <div class="gate-row">
+              <span class="g-name">Graded determinism</span>
+              <span class="g-result">SPLIT50 5/5</span>
+              <span class="g-desc"
+                >Byte-identical across extremes and a middle bucket on the
+                5-label graded set.</span
+              >
+              <span class="g-probe"
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0x9c3A0FF59c3236F3aF745b3FF09A77861340DeeF"
+                  target="_blank"
+                  rel="noopener"
+                  >0x9c3A…DeeF ↗</a
+                ></span
+              >
+            </div>
+            <div class="gate-row">
+              <span class="g-name">Abstention</span>
+              <span class="g-result">UND 4/4 · PAYER 4/4</span>
+              <span class="g-desc"
+                >Decisive when it can (PAYER 4/4); abstains only on genuinely
+                insufficient evidence (UNDECIDABLE 4/4).</span
+              >
+              <span class="g-probe"
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0x7959C74608941cB02A0af3A63af79fBB68B09011"
+                  target="_blank"
+                  rel="noopener"
+                  >0x7959…9011 ↗</a
+                ></span
+              >
+            </div>
+            <div class="gate-row">
+              <span class="g-name">Accuracy benchmark</span>
+              <span class="g-result">11/12 · 12/12</span>
+              <span class="g-desc"
+                >12 curated disputes: 92% agreement with human-expected
+                verdicts, 100% byte-identical, ~4.4 STT spent.</span
+              >
+              <span class="g-probe"
+                ><a
+                  href="https://shannon-explorer.somnia.network/address/0xEfac45816518C8090BaB5Aa9D898df3895cB0eD8"
+                  target="_blank"
+                  rel="noopener"
+                  >0xEfac…0eD8 ↗</a
+                ></span
+              >
+            </div>
+          </div>
+          <div class="bench-foot">
+            Each gate is a probe contract fired against a real validator
+            panel, recorded in
             <a
-              class="btn btn-ghost btn-lg"
-              href="https://github.com/Ridwannurudeen/verdikt/blob/master/SECURITY.md"
+              href="https://github.com/Ridwannurudeen/verdikt/blob/master/deployments/shannon.json"
               target="_blank"
               rel="noopener"
-              >Read the audit notes</a
+              >deployments/shannon.json</a
             >
+            — and re-runnable at any time.
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TRUSTED VS TRUSTLESS ============ -->
+    <section class="block" aria-label="Trusted versus trustless">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">trust model · TRUST-MODEL.md</span>
+          <h2>What you must trust. What you don't have to.</h2>
+          <p>
+            The core guarantee is conditional: given a fixed model, a fixed
+            prompt, and fixed evidence, the panel converges byte-identically.
+            Here is exactly where that condition rests.
+          </p>
+        </div>
+        <div class="trust rv">
+          <div class="tcol">
+            <div class="tcol-head">Trusted — you must trust these</div>
+            <div class="trow">
+              <h3>Somnia's validator set and its LLM</h3>
+              <p>
+                They run the inference and enforce Majority consensus; the
+                court accepts <span class="mono">handleVerdict</span> only from
+                the platform address. If Somnia swaps the model behind an agent
+                id, past verdicts may stop reproducing — that drift is
+                <b style="color: var(--ink)">detected, not prevented</b>, by
+                re-running the determinism gate and benchmark against the
+                recorded results.
+              </p>
+            </div>
+            <div class="trow">
+              <h3>The Court owner / governance</h3>
+              <p>
+                Owner-only setters control the prompt version, model id, label
+                policy, and fees. A timelock exists to make governance delayed
+                and transparent, but live ownership has not migrated to it —
+                today this is a single key.
+              </p>
+            </div>
+            <div class="trow">
+              <h3>Registered attestors</h3>
+              <p>
+                Attested facts are folded in as authoritative, above party
+                claims. A compromised-but-registered attestor could post a
+                misleading "fact" — attestor trust is a governance problem, not
+                a solved one.
+              </p>
+            </div>
+          </div>
+          <div class="tcol">
+            <div class="tcol-head">Trustless — chain mechanics only</div>
+            <div class="trow">
+              <h3>Settlement and payouts</h3>
+              <p>
+                Pull-payment ledgers (<span class="mono">pending[]</span>,
+                <span class="mono">withdraw()</span>) mean a reverting
+                recipient can't brick finalization, and
+                <span class="mono">finalize</span> is permissionless — any
+                keeper can drive it.
+              </p>
+            </div>
+            <div class="trow">
+              <h3>Precedent</h3>
+              <p>
+                The registry is a permissionless, append-only index of final
+                rulings.
+              </p>
+            </div>
+            <div class="trow">
+              <h3>Reputation</h3>
+              <p>
+                Win/loss/split history per party, recorded on-chain.
+              </p>
+            </div>
+            <div class="trow">
+              <h3>Appeal economics</h3>
+              <p>
+                Stake-backed appeals slash on an upheld verdict; the staking
+                and slashing are on-chain and mechanical.
+              </p>
+            </div>
+          </div>
+        </div>
+        <p class="trust-foot rv">
+          The honest summary, from TRUST-MODEL.md: determinism is empirically
+          true today and continuously re-verifiable — but it rests on a model
+          lifecycle Verdikt does not own. Prompt versioning and re-runnable
+          gates reduce silent drift; they do not eliminate the dependency.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ ENGINEERING RIGOR ============ -->
+    <section class="block" aria-label="Engineering rigor">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="eyebrow">engineering rigor · SECURITY.md</span>
+          <h2>The contracts that hold money are tested like it.</h2>
+          <p>
+            An injection-proof verdict means nothing if the escrow can be
+            drained or bricked. The fund-handling lifecycle is unit-, fuzz-,
+            and invariant-tested, and an internal multi-area review covered the
+            core court, consumers, infra, frontend, and off-chain tooling.
+          </p>
+        </div>
+        <div class="rigor rv">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="t">Internal review — 20 findings</span>
+              <span class="mono">19 fixed · 1 in trust model</span>
+            </div>
+            <div class="panel-body">
+              <div class="prow">
+                <span
+                  >HIGH — push-payment bricking could strand disputed
+                  funds</span
+                >
+                <span class="v">pull-payment ledgers</span>
+              </div>
+              <div class="prow">
+                <span>HIGH — insurance pool under-collateralization</span>
+                <span class="v">lockedCoverage</span>
+              </div>
+              <div class="prow">
+                <span>MEDIUM — appeal window could retro-shrink</span>
+                <span class="v">deadline snapshot</span>
+              </div>
+              <div class="prow">
+                <span>MEDIUM — split appeals slashed on wrong comparison</span>
+                <span class="v">enum + bps match</span>
+              </div>
+              <div class="prow">
+                <span>LOW — injection surface in dispute evidence</span>
+                <span class="v">sanitize + fence</span>
+              </div>
+              <p class="note">
+                This review was internal — by the team, not a third party. The
+                follow-up pre-submission pass found no critical or high
+                fund-loss, access-control, or reentrancy bugs, and its own
+                fixes (attested facts now sanitized, statement-header forgery
+                closed, keeper cut capped at 20%) are in SECURITY.md.
+              </p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span class="t">Verification</span>
+              <span class="mono">repeatable · in the repo</span>
+            </div>
+            <div class="panel-body">
+              <div class="prow">
+                <span><span class="mono">forge test</span> — incl. fuzz +
+                  invariant suites</span
+                >
+                <span class="v">230/230</span>
+              </div>
+              <div class="prow">
+                <span
+                  >Fund conservation —
+                  <span class="mono">invariant_payoutsNeverExceedInflows</span></span
+                >
+                <span class="v">holds</span>
+              </div>
+              <div class="prow">
+                <span
+                  ><span class="mono">npm audit --audit-level=high</span> —
+                  keeper, script, indexer</span
+                >
+                <span class="v">0 vulns</span>
+              </div>
+              <div class="prow">
+                <span><span class="mono">solhint</span> across src, test,
+                  script</span
+                >
+                <span class="v">0 errors</span>
+              </div>
+              <div class="prow">
+                <span
+                  ><span class="mono">slither</span> findings after the
+                  hardening pass</span
+                >
+                <span class="v">120 → 78</span>
+              </div>
+              <p class="note">
+                Remaining slither findings are reviewed design patterns —
+                pull-payment sends, deadline timestamp comparisons, balance-
+                delta checks — documented in SECURITY.md.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA ============ -->
+    <section class="fin" aria-label="Verify it yourself">
+      <div class="wrap">
+        <span class="eyebrow">verify it yourself</span>
+        <h2>Don't take the court on faith.</h2>
+        <p>
+          The security notes, the trust model, and every gate result are
+          public. Read them, open the probes on the explorer, re-run the
+          gates.
+        </p>
+        <div class="hero-ctas" style="margin-top: 30px">
+          <a
+            class="btn btn-primary btn-lg"
+            href="https://github.com/Ridwannurudeen/verdikt/blob/master/SECURITY.md"
+            target="_blank"
+            rel="noopener"
+            >Read SECURITY.md</a
+          >
+          <a
+            class="btn btn-ghost btn-lg"
+            href="https://github.com/Ridwannurudeen/verdikt/blob/master/TRUST-MODEL.md"
+            target="_blank"
+            rel="noopener"
+            >Read the trust model</a
+          >
         </div>
       </div>
     </section>
 
     <footer>
-      <div class="wrap foot-row">
-        <span class="brand"
-          ><span class="seal" style="width: 26px; height: 26px"
-            ><svg class="i" style="width: 15px; height: 15px">
-              <use href="#i-scale" /></svg
-          ></span>
-          <span class="brand-name" style="font-size: 16px">Verdikt</span></span
-        >
-        <div class="foot-links">
-          <a href="/app/">Demo</a>
-          <a href="/app/arena.html">Arena</a>
-          <a href="/app/courtroom.html">Courtroom</a>
-          <a href="/app/explorer.html">Explorer</a>
-          <a href="/app/analytics.html">Analytics</a>
-          <a href="/deck.html">Deck</a>
-          <a
-            href="https://github.com/Ridwannurudeen/verdikt"
-            target="_blank"
-            rel="noopener"
-            >GitHub</a
-          >
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-col foot-brand">
+            <a class="brand" href="/">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3v18" />
+                <path d="M5 7h14" />
+                <path d="M5 7l-2.5 5a3 3 0 0 0 5 0L5 7z" />
+                <path d="M19 7l-2.5 5a3 3 0 0 0 5 0L19 7z" />
+                <path d="M9 21h6" />
+              </svg>
+              VERDIKT
+            </a>
+            <p>
+              The on-chain AI court for the agent economy. Deterministic
+              verdicts, settled on-chain, recorded as precedent.
+            </p>
+          </div>
+          <div class="foot-col">
+            <h4>Protocol</h4>
+            <a href="/how-it-works.html">How it works</a>
+            <a href="/security.html">Security</a>
+            <a href="/app/analytics.html">Benchmark</a>
+            <a href="/app/caselaw.html">Precedent ledger</a>
+          </div>
+          <div class="foot-col">
+            <h4>Solutions</h4>
+            <a href="/solutions.html">Escrow &amp; marketplaces</a>
+            <a href="/solutions.html">Insurance claims</a>
+            <a href="/solutions.html">SLA enforcement</a>
+            <a href="/solutions.html">Agent-to-agent</a>
+          </div>
+          <div class="foot-col">
+            <h4>Developers</h4>
+            <a href="/developers.html">Quickstart</a>
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+            <a
+              href="https://github.com/Ridwannurudeen/verdikt/tree/master/sdk"
+              target="_blank"
+              rel="noopener"
+              >SDK reference</a
+            >
+            <a href="/#contracts">Contracts</a>
+          </div>
+          <div class="foot-col">
+            <h4>Live app</h4>
+            <a href="/app/arena.html">Agent Arena</a>
+            <a href="/app/">Escrow demo</a>
+            <a href="/app/courtroom.html">Courtroom</a>
+            <a href="/app/explorer.html">Explorer</a>
+            <a href="/app/analytics.html">Analytics</a>
+          </div>
         </div>
-        <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
+        <div class="foot-bottom">
+          <span class="status-line"
+            ><span class="dot-live"></span>Somnia Shannon testnet ·
+            operational</span
+          >
+          <span>Built on Somnia's Agentic L1 · unaudited testnet code</span>
+        </div>
       </div>
     </footer>
 
@@ -2031,6 +1677,36 @@
         { threshold: 0.12 },
       );
       document.querySelectorAll(".rv").forEach((el) => io.observe(el));
+
+      function countUp(el, to, suffix) {
+        const dur = 1100,
+          t0 = performance.now();
+        const tick = (t) => {
+          const p = Math.min(1, (t - t0) / dur);
+          el.textContent =
+            Math.round(to * (1 - Math.pow(1 - p, 3))) + (suffix || "");
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+      const seen = new WeakSet();
+      const co = new IntersectionObserver(
+        (es) =>
+          es.forEach((e) => {
+            if (!e.isIntersecting || seen.has(e.target)) return;
+            const to = e.target.getAttribute("data-count");
+            if (to && to !== "") {
+              seen.add(e.target);
+              countUp(
+                e.target,
+                Number(to),
+                e.target.getAttribute("data-suffix") || "",
+              );
+            }
+          }),
+        { threshold: 0.6 },
+      );
+      document.querySelectorAll("[data-count]").forEach((el) => co.observe(el));
     </script>
   </body>
 </html>

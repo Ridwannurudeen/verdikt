@@ -6,7 +6,7 @@
     <title>Verdikt — escrow demo</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8951e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e8b931' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2'/%3E%3C/svg%3E"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700,800&f[]=switzer@400,500,600,700&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&f[]=switzer@400,500,600&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -25,8 +25,8 @@
       html,
       body {
         margin: 0;
-        background: #0b0d10;
-        color: #f2f5f7;
+        background: #0a0b0d;
+        color: #e9e5dc;
         font-family:
           "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
           Consolas, "Liberation Mono", monospace;
@@ -40,22 +40,11 @@
         inset: 0;
         z-index: -2;
         pointer-events: none;
-        background:
-          linear-gradient(
-            180deg,
-            rgba(242, 245, 247, 0.035),
-            transparent 220px
-          ),
-          linear-gradient(
-            90deg,
-            rgba(242, 245, 247, 0.035) 1px,
-            transparent 1px
-          ),
-          linear-gradient(rgba(242, 245, 247, 0.028) 1px, transparent 1px);
-        background-size:
-          auto,
-          44px 44px,
-          44px 44px;
+        background: radial-gradient(
+          ellipse 70% 45% at 30% 0%,
+          rgba(233, 229, 220, 0.045),
+          transparent 70%
+        );
       }
       body::after {
         content: none;
@@ -69,8 +58,8 @@
         gap: 12px;
       }
       .panel {
-        background: #10151b;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #121316;
+        border: 1px solid rgba(233, 229, 220, 0.08);
         border-radius: 12px;
         padding: 18px;
       }
@@ -78,17 +67,17 @@
         font-size: 21px;
         margin: 0;
         font-weight: 800;
-        font-family: "Zodiak", Georgia, serif;
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
         letter-spacing: -0.03em;
       }
       h2 {
         font-size: 13px;
         margin: 0 0 12px;
         font-weight: 700;
-        font-family: "Zodiak", Georgia, serif;
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
         text-transform: uppercase;
         letter-spacing: -0.03em;
-        color: #aeb8c2;
+        color: #9b988f;
       }
       .header {
         display: flex;
@@ -104,13 +93,13 @@
         flex-wrap: wrap;
       }
       .conn-info {
-        color: #737f8c;
+        color: #9b988f;
         font-size: 12px;
       }
       label {
         display: block;
         margin-top: 10px;
-        color: #737f8c;
+        color: #9b988f;
         font-size: 12px;
       }
       input,
@@ -118,9 +107,9 @@
         width: 100%;
         box-sizing: border-box;
         padding: 8px;
-        background: #0b0d10;
-        border: 1px solid #2a3440;
-        color: #f2f5f7;
+        background: #0a0b0d;
+        border: 1px solid rgba(233, 229, 220, 0.16);
+        color: #e9e5dc;
         border-radius: 4px;
         font: inherit;
         margin-top: 4px;
@@ -137,20 +126,20 @@
         border: 1px solid transparent;
       }
       button.primary {
-        background: #c7a45a;
-        color: #0b0d10;
-        border-color: #c7a45a;
+        background: #e9e5dc;
+        color: #101113;
+        border-color: #e9e5dc;
       }
       button.primary:hover:not(:disabled) {
-        background: #d8c48a;
+        background: #f7f4ec;
       }
       button.ghost {
         background: transparent;
-        color: #f2f5f7;
-        border-color: #2a3440;
+        color: #e9e5dc;
+        border-color: rgba(233, 229, 220, 0.16);
       }
       button.ghost:hover:not(:disabled) {
-        background: #1b232d;
+        background: rgba(233, 229, 220, 0.06);
       }
       button:disabled {
         opacity: 0.5;
@@ -174,7 +163,7 @@
         font-size: 12px;
       }
       .kv .k {
-        color: #737f8c;
+        color: #9b988f;
       }
       .kv .v {
         word-break: break-all;
@@ -190,25 +179,25 @@
         max-width: 380px;
       }
       .toast {
-        background: #151b23;
-        border: 1px solid #2a3440;
-        border-left: 3px solid #c7a45a;
+        background: #17181c;
+        border: 1px solid rgba(233, 229, 220, 0.16);
+        border-left: 3px solid #e8b931;
         padding: 8px 12px;
         border-radius: 4px;
         font-size: 12px;
         word-break: break-all;
       }
       .toast.err {
-        border-left-color: #d8c48a;
+        border-left-color: #f0cd66;
       }
       .toast.info {
-        border-left-color: #c7a45a;
+        border-left-color: #e8b931;
       }
       a {
-        color: #d8c48a;
+        color: #f0cd66;
       }
       .muted {
-        color: #737f8c;
+        color: #9b988f;
         font-size: 12px;
       }
       .hidden {
@@ -219,9 +208,9 @@
         padding: 2px 6px;
         border-radius: 3px;
         font-size: 11px;
-        background: #151b23;
-        color: #f2f5f7;
-        border: 1px solid rgba(242, 245, 247, 0.2);
+        background: #17181c;
+        color: #e9e5dc;
+        border: 1px solid rgba(233, 229, 220, 0.16);
       }
       .kicker {
         display: inline-flex;
@@ -230,9 +219,9 @@
         font-weight: 700;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: #d8c48a;
-        background: rgba(199, 164, 90, 0.14);
-        border: 1px solid rgba(199, 164, 90, 0.4);
+        color: #f0cd66;
+        background: rgba(232, 185, 49, 0.12);
+        border: 1px solid rgba(232, 185, 49, 0.4);
         border-radius: 100px;
         padding: 4px 11px;
         margin: 0 0 8px;
@@ -246,45 +235,45 @@
         letter-spacing: 0.02em;
         padding: 4px 11px;
         border-radius: 100px;
-        border: 1px solid rgba(199, 164, 90, 0.4);
-        background: rgba(199, 164, 90, 0.14);
-        color: #d8c48a;
+        border: 1px solid rgba(232, 185, 49, 0.4);
+        background: rgba(232, 185, 49, 0.12);
+        color: #f0cd66;
         font-family: "Switzer", system-ui, sans-serif;
       }
       .vpill-NONE {
-        background: #151b23;
-        color: #aeb8c2;
-        border-color: rgba(242, 245, 247, 0.15);
+        background: #17181c;
+        color: #9b988f;
+        border-color: rgba(233, 229, 220, 0.16);
       }
       .vpill-PAYEE {
-        background: rgba(154, 166, 178, 0.14);
-        color: #9aa6b2;
-        border-color: rgba(154, 166, 178, 0.4);
+        background: #e8b931;
+        color: #161203;
+        border-color: #e8b931;
       }
       .vpill-PAYER {
-        background: rgba(115, 127, 140, 0.2);
-        color: #aeb8c2;
-        border-color: rgba(115, 127, 140, 0.5);
+        background: transparent;
+        color: #e9e5dc;
+        border-color: rgba(233, 229, 220, 0.16);
       }
       .vpill-SPLIT {
-        background: rgba(199, 164, 90, 0.14);
-        color: #d8c48a;
-        border-color: rgba(199, 164, 90, 0.4);
+        background: rgba(232, 185, 49, 0.12);
+        color: #f0cd66;
+        border-color: rgba(232, 185, 49, 0.55);
       }
       .vpill-UNDECIDABLE {
-        background: rgba(141, 130, 112, 0.18);
-        color: #aeb8c2;
-        border-color: rgba(242, 245, 247, 0.15);
+        background: transparent;
+        color: #6b6962;
+        border-color: rgba(233, 229, 220, 0.08);
       }
       details.cfg-panel > summary {
         cursor: pointer;
         list-style: none;
         font-size: 13px;
         font-weight: 700;
-        font-family: "Zodiak", Georgia, serif;
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
         text-transform: uppercase;
         letter-spacing: -0.03em;
-        color: #aeb8c2;
+        color: #9b988f;
       }
       details.cfg-panel > summary::-webkit-details-marker {
         display: none;
@@ -303,8 +292,8 @@
       :focus-visible {
         outline: none;
         box-shadow:
-          0 0 0 2px #0b0d10,
-          0 0 0 3.5px #c7a45a;
+          0 0 0 2px #0a0b0d,
+          0 0 0 3.5px #e8b931;
         border-radius: 6px;
       }
       /* AI jury panel */
@@ -328,7 +317,7 @@
       }
       .gauge-track {
         fill: none;
-        stroke: #1b232d;
+        stroke: rgba(233, 229, 220, 0.08);
         stroke-width: 11;
       }
       .gauge-arc {
@@ -336,7 +325,7 @@
         stroke: url(#jGaugeGrad);
         stroke-width: 11;
         stroke-linecap: round;
-        filter: drop-shadow(0 0 6px rgba(199, 164, 90, 0.4));
+        filter: drop-shadow(0 0 6px rgba(232, 185, 49, 0.4));
         transition: stroke-dashoffset 0.9s ease;
       }
       .gauge-center {
@@ -350,12 +339,12 @@
       .gauge-num {
         font-size: 15px;
         font-weight: 800;
-        font-family: "Zodiak", Georgia, serif;
+        font-family: "Cabinet Grotesk", system-ui, sans-serif;
         line-height: 1.1;
       }
       .gauge-sub {
         font-size: 10px;
-        color: #737f8c;
+        color: #9b988f;
         margin-top: 4px;
       }
       .jury-body {
@@ -364,12 +353,12 @@
       }
       .jury-headline {
         font-size: 12px;
-        color: #aeb8c2;
+        color: #9b988f;
         margin-bottom: 8px;
         line-height: 1.5;
       }
       .jurors {
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(233, 229, 220, 0.08);
         border-radius: 8px;
         overflow: hidden;
       }
@@ -378,7 +367,7 @@
         align-items: center;
         gap: 10px;
         padding: 8px 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(233, 229, 220, 0.06);
       }
       .juror-row:last-child {
         border-bottom: 0;
@@ -388,11 +377,11 @@
         height: 26px;
         flex: 0 0 auto;
         border-radius: 7px;
-        background: #1b232d;
-        border: 1px solid rgba(199, 164, 90, 0.32);
+        background: #17181c;
+        border: 1px solid rgba(232, 185, 49, 0.32);
         display: grid;
         place-items: center;
-        color: #d8c48a;
+        color: #f0cd66;
       }
       .juror-row .av svg {
         width: 14px;
@@ -404,14 +393,14 @@
       }
       .juror-row .jrole {
         font-size: 10.5px;
-        color: #737f8c;
+        color: #9b988f;
       }
       .juror-row .vpill {
         margin-left: auto;
       }
       .converge {
         font-size: 11.5px;
-        color: #737f8c;
+        color: #9b988f;
         margin-top: 10px;
         line-height: 1.5;
       }
@@ -447,8 +436,8 @@
           flex-wrap: wrap;
           font-size: 13px;
           font-family: &quot;Switzer&quot;, system-ui, sans-serif;
-          background: #10151b;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: #121316;
+          border: 1px solid rgba(233, 229, 220, 0.08);
           border-radius: 12px;
           padding: 11px 16px;
           margin-bottom: 12px;
@@ -460,9 +449,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #f2f5f7;
+            color: #e9e5dc;
             text-decoration: none;
-            font-family: &quot;Zodiak&quot;, serif;
+            font-family: &quot;Cabinet Grotesk&quot;, sans-serif;
             font-weight: 800;
           "
         >
@@ -471,11 +460,11 @@
               width: 24px;
               height: 24px;
               border-radius: 7px;
-              background: #151b23;
-              border: 1px solid rgba(199, 164, 90, 0.4);
+              background: #17181c;
+              border: 1px solid rgba(232, 185, 49, 0.4);
               display: grid;
               place-items: center;
-              color: #d8c48a;
+              color: #f0cd66;
             "
           >
             <svg
@@ -495,25 +484,25 @@
           </span>
           Verdikt
         </a>
-        <a href="arena.html" style="color: #aeb8c2; text-decoration: none"
+        <a href="arena.html" style="color: #9b988f; text-decoration: none"
           >Arena</a
         >
-        <a href="./" style="color: #f2f5f7; text-decoration: none">Demo</a>
-        <a href="courtroom.html" style="color: #aeb8c2; text-decoration: none"
+        <a href="./" style="color: #e9e5dc; text-decoration: none">Demo</a>
+        <a href="courtroom.html" style="color: #9b988f; text-decoration: none"
           >Courtroom</a
         >
-        <a href="explorer.html" style="color: #aeb8c2; text-decoration: none"
+        <a href="explorer.html" style="color: #9b988f; text-decoration: none"
           >Explorer</a
         >
-        <a href="caselaw.html" style="color: #aeb8c2; text-decoration: none"
+        <a href="caselaw.html" style="color: #9b988f; text-decoration: none"
           >Case law</a
         >
-        <a href="analytics.html" style="color: #aeb8c2; text-decoration: none"
+        <a href="analytics.html" style="color: #9b988f; text-decoration: none"
           >Analytics</a
         >
         <a
           href="/"
-          style="color: #737f8c; text-decoration: none; margin-left: auto"
+          style="color: #6b6962; text-decoration: none; margin-left: auto"
           >Home ↗</a
         >
       </nav>
@@ -684,9 +673,9 @@
                       x2="1"
                       y2="1"
                     >
-                      <stop offset="0" stop-color="#c7a45a" />
-                      <stop offset="0.55" stop-color="#d8c48a" />
-                      <stop offset="1" stop-color="#d8c48a" />
+                      <stop offset="0" stop-color="#e8b931" />
+                      <stop offset="0.55" stop-color="#f0cd66" />
+                      <stop offset="1" stop-color="#f0cd66" />
                     </linearGradient>
                   </defs>
                   <circle class="gauge-track" cx="75" cy="75" r="64" />
