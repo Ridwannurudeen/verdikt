@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&f[]=switzer@400,500,600&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&f[]=switzer@400,500,600&display=swap"
     />
     <link
       rel="stylesheet"
@@ -29,20 +29,21 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
-    />
     <style>
       :root {
         --bg: #0a0b0d;
         --surface: #121316;
+        --surface-2: #16181c;
         --border: rgba(233, 229, 220, 0.1);
+        --border-2: rgba(233, 229, 220, 0.16);
         --ink: #e9e5dc;
         --muted: #9b988f;
         --faint: #6b6962;
         --amber: #e8b931;
         --amber-ink: #f0cd66;
+        --amber-dim: rgba(232, 185, 49, 0.14);
+        --red: #cf6a59;
+        --green: #6fb98f;
       }
       .reveal-viewport,
       body,
@@ -53,107 +54,331 @@
         font-family: "Switzer", system-ui, sans-serif;
         color: var(--ink);
         font-weight: 400;
+        font-size: 26px;
       }
       .reveal .slides {
         text-align: left;
       }
       .reveal .slides > section {
-        padding: 28px 60px;
+        padding: 0 56px;
+        box-sizing: border-box;
       }
       .reveal h1,
       .reveal h2,
-      .reveal h3 {
+      .reveal h3,
+      .reveal h4 {
         font-family: "Cabinet Grotesk", "Switzer", sans-serif;
         text-transform: none;
         letter-spacing: -0.02em;
         color: var(--ink);
+        margin: 0;
       }
       .reveal h1 {
-        font-size: 2.4em;
-        font-weight: 800;
-        margin-bottom: 0.3em;
-        line-height: 1.04;
+        font-size: 4.1em;
+        font-weight: 900;
+        line-height: 0.96;
       }
       .reveal h2 {
-        font-size: 1.45em;
+        font-size: 1.6em;
         font-weight: 800;
-        margin-bottom: 0.5em;
-        line-height: 1.08;
-        padding-bottom: 0.3em;
-        border-bottom: 1px solid var(--border);
+        line-height: 1.05;
+        margin-bottom: 0.7rem;
       }
-      .reveal h3 {
-        font-size: 1.05em;
+      .reveal h2 .pre {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.42em;
+        font-weight: 500;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 0.5em;
+      }
+      .reveal h4 {
+        font-size: 0.92em;
         font-weight: 700;
-        margin-top: 0.7em;
-        color: var(--muted);
       }
       .reveal p,
       .reveal li {
         color: var(--ink);
-        font-size: 0.72em;
+        font-size: 0.82em;
         line-height: 1.5;
       }
-      .reveal em {
+      .reveal .lead {
         color: var(--muted);
-        font-style: italic;
+        font-size: 0.92em;
+        max-width: 30em;
+        margin: 0 0 1.4rem;
       }
       .reveal strong {
         color: var(--amber-ink);
         font-weight: 600;
       }
-      .reveal code {
+      .reveal em {
+        color: var(--muted);
+        font-style: italic;
+      }
+      .reveal code,
+      .mono {
         font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      .reveal code {
         background: var(--surface);
-        color: var(--ink);
-        padding: 2px 7px;
+        color: var(--amber-ink);
+        padding: 1px 7px;
         border-radius: 5px;
-        font-size: 0.86em;
+        font-size: 0.84em;
         border: 1px solid var(--border);
       }
-      .reveal ul {
-        margin-left: 1.1em;
+
+      /* ---- layout helpers ---- */
+      .grid {
+        display: grid;
+        gap: 16px;
       }
-      .reveal li {
-        margin-bottom: 0.35em;
+      .g2 { grid-template-columns: repeat(2, 1fr); }
+      .g3 { grid-template-columns: repeat(3, 1fr); }
+      .g4 { grid-template-columns: repeat(4, 1fr); }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
       }
-      .reveal li::marker {
+      .wrap { flex-wrap: wrap; }
+
+      /* ---- cards ---- */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 22px;
+      }
+      .card h4 { margin-bottom: 0.4em; }
+      .card p {
+        color: var(--muted);
+        font-size: 0.66em;
+        line-height: 1.42;
+        margin: 0;
+      }
+      .card .tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.5em;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--faint);
+        display: block;
+        margin-top: 0.8em;
+      }
+      .card.flag {
+        background: var(--amber-dim);
+        border-color: rgba(232, 185, 49, 0.4);
+      }
+      .card.flag h4 { color: var(--amber-ink); }
+      .mark {
+        font-size: 1.3em;
+        line-height: 1;
+        font-weight: 800;
+        margin-bottom: 0.3em;
+      }
+      .mark.x { color: var(--red); }
+      .mark.q { color: var(--amber); }
+
+      /* ---- terminal block ---- */
+      .term {
+        font-family: "JetBrains Mono", monospace;
+        background: var(--surface);
+        border: 1px solid var(--border-2);
+        border-radius: 12px;
+        padding: 20px 24px;
+        font-size: 0.62em;
+        line-height: 1.85;
+        color: var(--muted);
+      }
+      .term .k { color: var(--faint); }
+      .term .v { color: var(--ink); }
+      .term .ok { color: var(--amber-ink); }
+      .term .p::before { content: "> "; color: var(--amber); }
+
+      /* ---- flow / pipeline ---- */
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        margin: 0.4rem 0 1.2rem;
+      }
+      .flow .step {
+        flex: 1;
+        text-align: center;
+      }
+      .flow .step .box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 8px;
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 0.74em;
+      }
+      .flow .step .cap {
+        display: block;
+        color: var(--muted);
+        font-size: 0.56em;
+        line-height: 1.35;
+        margin-top: 0.7em;
+        padding: 0 4px;
+      }
+      .flow .arrow {
+        display: flex;
+        align-items: center;
         color: var(--amber);
+        font-size: 0.9em;
+        padding: 0 4px;
+        margin-top: 14px;
       }
+
+      /* ---- verdict pills ---- */
+      .vpills { display: flex; flex-direction: column; gap: 6px; }
+      .vpill {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.62em;
+        border: 1px solid var(--border-2);
+        border-radius: 999px;
+        padding: 3px 12px;
+        color: var(--ink);
+        text-align: center;
+      }
+      .vpill.win { border-color: rgba(232,185,49,0.5); color: var(--amber-ink); }
+
+      /* ---- consensus diagram ---- */
+      .consensus { display: flex; align-items: center; gap: 18px; }
+      .nodes { display: flex; flex-direction: column; gap: 7px; }
+      .node {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.5em;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 5px 12px;
+        color: var(--muted);
+      }
+      .conn { color: var(--amber); font-size: 0.62em; text-align: center; }
+      .result {
+        background: var(--amber-dim);
+        border: 1px solid rgba(232,185,49,0.4);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.6em;
+        color: var(--amber-ink);
+        text-align: center;
+      }
+
+      /* ---- funnel ---- */
+      .funnel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .stage {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.6em;
+        color: var(--ink);
+        text-align: center;
+      }
+      .stage.w70 { width: 70%; }
+      .stage.w50 { width: 50%; }
+      .down { color: var(--amber); font-size: 0.7em; }
+
+      /* ---- stats ---- */
+      .stat {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px 20px;
+        text-align: center;
+      }
+      .stat .num {
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 900;
+        font-size: 2.7em;
+        line-height: 1;
+        color: var(--amber-ink);
+        letter-spacing: -0.03em;
+      }
+      .stat .cap {
+        display: block;
+        color: var(--muted);
+        font-size: 0.6em;
+        line-height: 1.4;
+        margin-top: 0.7em;
+      }
+
+      /* ---- hub ---- */
+      .hub-wrap { display: flex; align-items: center; gap: 22px; }
+      .hub-core {
+        background: var(--amber-dim);
+        border: 1px solid rgba(232,185,49,0.45);
+        border-radius: 14px;
+        padding: 24px 18px;
+        text-align: center;
+        font-family: "Cabinet Grotesk", sans-serif;
+        font-weight: 800;
+        color: var(--amber-ink);
+        font-size: 0.92em;
+        min-width: 180px;
+      }
+
+      /* ---- checklist ---- */
+      .check { list-style: none; margin: 0; padding: 0; }
+      .check li {
+        position: relative;
+        padding-left: 1.5em;
+        margin-bottom: 0.6em;
+        font-size: 0.72em;
+        color: var(--ink);
+      }
+      .check li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--amber);
+        font-weight: 700;
+      }
+      .queue li::before { content: "→"; }
+
+      /* ---- chips ---- */
+      .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.56em;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        border: 1px solid var(--border-2);
+        border-radius: 999px;
+        padding: 5px 13px;
+      }
+      .chip.amber { color: var(--amber-ink); border-color: rgba(232,185,49,0.4); }
+
       .reveal a {
         color: var(--amber-ink);
         text-decoration: none;
         border-bottom: 1px solid rgba(232, 185, 49, 0.4);
       }
-      .reveal hr {
-        border: none;
-        border-top: 1px solid var(--border);
-        margin: 1.1em 0;
-      }
-      .reveal .controls {
-        color: var(--faint);
-      }
-      .reveal .progress {
-        color: var(--amber);
-      }
+      .mut { color: var(--muted); }
+      .center { text-align: center; }
+      .reveal .controls { color: var(--faint); }
+      .reveal .progress { color: var(--amber); }
       .reveal .slide-number {
         color: var(--faint);
         font-family: "JetBrains Mono", monospace;
         background: transparent;
       }
-      .reveal section.dense h2 {
-        font-size: 1.3em;
-      }
-      .reveal section.dense li {
-        font-size: 0.62em;
-        margin-bottom: 0.25em;
-      }
       .footer {
         position: fixed;
-        bottom: 12px;
-        left: 26px;
+        bottom: 14px;
+        left: 30px;
         color: var(--faint);
-        font-size: 0.62em;
+        font-size: 13px;
         font-family: "JetBrains Mono", monospace;
         letter-spacing: 0.04em;
         z-index: 5;
@@ -163,141 +388,244 @@
   <body>
     <div class="reveal">
       <div class="slides">
-        <section data-markdown>
-          <textarea data-template>
-# Verdikt
+        <!-- 1 · TITLE -->
+        <section>
+          <div>
+            <h1>Verdikt</h1>
+            <p style="font-size:1.15em;color:var(--muted);margin:0.5rem 0 1.6rem;font-weight:500;">
+              The settlement court for the <strong>agent economy</strong>.
+            </p>
+            <div class="term" style="max-width:30em;">
+              <div class="p"><span class="k">INITIALIZING</span> <span class="v">trustless AI arbitration…</span></div>
+              <div class="p"><span class="k">NETWORK:</span> <span class="v">Somnia Agentic L1 · Shannon testnet</span></div>
+              <div class="p"><span class="k">STATUS:</span> <span class="ok">$LIVE</span> <span class="v">→ verdikt.gudman.xyz</span></div>
+              <div class="p"><span class="k">DEMO:</span> <span class="v">youtu.be/UO8_gmMOh0I</span></div>
+              <div class="p"><span class="k">REPO:</span> <span class="v">github.com/Ridwannurudeen/verdikt</span></div>
+            </div>
+          </div>
+        </section>
 
-**The settlement court for the agent economy**
+        <!-- 2 · PROBLEM -->
+        <section>
+          <h2><span class="pre">The gap</span>Smart contracts move money. They can't judge.</h2>
+          <div class="grid g4" style="margin-top:1.2rem;">
+            <div class="card">
+              <div class="mark x">✕</div>
+              <h4>Smart Contracts</h4>
+              <p>On-chain escrow works — until two parties disagree. A contract can't weigh evidence.</p>
+              <span class="tag">Fails on subjectivity</span>
+            </div>
+            <div class="card">
+              <div class="mark x">✕</div>
+              <h4>Human Juries</h4>
+              <p>Understand context, but slow and uneconomical for small or machine-speed claims.</p>
+              <span class="tag">Fails on speed</span>
+            </div>
+            <div class="card">
+              <div class="mark x">✕</div>
+              <h4>Off-Chain Bots</h4>
+              <p>A single off-chain arbitrator bot is a trust hole the size of its operator.</p>
+              <span class="tag">Fails on trustlessness</span>
+            </div>
+            <div class="card flag">
+              <div class="mark q">?</div>
+              <h4>The Agent-Economy Gap</h4>
+              <p>Autonomous agents can pay each other — but they can't sue each other. The court doesn't exist yet.</p>
+              <span class="tag">Verdikt builds it</span>
+            </div>
+          </div>
+        </section>
 
-Trustless AI arbitration on Somnia's Agentic L1 · Shannon testnet
+        <!-- 3 · CONSENSUS -->
+        <section>
+          <h2><span class="pre">The mechanism</span>Somnia's Agentic L1 makes AI judgment trust-minimized</h2>
+          <div class="consensus" style="margin-top:0.8rem;">
+            <div class="term" style="font-size:0.5em;flex:0 0 auto;">
+              <div><span class="k">CASE_ID:</span> "0xab1…3f4"</div>
+              <div><span class="k">PARTIES:</span> [UserA, UserB]</div>
+              <div><span class="k">EVIDENCE:</span> "Invoice #123, $500"</div>
+              <div><span class="k">CLAIM:</span> "Goods not delivered"</div>
+              <div><span class="k">CONTRACT:</span> "0x992…7c8"</div>
+            </div>
+            <div class="conn">same LLM<br/>inference →</div>
+            <div class="nodes">
+              <div class="node">validator · agent</div>
+              <div class="node">validator · agent</div>
+              <div class="node">validator · agent</div>
+              <div class="node">validator · agent</div>
+              <div class="node">validator · agent</div>
+            </div>
+            <div class="conn">→</div>
+            <div class="result">0x8fB7A…4c9E2<br/><span style="color:var(--green)">✓ byte-identical</span></div>
+          </div>
+          <div class="chips" style="margin-top:1.2rem;">
+            <span class="chip amber">native to the network — no external API</span>
+            <span class="chip amber">no operator key</span>
+          </div>
+          <p style="font-size:0.92em;margin-top:1.1rem;">A validator subcommittee is <strong>a juror committee native to the chain</strong>. Verdikt turns it into a <strong>settlement layer.</strong></p>
+        </section>
 
-**[Live → verdikt.gudman.xyz](https://verdikt.gudman.xyz)** · `github.com/Ridwannurudeen/verdikt`
+        <!-- 4 · PRIMITIVE -->
+        <section>
+          <h2><span class="pre">The primitive</span>VerdiktCourt — a reusable AI-jury primitive</h2>
+          <div class="flow">
+            <div class="step"><div class="box mono" style="color:var(--amber-ink)">openCase()</div><span class="cap">submit evidence</span></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box">Validator panel</div><span class="cap">Somnia LLM agents</span></div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="box" style="padding:8px;">
+                <div class="vpills">
+                  <span class="vpill">PAYER</span>
+                  <span class="vpill win">PAYEE</span>
+                  <span class="vpill">SPLIT</span>
+                </div>
+              </div>
+              <span class="cap">majority verdict</span>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box">Appeal window</div><span class="cap">stake to escalate</span></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box mono" style="color:var(--green)">finalize()</div><span class="cap">permissionless</span></div>
+          </div>
+          <div class="grid g2" style="margin-top:0.6rem;">
+            <div class="card">
+              <h4>Plug-and-play integration</h4>
+              <p style="margin-bottom:0.6em;">Any contract plugs in via <code>IVerdiktConsumer.onVerdict</code>.</p>
+              <p>The court doesn't know what the deal <em>means</em> — it only judges.</p>
+            </div>
+            <div class="card flag">
+              <h4>Human-free settlement</h4>
+              <p style="font-size:0.78em;line-height:1.5;color:var(--amber-ink)">No admin signer.<br/>No fallback path.<br/>No human in the settlement loop.</p>
+            </div>
+          </div>
+        </section>
 
----
+        <!-- 5 · APPEALS -->
+        <section>
+          <h2><span class="pre">Economic security</span>Losing parties pay to be wrong</h2>
+          <p class="lead">Appeal by staking → a larger panel re-tries with new evidence → stake slashed if the verdict holds.</p>
+          <div class="funnel">
+            <div class="stage w70">Initial verdict · 5-agent panel</div>
+            <div class="down">↓ &nbsp;appeal by staking</div>
+            <div class="stage w50">Larger panel re-tries</div>
+            <div class="down">↓</div>
+            <div class="row" style="gap:24px;">
+              <div class="stage" style="border-color:rgba(207,106,89,0.45);color:var(--red)">Verdict holds → stake slashed</div>
+              <div class="stage" style="border-color:rgba(111,185,143,0.45);color:var(--green)">Overturned → stake returned</div>
+            </div>
+          </div>
+        </section>
 
-## Smart contracts move money. They can't judge.
+        <!-- 6 · AGENT-FIRST -->
+        <section>
+          <h2><span class="pre">Agent-first</span>Two agents transact, dispute &amp; settle — end to end</h2>
+          <p class="lead">In the Agent Arena, no human and no EOA sits in the settlement path.</p>
+          <div class="flow">
+            <div class="step"><div class="box">Transact</div><span class="cap">agents strike a deal</span></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box">Dispute</div><span class="cap">buyer agent files</span></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box">Judge</div><span class="cap">court convenes the jury</span></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box">Settle</div><span class="cap">verdict moves the funds</span></div>
+            <div class="arrow">→</div>
+            <div class="step"><div class="box">Finalize</div><span class="cap">a keeper finalizes</span></div>
+          </div>
+          <div class="card" style="margin-top:0.4rem;">
+            <p style="font-size:0.78em;color:var(--ink)">The same court powers a two-party escrow (two-sided evidence) and a <strong>ServiceSLA</strong> arbiter in <strong>~60 lines</strong>. <span class="mut">Judgment-as-an-oracle for the machine economy.</span></p>
+          </div>
+        </section>
 
-On-chain escrow works — until two parties disagree.
+        <!-- 7 · WHY SAFE -->
+        <section>
+          <h2><span class="pre">Trust model</span>Why an LLM verdict is safe to settle money on</h2>
+          <div class="grid g3" style="margin-top:1rem;">
+            <div class="card"><h4>Determinism</h4><p>Proven live — 5-agent panels agree byte-for-byte.</p></div>
+            <div class="card"><h4>Verifiable evidence</h4><p>Attested oracle facts outrank unverified claims.</p></div>
+            <div class="card"><h4>Injection-resistant</h4><p>Proven live — embedded instructions are ignored.</p></div>
+            <div class="card"><h4>Model + prompt pinning</h4><p>Every verdict is auditable to exactly what decided it.</p></div>
+            <div class="card"><h4>Abstention</h4><p>Thin evidence → <code>UNDECIDABLE</code> + a safe-default refund.</p></div>
+            <div class="card"><h4>Resilient panels</h4><p>Degrade to the largest jury available — never stall.</p></div>
+          </div>
+        </section>
 
-- *"You didn't deliver." "Yes I did."* — a contract can't weigh evidence
-- A single off-chain arbitrator bot is a trust hole the size of its operator
-- Human juries are slow and uneconomical for small or machine-speed claims
-- **Autonomous agents can pay each other — but they can't sue each other**
+        <!-- 8 · PROVEN LIVE -->
+        <section>
+          <h2><span class="pre">Proven live on Shannon</span>Real settlements, real on-chain data</h2>
+          <div class="grid g3" style="margin-top:0.6rem;">
+            <div class="stat"><div class="num">100%</div><span class="cap">byte-identical convergence — 12-case benchmark · determinism gate PASS</span></div>
+            <div class="stat"><div class="num">92%</div><span class="cap">agreement with human-expected verdicts (11/12)</span></div>
+            <div class="stat"><div class="num">0</div><span class="cap">successful prompt injections</span></div>
+          </div>
+          <div class="card" style="margin-top:1rem;">
+            <p style="font-size:0.78em;color:var(--ink)">Disputes filed, judged, and finalized <strong>with no human</strong> — a precedent ledger of real rulings, all reading live from chain at <strong>verdikt.gudman.xyz</strong>. Watch the demo: <span class="mono mut">youtu.be/UO8_gmMOh0I</span></p>
+          </div>
+        </section>
 
-The dispute court the agent economy needs **doesn't exist yet.**
+        <!-- 9 · MANY PROTOCOLS -->
+        <section>
+          <h2><span class="pre">One court, many protocols</span>Consumers settle on the same shared court</h2>
+          <div class="hub-wrap" style="margin-top:0.8rem;">
+            <div class="grid g2" style="flex:1;">
+              <div class="card"><h4 class="mono">VerdiktEscrow</h4><p>Two-party deal · two-sided evidence</p></div>
+              <div class="card"><h4 class="mono">VerdiktAgentEscrow</h4><p>Pull-payment · agent-to-agent</p></div>
+              <div class="card"><h4 class="mono">VerdiktTokenEscrow</h4><p>ERC-20 — agents settle real token value</p></div>
+              <div class="card"><h4 class="mono">ServiceSLA</h4><p>SLA-breach arbiter (~60 lines)</p></div>
+            </div>
+            <div class="hub-core">Shared<br/>VerdiktCourt</div>
+            <div class="grid" style="flex:0 0 200px;">
+              <div class="card"><h4 class="mono" style="font-size:0.8em">VerdiktGrantClawback</h4><p>DAO grant clawback</p></div>
+              <div class="card"><h4 class="mono" style="font-size:0.8em">VerdiktMilestone</h4><p>Freelance milestone</p></div>
+            </div>
+          </div>
+          <p style="font-size:0.72em;margin-top:1rem;" class="mut">Plus an on-chain <strong>precedent ledger</strong>, reputation, an arbitration marketplace, and timelock governance.</p>
+        </section>
 
----
-
-## Somnia's Agentic L1 makes AI judgment trust-minimized
-
-A subcommittee of validators each runs the **same** LLM inference and must agree on a **byte-identical** result.
-
-That is a juror committee, native to the network — **no external API, no operator key.**
-
-Verdikt turns it into a **settlement layer.**
-
----
-
-## VerdiktCourt — a reusable AI-jury primitive
-
-`openCase(evidence)` → panel of Somnia validator LLM agents → majority verdict (`PAYER` / `PAYEE` / `SPLIT`) → appeal window → permissionless `finalize`.
-
-- Any contract plugs in via `IVerdiktConsumer.onVerdict` — the court doesn't know what the deal means
-- Losing party can **appeal by staking** → a larger panel re-tries with new evidence → stake **slashed** if the verdict holds
-- **No admin signer. No fallback path. No human in the settlement loop.**
-
----
-
-## Agent-first, end-to-end
-
-In the **Agent Arena**, two autonomous agents transact, dispute, and settle with **no human and no EOA in the settlement path.**
-
-- The buyer agent files · the court convenes the jury · the verdict settles the funds · a keeper finalizes it
-- The same court powers a two-party escrow (two-sided evidence) and a **ServiceSLA** arbiter in ~60 lines
-
-**Judgment-as-an-oracle** for the machine economy.
-
----
-
-<!-- .slide: class="dense" -->
-
-## Why an LLM verdict is safe to settle money on
-
-- **Determinism** — proven live: 5-agent panels agree byte-for-byte
-- **Verifiable evidence** — attested oracle facts outrank unverified claims
-- **Injection-resistant** — proven live; embedded instructions are ignored
-- **Model + prompt pinning** — every verdict is auditable to what decided it
-- **Abstention** — thin evidence → `UNDECIDABLE` + a safe-default refund
-- **Resilient panels** — degrade to the largest jury available; never stall
-
----
-
-## Proven live on Shannon
-
-- **Determinism gate: PASS** — byte-identical panel consensus, the premise the whole design rests on
-- **92% agreement** with human-expected verdicts · **100% byte-identical** convergence — 12-case benchmark
-- **Real settlements on-chain** — disputes filed, judged, and finalized with no human; a precedent ledger of real rulings
-- **0 successful prompt injections**
-
-Everything is live and reading real on-chain data at **verdikt.gudman.xyz**.
-
----
-
-## One court, many protocols
-
-Consumers settle on the same shared court:
-
-- `VerdiktEscrow` — two-party deal, two-sided evidence
-- **`VerdiktAgentEscrow`** — pull-payment, agent-to-agent
-- **`VerdiktTokenEscrow`** — ERC-20 (agents settle real token value)
-- **`ServiceSLA`** — SLA-breach arbiter · `VerdiktGrantClawback` · `VerdiktMilestone`
-
-Plus an on-chain **precedent ledger**, reputation, a marketplace, and timelock governance.
-
----
-
-## What ships today
-
-- `VerdiktCourt` + a family of consumers on **one shared court**
-- **230 passing tests** — Solidity 0.8.24 (cancun), Foundry, incl. invariant + fuzz
-- **Auto-finalize keeper** running in production (systemd) — nothing waits on a human
-- **Full live product** — Agent Arena, Courtroom replay, Explorer, Case-law ledger, Analytics, interactive demo
-- Live premium stack on Shannon (chain 50312) · addresses in `deployments/shannon.json`
-
----
-
-## Status & roadmap
-
-**Live on testnet** as a reference deployment — real on-chain activity, honest about what's next:
-
-- No third-party audit yet — audit-readiness + bug-bounty scaffolding are in the repo
-- ~92% accuracy on a small benchmark — escalating stake-backed appeals + a human-escalation path for high-value disputes
-- **Next:** external audit → mainnet → real integrators
-
-**[verdikt.gudman.xyz](https://verdikt.gudman.xyz)** · `github.com/Ridwannurudeen/verdikt`
-        </textarea
-          >
+        <!-- 10 · STATUS & ROADMAP -->
+        <section>
+          <h2><span class="pre">Status &amp; roadmap</span>Submitted to the Somnia Agentathon — live today</h2>
+          <div class="grid g2" style="margin-top:0.7rem;">
+            <div class="card">
+              <h4 style="color:var(--amber-ink);margin-bottom:0.7em;">What ships today</h4>
+              <ul class="check">
+                <li>VerdiktCourt + a family of consumers on one shared court</li>
+                <li><strong>230 passing tests</strong> — Solidity 0.8.24 (cancun), Foundry, incl. invariant + fuzz</li>
+                <li>Auto-finalize keeper running in production (systemd)</li>
+                <li>Full live product — Arena, Courtroom replay, Explorer, Case-law, Analytics, demo</li>
+                <li>Live premium stack on Shannon (chain 50312)</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h4 style="margin-bottom:0.7em;">Execution queue</h4>
+              <ul class="check queue">
+                <li>Live on testnet as a reference deployment — honest about what's next</li>
+                <li>No third-party audit yet — audit-readiness + bug-bounty scaffolding in repo</li>
+                <li>~92% accuracy on a small benchmark — stake-backed appeals + human-escalation for high-value disputes</li>
+                <li><strong>Next:</strong> external audit → mainnet → real integrators</li>
+              </ul>
+            </div>
+          </div>
+          <p style="font-size:0.78em;margin-top:1rem;text-align:center;">
+            <strong>verdikt.gudman.xyz</strong> &nbsp;·&nbsp; <span class="mono mut">github.com/Ridwannurudeen/verdikt</span> &nbsp;·&nbsp; <span class="mono mut">youtu.be/UO8_gmMOh0I</span>
+          </p>
         </section>
       </div>
     </div>
-    <div class="footer">
-      verdikt · Somnia Agentathon · verdikt.gudman.xyz
-    </div>
+    <div class="footer">verdikt · Somnia Agentathon · verdikt.gudman.xyz</div>
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
-    />
     <script>
+      var clean = location.search.indexOf("clean") !== -1;
       Reveal.initialize({
+        width: 1280,
+        height: 720,
+        margin: 0.04,
+        center: true,
         hash: true,
-        slideNumber: "c/t",
-        controls: true,
-        progress: true,
+        slideNumber: clean ? false : "c/t",
+        controls: !clean,
+        progress: !clean,
         transition: "slide",
-        plugins: [RevealMarkdown, RevealHighlight],
       });
     </script>
   </body>
